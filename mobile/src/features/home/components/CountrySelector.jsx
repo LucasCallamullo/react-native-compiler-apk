@@ -23,6 +23,9 @@ const CountrySelector = () => {
         },
       });
 
+      // Log para verificar la URL real construida por Axios
+      // console.log('🔗 URL solicitada:', response.config.url, response.config.params);
+
       const objects = response.data?.data?.objects || [];
       const item = objects[0];
 
