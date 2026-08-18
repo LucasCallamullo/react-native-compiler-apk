@@ -7,16 +7,25 @@
     "expo": "~52.0.0",
     "expo-asset": "~11.0.5",
     "expo-status-bar": "~2.0.1",
+    "nativewind": "^4.2.6",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.7",
-    "react-native-web": "^0.19.13"
+    "react-native-reanimated": "~3.16.1",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-web": "^0.19.13",
+    "react-native-worklets-core": "^1.6.3",
+    "tailwindcss": "^3.4.0"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "postinstall": "node -e \"const fs=require('fs'); if(!fs.existsSync('node_modules/react-native-worklets')){fs.mkdirSync('node_modules/react-native-worklets',{recursive:true});fs.writeFileSync('node_modules/react-native-worklets/package.json','{\\\"name\\\":\\\"react-native-worklets\\\",\\\"main\\\":\\\"index.js\\\"}');fs.writeFileSync('node_modules/react-native-worklets/index.js','module.exports = require(\\\"react-native-worklets-core\\\");');fs.writeFileSync('node_modules/react-native-worklets/plugin.js','module.exports = require(\\\"react-native-worklets-core/plugin\\\");');}\""
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "babel-plugin-module-resolver": "^5.0.3"
+  }
 }

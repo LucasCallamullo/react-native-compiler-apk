@@ -1,34 +1,29 @@
+import './global.css';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, View, TouchableOpacity } from 'react-native';
 
 export default function App() {
-  // Estado para controlar qué pantalla mostrar
   const [showSecondScreen, setShowSecondScreen] = useState(false);
 
-  // Función para cambiar a la segunda pantalla
-  const goToSecondScreen = () => {
-    setShowSecondScreen(true);
-  };
+  const goToSecondScreen = () => setShowSecondScreen(true);
+  const goBack = () => setShowSecondScreen(false);
 
-  // Función para volver a la pantalla principal
-  const goBack = () => {
-    setShowSecondScreen(false);
-  };
-
-  // Pantalla principal
   if (!showSecondScreen) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>No se permiten Lucas</Text>
-        <Text style={styles.subtitle}>Versión 0.1 - Prototipo</Text>
-        
-        {/* Botón principal */}
-        <TouchableOpacity 
-          style={styles.button} 
+      <View className="flex-1 bg-gray-100 items-center justify-center p-5">
+        <Text className="text-2xl font-bold text-gray-800 mb-2">
+          No se permiten Lucas
+        </Text>
+        <Text className="text-base text-gray-600 mb-8">
+          Versión 0.1 - Prototipo
+        </Text>
+
+        <TouchableOpacity
+          className="bg-green-600 py-3.5 px-10 rounded-xl my-2 min-w-[200px] items-center active:opacity-80"
           onPress={goToSecondScreen}
         >
-          <Text style={styles.buttonText}>Banear Lucas!</Text>
+          <Text className="color-white text-lg font-bold">Banear Lucas!</Text>
         </TouchableOpacity>
 
         <StatusBar style="auto" />
@@ -36,59 +31,23 @@ export default function App() {
     );
   }
 
-  // Segunda pantalla
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Cantidad actual de Lucas: 1</Text>
-      <Text style={styles.subtitle}>Desgraciadamente no te vas a salvar de algún Lucas</Text>
-      
-      {/* Botón para volver */}
-      <TouchableOpacity 
-        style={[styles.button, styles.buttonSecondary]} 
+    <View className="flex-1 bg-gray-100 items-center justify-center p-5">
+      <Text className="text-2xl font-bold text-gray-800 mb-2">
+        Cantidad actual de Lucas: 1
+      </Text>
+      <Text className="text-base text-gray-600 mb-8 text-center">
+        Desgraciadamente no te vas a salvar de algún Lucas
+      </Text>
+
+      <TouchableOpacity
+        className="bg-blue-600 py-3.5 px-10 rounded-xl my-2 min-w-[200px] items-center active:opacity-80"
         onPress={goBack}
       >
-        <Text style={styles.buttonText}>Volver</Text>
+        <Text className="color-white text-lg font-bold">Volver</Text>
       </TouchableOpacity>
 
       <StatusBar style="auto" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 30,
-  },
-  button: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 10,
-    marginVertical: 10,
-    minWidth: 200,
-    alignItems: 'center',
-  },
-  buttonSecondary: {
-    backgroundColor: '#2196F3',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});
