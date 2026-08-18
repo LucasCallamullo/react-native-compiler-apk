@@ -45,3 +45,5 @@ yarn-error.*
 AGENTS.md
 CLAUDE.md
 .claude/
+
+proofs/
