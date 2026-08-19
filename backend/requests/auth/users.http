@@ -1,0 +1,85 @@
+
+### REST Client Test File for User CRUD Operations
+### Base URL: http://localhost:8080
+
+@baseUrl = http://localhost:8080
+@apiUsers = {{baseUrl}}/api/v1/users
+
+### ============================================
+### SUCCESS CASES
+### ============================================
+
+### 1. Create User - Success
+# @name createUser
+POST {{apiUsers}}
+Content-Type: application/json
+
+{
+    "firstName": "Juan",
+    "lastName": "Pérez",
+    "email": "juan.perez@mail.com",
+    "password": "123456",
+    "dni": "12345678",
+    "phone": "1234567890",
+    "role": "USER"
+}
+
+### 2. Create User - Success (with OTHER role)
+# @name createUserOther
+POST {{apiUsers}}
+Content-Type: application/json
+
+{
+    "firstName": "Maria",
+    "lastName": "García",
+    "email": "maria.garcia@mail.com",
+    "password": "123456",
+    "dni": "87654321",
+    "phone": "0987654321",
+    "role": "ADMIN"
+}
+
+### 3. Get All Users - Success
+# @name getAllUsers
+GET {{apiUsers}}
+Content-Type: application/json
+
+### 4. Get User By ID - Success
+# @name getUserById
+GET {{apiUsers}}/1
+Content-Type: application/json
+
+### 5. Get User By Email - Success
+# @name getUserByEmail
+GET {{apiUsers}}/email/juan.perez@mail.com
+Content-Type: application/json
+
+### 6. Get User By DNI - Success
+# @name getUserByDni
+GET {{apiUsers}}/dni/12345678
+Content-Type: application/json
+
+### 7. Update User - Success
+# @name updateUser
+PUT {{apiUsers}}/1
+Content-Type: application/json
+
+{
+    "firstName": "Juan Carlos",
+    "lastName": "Pérez Gómez",
+    "email": "juan.perez@mail.com",
+    "password": "654321",
+    "dni": "12345678",
+    "phone": "0987654321",
+    "role": "ADMIN"
+}
+
+### 8. Delete User - Success
+# @name deleteUser
+DELETE {{apiUsers}}/1
+Content-Type: application/json
+
+### 9. Delete User - Success (second user)
+# @name deleteUserOther
+DELETE {{apiUsers}}/2
+Content-Type: application/json
