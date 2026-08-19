@@ -1,0 +1,60 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ms-core
+  
+  datasource:
+    # url: jdbc:h2:mem:fleetdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    # driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:appvgdb
+    username: sa
+    password: 
+  
+  jpa:
+    hibernate:
+      ddl-auto: create
+    # show-sql: true
+
+    properties:
+      hibernate:
+        format_sql: true
+    # database-platform: org.hibernate.dialect.H2Dialect
+
+# ============================================
+# LOGGING CONFIGURATION
+# ============================================
+logging:
+  
+  # ============================================
+  # LOG LEVELS (Filters)
+  # ============================================
+  # Defines which log messages are displayed.
+  # Priority order: TRACE < DEBUG < INFO < WARN < ERROR
+  # 
+  # When set to INFO: shows INFO, WARN, ERROR (hides DEBUG and TRACE)
+  # ============================================
+  level:
+    # Application packages
+    # com.vg.controller: WARN         
+    # com.vg.filter: INFO                        # logging filter / middleware
+    
+  
+  # ============================================
+  # LOG PATTERNS (Format)
+  # ============================================
+  pattern:
+    # Console output format (human-readable, color-friendly)
+    # %d{pattern} - timestamp (yyyy-MM-dd HH:mm:ss)
+    # %level      - log level (INFO, DEBUG, ERROR, etc.)
+    # %msg        - the actual log message
+    # %n          - new line
+    # console: "%d{yyyy-MM-dd HH:mm:ss} - %level - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} - %highlight(%-5level) - %msg%n"
+    
+    # File output format (more detailed for debugging)
+    # %thread     - name of the thread that generated the log
+    # %logger{36} - source class name (limited to 36 chars)
+    file: "%d{yyyy-MM-dd HH:mm:ss} - %level - [%thread] - %logger{36} - %msg%n%n"
+  
