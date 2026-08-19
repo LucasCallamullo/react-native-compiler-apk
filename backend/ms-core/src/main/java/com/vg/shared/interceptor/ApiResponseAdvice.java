@@ -1,8 +1,6 @@
 package com.vg.shared.interceptor;
 
 import com.vg.shared.exception.ErrorResponse;
-// import com.vg.shared.interceptor.ApiResponse;
-
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -18,21 +16,12 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 @ControllerAdvice
 public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
 
-    /**
-     * Decides if this advice should be applied.
-     * Returns true for all responses except ErrorResponse (which is already wrapped).
-     */
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        // Don't wrap ErrorResponse (they are already formatted by GlobalExceptionHandler)
-        return !returnType.getParameterType().equals(ErrorResponse.class);
+        // Always return true, we'll handle the exclusion in beforeBodyWrite
+        return true;
     }
 
-    /**
-     * Wraps the response body in a standardized ApiResponse.
-     * This transforms: { "id": 1, "name": "Juan" } 
-     * Into: { "timestamp": "...", "status": 200, "message": "Success", "data": { "id": 1, "name": "Juan" }, "success": true }
-     */
     @Override
     public Object beforeBodyWrite(
             Object body,
@@ -50,6 +39,11 @@ public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
         // If body is null, return empty success response
         if (body == null) {
             return new ApiResponse<>(200, "Success", null);
+        }
+        
+        // If body is ErrorResponse, don't wrap it (GlobalExceptionHandler already formatted it)
+        if (body instanceof ErrorResponse) {
+            return body;
         }
         
         // Wrap the response in ApiResponse
