@@ -1,0 +1,57 @@
+### REST Client Test File for Authentication Endpoints
+### Base URL: http://localhost:8080
+
+@baseUrl = http://localhost:8080
+@apiAuth = {{baseUrl}}/api/v1/auth
+@apiUsers = {{baseUrl}}/api/v1/users
+
+### ============================================
+### 1. Create User (needed for testing)
+### ============================================
+
+### 1. Create User - Success
+# @name createTestUser
+POST {{apiAuth}}/register
+Content-Type: application/json
+
+{
+    "firstName": "Test",
+    "lastName": "User",
+    "email": "test@mail.com",
+    "password": "123456",
+    "dni": "11112222",
+    "phone": "1234567890"
+}
+
+### ============================================
+### 2. AUTHENTICATION ENDPOINTS
+### ============================================
+
+### 2. Login - Success
+# @name login
+POST {{apiAuth}}/login
+Content-Type: application/json
+
+{
+    "email": "test@mail.com",
+    "password": "123456"
+}
+
+### 3. Validate Token - Success
+# @name validateToken
+GET {{apiAuth}}/validate
+Authorization: Bearer {{login.response.body.data.token}}
+
+### 4. Refresh Token - Success
+# @name refreshToken
+POST {{apiAuth}}/refresh
+Content-Type: application/json
+
+{
+    "token": "{{login.response.body.data.token}}"
+}
+
+### 5. Logout - Success
+# @name logout
+POST {{apiAuth}}/logout
+Authorization: Bearer {{login.response.body.data.token}}
