@@ -6,8 +6,69 @@ import com.vg.auth.model.User;
 import com.vg.shared.exception.AppException;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
+
+    // ============================================
+    // VALIDATION METHODS (reutilizables)
+    // ============================================
+
+    /**
+     * Validates that the email is not already in use.
+     *
+     * @param email the email to validate
+     * @throws AppException if email already exists (HTTP 409 Conflict)
+     */
+    void validateEmailUnique(String email);
+
+    /**
+     * Validates that the DNI is not already in use.
+     *
+     * @param dni the DNI to validate
+     * @throws AppException if DNI already exists (HTTP 409 Conflict)
+     */
+    void validateDniUnique(String dni);
+
+    /**
+     * Validates that the email is not already in use by another user.
+     *
+     * @param email the email to validate
+     * @param userId the user ID to exclude from the check
+     * @throws AppException if email already exists (HTTP 409 Conflict)
+     */
+    void validateEmailUniqueForUpdate(String email, Long userId);
+
+    /**
+     * Validates that the DNI is not already in use by another user.
+     *
+     * @param dni the DNI to validate
+     * @param userId the user ID to exclude from the check
+     * @throws AppException if DNI already exists (HTTP 409 Conflict)
+     */
+    void validateDniUniqueForUpdate(String dni, Long userId);
+
+    /**
+     * Validates that a user exists by ID.
+     *
+     * @param id the user ID
+     * @return User entity
+     * @throws AppException if user not found (HTTP 404 Not Found)
+     */
+    User validateUserExists(Long id);
+
+    // ============================================
+    // ENTITY METHODS
+    // ============================================
+
+    /**
+     * Saves a user entity.
+     * Centralizes persistence logic for internal operations.
+     *
+     * @param user the user entity to save
+     * @return the saved User entity
+     */
+    User save(User user);
 
     /**
      * Retrieves a user entity by their ID.
@@ -18,6 +79,28 @@ public interface UserService {
      * @throws AppException if user not found (HTTP 404 Not Found)
      */
     User getUserEntityById(Long id);
+
+    /**
+     * Finds a user by email.
+     * Returns Optional to allow different error handling per use case.
+     *
+     * @param email the user email
+     * @return Optional containing the user if found, empty otherwise
+     */
+    Optional<User> findUserByEmail(String email);
+
+    /**
+     * Finds a user by DNI.
+     * Returns Optional to allow different error handling per use case.
+     *
+     * @param dni the user DNI
+     * @return Optional containing the user if found, empty otherwise
+     */
+    Optional<User> findUserByDni(String dni);
+
+    // ============================================
+    // CRUD METHODS
+    // ============================================
 
     /**
      * Creates a new user from the provided DTO.
