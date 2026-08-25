@@ -5,7 +5,17 @@ import ExpressionDisplay from '../components/ExpressionDisplay';
 import Keypad from '../components/Keypad';
 import { useCalculator } from '../hooks/useCalculator';
 
-const CalculatorScreen = ({ onUnlock }) => {
+const CalculatorScreen = ({ navigation }) => {
+  
+  const handleUnlock = () => {
+    // Redirige al workspace de pestañas y borra la calculadora del stack
+    // para que no vuelva atrás si el usuario presiona el botón físico de Android
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'HomeWorkspace' }],
+    });
+  };
+
   const {
     display,
     expression,
@@ -18,7 +28,7 @@ const CalculatorScreen = ({ onUnlock }) => {
     toggleSign,
   } = useCalculator({
     secretCode: '911',
-    onSecretCode: onUnlock,
+    onSecretCode: handleUnlock,
   });
 
   const handleKeyPress = (button) => {
@@ -50,7 +60,7 @@ const CalculatorScreen = ({ onUnlock }) => {
   };
 
   return (
-    <View className="flex-1 justify-end bg-zinc-900">
+    <View className="flex-1 justify-end bg-zinc-950">
       <ExpressionDisplay expression={expression} />
       <Display value={display} />
       <Keypad onPress={handleKeyPress} />
