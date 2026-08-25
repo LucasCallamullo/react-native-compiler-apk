@@ -21,11 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Implementation of AuthService.
- * Handles authentication logic including login, registration, token refresh,
- * and token validation.
- */
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -34,13 +29,6 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Authenticates a user with email and password.
-     *
-     * @param loginRequest the login credentials
-     * @return AuthResponseDTO containing JWT token and user info
-     * @throws AppException with 401 UNAUTHORIZED if credentials are invalid
-     */
     @Override
     public AuthResponseDTO login(LoginRequestDTO loginRequest) {
         // Step 1: Find user by email
@@ -60,12 +48,15 @@ public class AuthServiceImpl implements AuthService {
         claims.put("firstName", user.getFirstName());
         claims.put("lastName", user.getLastName());
 
-        // Step 4: Generate JWT token
-        String token = jwtService.generateToken(user.getEmail(), claims);
+        // Step 4: Generate access token and refresh token
+        String accessToken = jwtService.generateAccessToken(user.getEmail(), claims);
+        String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
-        // Step 5: Return authentication response
+        // Step 5: Return authentication response with both tokens
         return new AuthResponseDTO(
-            token,
+            accessToken,
+            refreshToken,
+            jwtService.getAccessTokenExpiration(),
             user.getEmail(),
             user.getRole(),
             user.getFirstName(),
@@ -74,13 +65,6 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    /**
-     * Registers a new user (public registration).
-     *
-     * @param registerRequest the registration data
-     * @return AuthResponseDTO containing JWT token and user info
-     * @throws AppException with 409 CONFLICT if email or DNI already exists
-     */
     @Override
     @Transactional
     public AuthResponseDTO register(RegisterRequestDTO registerRequest) {
@@ -95,10 +79,10 @@ public class AuthServiceImpl implements AuthService {
             .firstName(registerRequest.firstName())
             .lastName(registerRequest.lastName())
             .email(registerRequest.email())
-            .password(passwordEncoder.encode(registerRequest.password())) // Encrypt password
+            .password(passwordEncoder.encode(registerRequest.password()))
             .dni(registerRequest.dni())
             .phone(registerRequest.phone())
-            .role(UserRole.USER) // Default role, ADMIN cannot be assigned via registration
+            .role(UserRole.USER)
             .build();
 
         // Step 4: Save user using UserService
@@ -112,12 +96,15 @@ public class AuthServiceImpl implements AuthService {
         claims.put("firstName", savedUser.getFirstName());
         claims.put("lastName", savedUser.getLastName());
 
-        // Step 6: Generate JWT token
-        String token = jwtService.generateToken(savedUser.getEmail(), claims);
+        // Step 6: Generate access token and refresh token
+        String accessToken = jwtService.generateAccessToken(savedUser.getEmail(), claims);
+        String refreshToken = jwtService.generateRefreshToken(savedUser.getEmail());
 
         // Step 7: Return authentication response
         return new AuthResponseDTO(
-            token,
+            accessToken,
+            refreshToken,
+            jwtService.getAccessTokenExpiration(),
             savedUser.getEmail(),
             savedUser.getRole(),
             savedUser.getFirstName(),
@@ -126,30 +113,12 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    /**
-     * Logs out a user.
-     * In a stateless JWT system, logout is handled client-side.
-     * This method is a placeholder for future token blacklisting.
-     *
-     * @param token the JWT token to invalidate
-     * @return true if logout was successful
-     */
     @Override
     public boolean logout(String token) {
-        // In a stateless JWT system, logout is handled client-side by discarding the token.
-        // For token blacklisting, we would need to store tokens in a cache/DB.
-        // This is a placeholder for future implementation if needed.
+        // In a stateless JWT system, logout is handled client-side.
         return true;
     }
 
-    /**
-     * Refreshes an expired JWT token.
-     *
-     * @param refreshRequest containing the expired/current token
-     * @return RefreshTokenResponseDTO with a new JWT token
-     * @throws AppException with 401 UNAUTHORIZED if token is invalid or expired
-     * @throws AppException with 404 NOT_FOUND if user doesn't exist
-     */
     @Override
     public RefreshTokenResponseDTO refreshToken(RefreshTokenRequestDTO refreshRequest) {
         String token = refreshRequest.token();
@@ -159,14 +128,20 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException("Invalid or expired token", HttpStatus.UNAUTHORIZED);
         }
 
-        // Step 2: Extract email from token
+        // Step 2: Verify this is a refresh token
+        String tokenType = jwtService.extractTokenType(token);
+        if (!"refresh".equals(tokenType)) {
+            throw new AppException("Invalid token type. Expected refresh token.", HttpStatus.UNAUTHORIZED);
+        }
+
+        // Step 3: Extract email from token
         String email = jwtService.extractEmail(token);
         
-        // Step 3: Find user by email
+        // Step 4: Find user by email
         User user = userService.findUserByEmail(email)
             .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
 
-        // Step 4: Build claims for new token
+        // Step 5: Build claims for new tokens
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", user.getRole().name());
         claims.put("userId", user.getId());
@@ -174,59 +149,42 @@ public class AuthServiceImpl implements AuthService {
         claims.put("firstName", user.getFirstName());
         claims.put("lastName", user.getLastName());
 
-        // Step 5: Generate new token
-        String newToken = jwtService.generateToken(user.getEmail(), claims);
+        // Step 6: Generate new access token and refresh token
+        String newAccessToken = jwtService.generateAccessToken(user.getEmail(), claims);
+        String newRefreshToken = jwtService.generateRefreshToken(user.getEmail());
 
-        // Step 6: Return response with new token
+        // Step 7: Return response with new tokens
         return new RefreshTokenResponseDTO(
-            newToken,
+            newAccessToken,
+            newRefreshToken,
+            jwtService.getAccessTokenExpiration(),
             "Token refreshed successfully"
         );
     }
 
-    /**
-     * Validates a JWT token.
-     *
-     * @param token the JWT token to validate
-     * @return the email extracted from the token
-     * @throws AppException with 401 UNAUTHORIZED if token is invalid or expired
-     */
     @Override
     public String validateToken(String token) {
-        // Step 1: Validate token
         if (!jwtService.isTokenValid(token)) {
             throw new AppException("Invalid or expired token", HttpStatus.UNAUTHORIZED);
         }
-        
-        // Step 2: Extract and return email
         return jwtService.extractEmail(token);
     }
 
-    /**
-     * Extracts user information from a valid JWT token.
-     *
-     * @param token the JWT token
-     * @return AuthResponseDTO with user info
-     * @throws AppException with 401 UNAUTHORIZED if token is invalid or expired
-     * @throws AppException with 404 NOT_FOUND if user doesn't exist
-     */
     @Override
     public AuthResponseDTO getUserInfoFromToken(String token) {
-        // Step 1: Validate token
         if (!jwtService.isTokenValid(token)) {
             throw new AppException("Invalid or expired token", HttpStatus.UNAUTHORIZED);
         }
 
-        // Step 2: Extract email from token
         String email = jwtService.extractEmail(token);
         
-        // Step 3: Find user by email
         User user = userService.findUserByEmail(email)
             .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
 
-        // Step 4: Return user info
         return new AuthResponseDTO(
             token,
+            null, // No refresh token for validation endpoint
+            jwtService.getAccessTokenExpiration(),
             user.getEmail(),
             user.getRole(),
             user.getFirstName(),
