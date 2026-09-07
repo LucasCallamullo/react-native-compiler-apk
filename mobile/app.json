@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
-    "version": "1.0.0",
+    "name": "Calculadora",
+    "slug": "calculadora",
+    "version": "1.2.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/calc-icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
@@ -24,7 +24,23 @@
     },
     "plugins": [
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "expo-secure-store",
+      [
+        "expo-dynamic-app-icon",
+        {
+          "icons": {
+            "calculator": {
+              "image": "./assets/calc-icon.png",
+              "prerendered": true
+            },
+            "official": {
+              "image": "./assets/icon.png",
+              "prerendered": true
+            }
+          }
+        }
+      ]
     ]
   }
 }

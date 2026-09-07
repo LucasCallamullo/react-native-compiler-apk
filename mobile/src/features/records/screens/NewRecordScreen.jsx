@@ -114,7 +114,7 @@ export default function NewRecordScreen({ navigation }) {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          onPress={() => navigation.navigate('Inicio')}
+          onPress={() => navigation.navigate('Home')}
           className="w-28 border border-zinc-700 bg-zinc-900 py-3 rounded-full flex-row items-center justify-center gap-1.5 active:bg-zinc-800"
         >
           <XCircle color="#a1a1aa" size={18} />

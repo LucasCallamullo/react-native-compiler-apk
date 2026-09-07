@@ -1,7 +1,8 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "strict": true,
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@features/*": ["src/features/*"],
       "@shared/*": ["src/shared/*"]

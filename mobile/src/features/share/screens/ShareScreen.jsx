@@ -1,3 +1,4 @@
+// src/features/share/screens/ShareScreen.jsx
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Switch, TextInput } from 'react-native';
 import { 
@@ -10,7 +11,8 @@ import {
   Eye, 
   Send, 
   AlertTriangle,
-  Hourglass 
+  Hourglass,
+  ArrowLeft 
 } from 'lucide-react-native';
 
 export default function ShareScreen({ navigation }) {
@@ -21,12 +23,21 @@ export default function ShareScreen({ navigation }) {
 
   return (
     <ScrollView className="flex-1 bg-zinc-950 px-4 pt-4" showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <View className="flex-row items-center gap-2 mb-1">
-        <Share2 color="#a855f7" size={24} />
-        <Text className="text-xl font-bold text-zinc-100">Compartir Historial</Text>
+      {/* Header con botón de retorno */}
+      <View className="flex-row items-center gap-3 mb-1">
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 items-center justify-center active:bg-zinc-800"
+        >
+          <ArrowLeft color="#e4e4e7" size={20} />
+        </TouchableOpacity>
+        <View className="flex-row items-center gap-2">
+          <Share2 color="#a855f7" size={24} />
+          <Text className="text-xl font-bold text-zinc-100">Compartir Historial</Text>
+        </View>
       </View>
-      <Text className="text-sm text-zinc-400 mb-4">
+      
+      <Text className="text-sm text-zinc-400 mb-4 ml-13">
         Generá un link temporal para compartir tu evidencia
       </Text>
 
@@ -39,9 +50,9 @@ export default function ShareScreen({ navigation }) {
           https://safeguard.app/share/abc123xyz
         </Text>
 
-        <View className="flex-row items-center justify-center gap-2 mt-2 mb-3 ">
-          <Hourglass color="#c084fc" size={28}/>
-          <Text className="text-[10px] text-zinc-500 ">
+        <View className="flex-row items-center justify-center gap-2 mt-2 mb-3">
+          <Hourglass color="#c084fc" size={16} />
+          <Text className="text-[10px] text-zinc-500">
             Expira: 24/08/2026 15:30
           </Text>
         </View>
