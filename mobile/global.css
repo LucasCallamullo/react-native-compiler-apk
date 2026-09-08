@@ -1,3 +1,79 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+/**
+ * ============================================================================
+ * GLOBAL THEME SYSTEM (CSS Variables / Design Tokens)
+ * ============================================================================
+ * Defines theme variables used across the application. These custom properties 
+ * allow dynamic switching between light, dark, and custom themes by applying 
+ * the corresponding class (e.g., .theme-light, .theme-dark, .theme-violet) 
+ * to a root wrapper view.
+ */
+
+@layer base {
+  /* DEFAULT DARK THEME */
+  :root, .theme-dark {
+    /* Backgrounds & Layering */
+    --color-bg: #09090b;         /* Main application background (zinc-950) */
+    --color-card: #18181b;       /* Surfaces for cards, sheets, and modals (zinc-900) */
+    --color-popover: #27272a;    /* Floating elements, dropdowns, and tooltips (zinc-800) */
+
+    /* Typography & Legibility */
+    --color-fg: #f4f4f5;         /* Primary text color (zinc-100) */
+    --color-fg-muted: #a1a1aa;   /* Secondary text, subtitles, and placeholders (zinc-400) */
+
+    /* Brand & Accent Colors */
+    --color-primary: #a855f7;    /* Main brand color (purple-500) */
+    --color-primary-fg: #ffffff; /* Text color rendered over primary background */
+    --color-accent: #27272a;     /* Interactive states (hover, active, pressed) (zinc-800) */
+
+    /* Borders & Form Inputs */
+    --color-border: #27272a;     /* General dividers and element borders (zinc-800) */
+    --color-input: #27272a;      /* Form input fields border/background (zinc-800) */
+  }
+
+  /* LIGHT THEME */
+  .theme-light {
+    /* Backgrounds & Layering */
+    --color-bg: #ffffff;         /* Main application background (pure white) */
+    --color-card: #f4f4f5;       /* Surfaces for cards, sheets, and modals (zinc-100) */
+    --color-popover: #ffffff;    /* Floating elements, dropdowns, and tooltips (pure white) */
+
+    /* Typography & Legibility */
+    --color-fg: #18181b;         /* Primary text color (zinc-900) */
+    --color-fg-muted: #71717a;   /* Secondary text, subtitles, and placeholders (zinc-500) */
+
+    /* Brand & Accent Colors */
+    --color-primary: #9333ea;    /* Main brand color (purple-600) */
+    --color-primary-fg: #ffffff; /* Text color rendered over primary background */
+    --color-accent: #e4e4e7;     /* Interactive states (hover, active, pressed) (zinc-200) */
+
+    /* Borders & Form Inputs */
+    --color-border: #e4e4e7;     /* General dividers and element borders (zinc-200) */
+    --color-input: #e4e4e7;      /* Form input fields border/background (zinc-200) */
+  }
+
+  /* PURPLE NIGHT / VIOLET THEME */
+  .theme-violet {
+    /* Backgrounds & Layering */
+    --color-bg: #1e0b36;         /* Main application background (deep dark violet) */
+    --color-card: #2e1065;       /* Surfaces for cards, sheets, and modals (violet-950) */
+    --color-popover: #581c87;    /* Floating elements, dropdowns, and tooltips (violet-900) */
+
+    /* Typography & Legibility */
+    --color-fg: #faf5ff;         /* Primary text color (purple-50) */
+    --color-fg-muted: #d8b4fe;   /* Secondary text, subtitles, and placeholders (purple-300) */
+
+    /* Brand & Accent Colors */
+    --color-primary: #ec4899;    /* Main brand color / high contrast accent (pink-500) */
+    --color-primary-fg: #ffffff; /* Text color rendered over primary background */
+    --color-accent: #4c1d95;     /* Interactive states (hover, active, pressed) (violet-900) */
+
+    /* Borders & Form Inputs */
+    --color-border: #581c87;     /* General dividers and element borders (violet-900) */
+    --color-input: #581c87;      /* Form input fields border/background (violet-900) */
+  }
+}
