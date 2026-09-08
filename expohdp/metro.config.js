@@ -1,11 +1,15 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
 const { getDefaultConfig } = require('expo/metro-config');
+const { withNativewind } = require("nativewind/metro");
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
 module.exports = config;
 
-const { withNativewind } = require("nativewind/metro");
+config.resolver.extraNodeModules = {
+  '@features': `${__dirname}/src/features`,
+  '@shared': `${__dirname}/src/shared`,
+};
  
 module.exports = withNativewind(config);
