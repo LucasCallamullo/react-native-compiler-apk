@@ -3,16 +3,14 @@ import { Camera, Siren, Folder, Share2, Mic, ClipboardList, Rabbit, Lock } from 
 import { useRouter } from 'expo-router';
 import { useAppTheme } from '@shared/context/ThemeProvider';
 import { ScreenCustom } from '@shared/components/ScreenCustom';
+import { useAuth } from '@features/auth/context/AuthContext';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { theme, setTheme, getColor } = useAppTheme();
 
-  // Mock temporal de Auth mientras integrás el context
-  const isAuthenticated = false;
-  const user = {
-    firstName: null
-  };
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
   // Dynamic colors from theme
   const primaryColor = getColor('text-primary');
@@ -36,7 +34,7 @@ export default function HomeScreen() {
 
   const handleProtectedAction = (screenPath: string) => {
     if (!isAuthenticated) {
-      router.push('/profile');
+      router.push('/login');
       return;
     }
     router.push(screenPath as any);
@@ -64,7 +62,7 @@ export default function HomeScreen() {
 
           {/* Avatar / Login Button */}
           <TouchableOpacity
-            onPress={() => router.push('/profile')}
+            onPress={() => isAuthenticated ? router.push('/profile') : router.push('/login')}
             className="w-11 h-11 rounded-full bg-primary items-center justify-center active:opacity-80"
           >
             {isAuthenticated ? (
@@ -97,7 +95,7 @@ export default function HomeScreen() {
         {/* Promotional banner if not logged in */}
         {!isAuthenticated && (
           <TouchableOpacity
-            onPress={() => router.push('/profile')}
+            onPress={() => router.push('/login')}
             className="rounded-2xl p-4 my-2 flex-row justify-between items-center border"
             style={{
               backgroundColor: cardBgColor,

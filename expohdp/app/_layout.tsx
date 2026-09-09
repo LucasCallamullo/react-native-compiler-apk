@@ -3,15 +3,14 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useAppTheme } from '@shared/context/ThemeProvider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useRouter } from 'expo-router';
 
 import '../global.css';
 import { useColorScheme } from 'react-native';
+import { AuthProvider } from '@features/auth/context/AuthContext';
 
 export { useAppTheme } from '@shared/context/ThemeProvider';
 
 function RootLayoutContent() {
-  const router = useRouter();
   const { theme, getColor } = useAppTheme();
   const systemTheme = useColorScheme();
   
@@ -53,6 +52,20 @@ function RootLayoutContent() {
           }} 
         />
 
+        <Stack.Screen 
+          name="login" 
+          options={{ 
+            headerShown: false, 
+          }} 
+        />
+
+        <Stack.Screen 
+          name="register" 
+          options={{ 
+            headerShown: false, 
+          }} 
+        />
+
         {/* Main Tabs Group */}
         <Stack.Screen 
           name="(tabs)" 
@@ -70,7 +83,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}> 
         <ThemeProvider>
-          <RootLayoutContent />
+          <AuthProvider> 
+            <RootLayoutContent />
+          </AuthProvider>
         </ThemeProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>

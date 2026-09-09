@@ -40,7 +40,7 @@ Content-Type: application/json
 ### 3. Validate Token - Success
 # @name validateToken
 GET {{apiAuth}}/validate
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: Bearer {{login.response.body.data.accessToken}}
 
 ### 4. Refresh Token - Success
 # @name refreshToken
@@ -48,10 +48,10 @@ POST {{apiAuth}}/refresh
 Content-Type: application/json
 
 {
-    "token": "{{login.response.body.data.token}}"
+    "token": "{{login.response.body.data.accessToken}}"
 }
 
 ### 5. Logout - Success
 # @name logout
 POST {{apiAuth}}/logout
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: Bearer {{login.response.body.data.accessToken}}
