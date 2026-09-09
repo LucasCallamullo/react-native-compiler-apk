@@ -11,70 +11,58 @@
    ============================================ */
 @theme {
   /* Backgrounds & Layering */
-  --color-bg: #09090b;         /* Main application background (zinc-950) */
-  --color-card: #18181b;       /* Surfaces for cards, sheets, and modals (zinc-900) */
-  --color-popover: #27272a;    /* Floating elements, dropdowns, and tooltips (zinc-800) */
+  --color-bg: #09090b;
+  --color-card: #18181b;
+  --color-popover: #27272a;
 
   /* Typography & Legibility */
-  --color-fg: #f4f4f5;         /* Primary text color (zinc-100) */
-  --color-fg-muted: #a1a1aa;   /* Secondary text, subtitles, and placeholders (zinc-400) */
+  --color-fg: #f4f4f5;
+  --color-fg-muted: #a1a1aa;
 
   /* Brand & Accent Colors */
-  --color-primary: #a855f7;    /* Main brand color (purple-500) */
-  --color-primary-fg: #ffffff; /* Text color rendered over primary background */
-  --color-secondary: #8b5cf6;  /* Secondary brand color (purple-400) */
-  --color-secondary-fg: #ffffff; /* Text color over secondary background */
-  --color-accent: #27272a;     /* Interactive states (hover, active, pressed) (zinc-800) */
+  --color-primary: #a855f7;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #8b5cf6;
+  --color-secondary-fg: #ffffff;
+  --color-accent: #27272a;
 
   /* Borders & Form Inputs */
-  --color-border: #27272a;     /* General dividers and element borders (zinc-800) */
-  --color-input: #27272a;      /* Form input fields border/background (zinc-800) */
+  --color-border: #27272a;
+  --color-input: #27272a;
+
+  /* ===== NEW: Status & Semantic Colors ===== */
+  --color-success: #22c55e;
+  --color-success-bg: #052e16;
+  --color-success-border: #166534;
+  --color-success-fg: #86efac;
+
+  --color-error: #ef4444;
+  --color-error-bg: #450a0a;
+  --color-error-border: #991b1b;
+  --color-error-fg: #fca5a5;
+
+  --color-warning: #f59e0b;
+  --color-warning-bg: #451a03;
+  --color-warning-border: #92400e;
+  --color-warning-fg: #fcd34d;
+
+  --color-info: #3b82f6;
+  --color-info-bg: #172554;
+  --color-info-border: #1e3a8a;
+  --color-info-fg: #93c5fd;
+
+  --color-purple-light: #c084fc;
+  --color-purple-bg: #2e1065;
+  --color-purple-border: #581c87;
+
+  --color-zinc-800: #27272a;
+  --color-zinc-900: #18181b;
+  --color-zinc-950: #09090b;
 }
 
 /* ============================================
    CUSTOM UTILITY CLASSES
-   These extend Tailwind with custom styles
    ============================================ */
-
-/* Icon color utility - inherits from text-primary */
-.icon-primary {
-  color: var(--color-primary) !important;
-}
-
-.icon-secondary {
-  color: var(--color-secondary) !important;
-}
-
-.icon-fg {
-  color: var(--color-fg) !important;
-}
-
-.icon-fg-muted {
-  color: var(--color-fg-muted) !important;
-}
-
-/* Card component utility */
-.card {
-  background-color: var(--color-card);
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-border);
-  padding: 1rem;
-}
-
-/* Interactive element utility */
-.interactive {
-  background-color: var(--color-accent);
-  transition: all 0.2s ease;
-}
-
-/* Form input utility */
-.input {
-  background-color: var(--color-input);
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  color: var(--color-fg);
-}
 
 /* ============================================
    THEME DEFINITIONS
@@ -82,24 +70,53 @@
    ============================================ */
 :root, .theme-dark {
   /* Backgrounds & Layering */
-  --color-bg: #09090b;         /* Main application background (zinc-950) */
-  --color-card: #18181b;       /* Surfaces for cards, sheets, and modals (zinc-900) */
-  --color-popover: #27272a;    /* Floating elements, dropdowns, and tooltips (zinc-800) */
+  --color-bg: #09090b;
+  --color-card: #18181b;
+  --color-popover: #27272a;
 
   /* Typography & Legibility */
-  --color-fg: #f4f4f5;         /* Primary text color (zinc-100) */
-  --color-fg-muted: #a1a1aa;   /* Secondary text, subtitles, and placeholders (zinc-400) */
+  --color-fg: #f4f4f5;
+  --color-fg-muted: #a1a1aa;
 
   /* Brand & Accent Colors */
-  --color-primary: #a855f7;    /* Main brand color (purple-500) */
-  --color-primary-fg: #ffffff; /* Text color rendered over primary background */
-  --color-secondary: #8b5cf6;  /* Secondary brand color (purple-400) */
-  --color-secondary-fg: #ffffff; /* Text color over secondary background */
-  --color-accent: #27272a;     /* Interactive states (hover, active, pressed) (zinc-800) */
+  --color-primary: #a855f7;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #8b5cf6;
+  --color-secondary-fg: #ffffff;
+  --color-accent: #27272a;
 
   /* Borders & Form Inputs */
-  --color-border: #27272a;     /* General dividers and element borders (zinc-800) */
-  --color-input: #27272a;      /* Form input fields border/background (zinc-800) */
+  --color-border: #27272a;
+  --color-input: #27272a;
+
+  /* ===== Status Colors (Dark Theme) ===== */
+  --color-success: #4ade80;
+  --color-success-bg: #052e16;
+  --color-success-border: #166534;
+  --color-success-fg: #86efac;
+
+  --color-error: #f87171;
+  --color-error-bg: #450a0a;
+  --color-error-border: #991b1b;
+  --color-error-fg: #fca5a5;
+
+  --color-warning: #fbbf24;
+  --color-warning-bg: #451a03;
+  --color-warning-border: #92400e;
+  --color-warning-fg: #fcd34d;
+
+  --color-info: #60a5fa;
+  --color-info-bg: #172554;
+  --color-info-border: #1e3a8a;
+  --color-info-fg: #93c5fd;
+
+  --color-purple-light: #c084fc;
+  --color-purple-bg: #2e1065;
+  --color-purple-border: #581c87;
+
+  --color-zinc-800: #27272a;
+  --color-zinc-900: #18181b;
+  --color-zinc-950: #09090b;
 }
 
 /* ============================================
@@ -107,24 +124,53 @@
    ============================================ */
 .theme-light {
   /* Backgrounds & Layering */
-  --color-bg: #ffffff;         /* Main application background (pure white) */
-  --color-card: #f4f4f5;       /* Surfaces for cards, sheets, and modals (zinc-100) */
-  --color-popover: #ffffff;    /* Floating elements, dropdowns, and tooltips (pure white) */
+  --color-bg: #ffffff;
+  --color-card: #f4f4f5;
+  --color-popover: #ffffff;
 
   /* Typography & Legibility */
-  --color-fg: #18181b;         /* Primary text color (zinc-900) */
-  --color-fg-muted: #71717a;   /* Secondary text, subtitles, and placeholders (zinc-500) */
+  --color-fg: #18181b;
+  --color-fg-muted: #71717a;
 
   /* Brand & Accent Colors */
-  --color-primary: #9333ea;    /* Main brand color (purple-600) */
-  --color-primary-fg: #ffffff; /* Text color rendered over primary background */
-  --color-secondary: #7c3aed;  /* Secondary brand color (purple-500) */
-  --color-secondary-fg: #ffffff; /* Text color over secondary background */
-  --color-accent: #e4e4e7;     /* Interactive states (hover, active, pressed) (zinc-200) */
+  --color-primary: #7c3aed;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #6d28d9;
+  --color-secondary-fg: #ffffff;
+  --color-accent: #e4e4e7;
 
   /* Borders & Form Inputs */
-  --color-border: #e4e4e7;     /* General dividers and element borders (zinc-200) */
-  --color-input: #e4e4e7;      /* Form input fields border/background (zinc-200) */
+  --color-border: #e4e4e7;
+  --color-input: #e4e4e7;
+
+  /* ===== Status Colors (Light Theme) ===== */
+  --color-success: #16a34a;
+  --color-success-bg: #dcfce7;
+  --color-success-border: #86efac;
+  --color-success-fg: #14532d;
+
+  --color-error: #dc2626;
+  --color-error-bg: #fee2e2;
+  --color-error-border: #fca5a5;
+  --color-error-fg: #7f1d1d;
+
+  --color-warning: #d97706;
+  --color-warning-bg: #fef3c7;
+  --color-warning-border: #fcd34d;
+  --color-warning-fg: #78350f;
+
+  --color-info: #2563eb;
+  --color-info-bg: #dbeafe;
+  --color-info-border: #93c5fd;
+  --color-info-fg: #1e3a8a;
+
+  --color-purple-light: #7c3aed;
+  --color-purple-bg: #f5f3ff;
+  --color-purple-border: #c4b5fd;
+
+  --color-zinc-800: #d4d4d8;
+  --color-zinc-900: #e4e4e7;
+  --color-zinc-950: #f4f4f5;
 }
 
 /* ============================================
@@ -132,22 +178,51 @@
    ============================================ */
 .theme-violet {
   /* Backgrounds & Layering */
-  --color-bg: #1e0b36;         /* Main application background (deep dark violet) */
-  --color-card: #2e1065;       /* Surfaces for cards, sheets, and modals (violet-950) */
-  --color-popover: #581c87;    /* Floating elements, dropdowns, and tooltips (violet-900) */
+  --color-bg: #1e0b36;
+  --color-card: #2e1065;
+  --color-popover: #581c87;
 
   /* Typography & Legibility */
-  --color-fg: #faf5ff;         /* Primary text color (purple-50) */
-  --color-fg-muted: #d8b4fe;   /* Secondary text, subtitles, and placeholders (purple-300) */
+  --color-fg: #faf5ff;
+  --color-fg-muted: #d8b4fe;
 
   /* Brand & Accent Colors */
-  --color-primary: #ec4899;    /* Main brand color / high contrast accent (pink-500) */
-  --color-primary-fg: #ffffff; /* Text color rendered over primary background */
-  --color-secondary: #d946ef;  /* Secondary brand color (fuchsia-500) */
-  --color-secondary-fg: #ffffff; /* Text color over secondary background */
-  --color-accent: #4c1d95;     /* Interactive states (hover, active, pressed) (violet-900) */
+  --color-primary: #ec4899;
+  --color-primary-fg: #ffffff;
+  --color-secondary: #d946ef;
+  --color-secondary-fg: #ffffff;
+  --color-accent: #4c1d95;
 
   /* Borders & Form Inputs */
-  --color-border: #581c87;     /* General dividers and element borders (violet-900) */
-  --color-input: #581c87;      /* Form input fields border/background (violet-900) */
+  --color-border: #581c87;
+  --color-input: #581c87;
+
+  /* ===== Status Colors (Violet Theme) ===== */
+  --color-success: #4ade80;
+  --color-success-bg: #052e16;
+  --color-success-border: #166534;
+  --color-success-fg: #86efac;
+
+  --color-error: #f87171;
+  --color-error-bg: #450a0a;
+  --color-error-border: #991b1b;
+  --color-error-fg: #fca5a5;
+
+  --color-warning: #fbbf24;
+  --color-warning-bg: #451a03;
+  --color-warning-border: #92400e;
+  --color-warning-fg: #fcd34d;
+
+  --color-info: #60a5fa;
+  --color-info-bg: #172554;
+  --color-info-border: #1e3a8a;
+  --color-info-fg: #93c5fd;
+
+  --color-purple-light: #d8b4fe;
+  --color-purple-bg: #3b0764;
+  --color-purple-border: #7e22ce;
+
+  --color-zinc-800: #3b0764;
+  --color-zinc-900: #4c1d95;
+  --color-zinc-950: #1e0b36;
 }

@@ -1,6 +1,6 @@
 import { View, TouchableOpacity } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
-import { Home, Folder, PlusCircle, User, Rabbit, Calculator } from 'lucide-react-native';
+import { Home, Folder, PlusCircle, User, Rabbit, Calculator, Siren } from 'lucide-react-native';
 import { useAppTheme } from '@shared/context/ThemeProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DraggableLockButton } from '@shared/components/DraggableLockButton';
@@ -63,27 +63,31 @@ export default function TabsLayout() {
             tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
           }}
         />
+
         <Tabs.Screen
-          name="folder"
+          name="audit"
           options={{
-            title: 'Carpetas',
+            title: 'Historial',
             tabBarIcon: ({ color, size }) => <Folder size={size} color={color} />,
           }}
         />
-        <Tabs.Screen
-          name="create"
+
+        <Tabs.Screen 
+          name="records"
           options={{
-            title: 'Crear',
+            title: 'Record',
             tabBarIcon: ({ color, size }) => <PlusCircle size={size} color={color} />,
           }}
         />
+
         <Tabs.Screen
-          name="user"
+          name="emergency"
           options={{
-            title: 'Usuario',
-            tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+            title: 'Emergencia',
+            tabBarIcon: ({ color, size }) => <Siren size={size} color={color} />,
           }}
         />
+
         <Tabs.Screen
           name="profile"
           options={{
