@@ -1,51 +1,67 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useAppTheme } from '@shared/context/ThemeProvider';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useEffect } from 'react';
+import { useRouter } from 'expo-router';
+
 import '../global.css';
 import { useColorScheme } from 'react-native';
 
 export { useAppTheme } from '@shared/context/ThemeProvider';
 
 function RootLayoutContent() {
-  const { theme } = useAppTheme();
+  const router = useRouter();
+  const { theme, getColor } = useAppTheme();
   const systemTheme = useColorScheme();
   
   const isDarkTheme = theme === 'theme-dark' || theme === 'theme-violet' || 
                       (theme === 'theme-light' ? false : systemTheme === 'dark');
-  
+
+  // Resolve dynamic colors for stack screens
+  const bgColor = getColor('bg-bg');
+  const fgColor = getColor('text-fg');
+
   return (
     <>
-      <StatusBar style={isDarkTheme ? 'light' : 'dark'} />
-      <>
-        <Stack >
-          {/* Tabs como pantalla principal */}
-          <Stack.Screen 
-            name="(tabs)" 
-            options={{ 
-              headerShown: false, // Ocultar header para tabs
-            }} 
-          />
-          
-          {/* Otras pantallas que no están en tabs */}
-          <Stack.Screen 
-            name="profile" 
-            options={{ 
-              title: 'Perfil',
-              headerStyle: { backgroundColor: 'var(--color-bg)' },
-              headerTintColor: 'var(--color-fg)',
-            }} 
-          />
-          <Stack.Screen 
-            name="settings" 
-            options={{ 
-              title: 'Configuración',
-              headerStyle: { backgroundColor: 'var(--color-bg)' },
-              headerTintColor: 'var(--color-fg)',
-            }} 
-          />
-        </Stack>
-      </>
+      {/* Status bar background color for Android */}
+      <StatusBar 
+        style={isDarkTheme ? 'light' : 'dark'} 
+      />
+      
+      <Stack
+        initialRouteName="calculator"
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: bgColor,
+          },
+          headerTintColor: fgColor,
+          headerTitleStyle: {
+            fontWeight: '600',
+          },
+          // Ensures stack screens respect the theme background
+          contentStyle: {
+            backgroundColor: bgColor,
+          },
+        }}
+      >
+        {/* Initial Screen: Calculator Lock Screen */}
+        <Stack.Screen 
+          name="calculator" 
+          options={{ 
+            headerShown: false, 
+          }} 
+        />
+
+        {/* Main Tabs Group */}
+        <Stack.Screen 
+          name="(tabs)" 
+          options={{ 
+            headerShown: false, 
+          }} 
+        />
+      </Stack>
     </>
   );
 }
@@ -53,9 +69,11 @@ function RootLayoutContent() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <ThemeProvider>
-        <RootLayoutContent />
-      </ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}> 
+        <ThemeProvider>
+          <RootLayoutContent />
+        </ThemeProvider>
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }
