@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -71,7 +72,7 @@ public class UserServiceImpl implements UserService {
      * @throws AppException with 409 CONFLICT if email is used by another user
      */
     @Override
-    public void validateEmailUniqueForUpdate(String email, Long userId) {
+    public void validateEmailUniqueForUpdate(String email, UUID userId) {
         if (userRepository.existsByEmailAndIdNot(email, userId)) {
             throw new AppException("Email already in use: " + email, HttpStatus.CONFLICT);
         }
@@ -86,7 +87,7 @@ public class UserServiceImpl implements UserService {
      * @throws AppException with 409 CONFLICT if DNI is used by another user
      */
     @Override
-    public void validateDniUniqueForUpdate(String dni, Long userId) {
+    public void validateDniUniqueForUpdate(String dni, UUID userId) {
         if (userRepository.existsByDniAndIdNot(dni, userId)) {
             throw new AppException("DNI already in use: " + dni, HttpStatus.CONFLICT);
         }
@@ -101,7 +102,7 @@ public class UserServiceImpl implements UserService {
      * @throws AppException with 404 NOT_FOUND if user doesn't exist
      */
     @Override
-    public User validateUserExists(Long id) {
+    public User validateUserExists(UUID id) {
         return userRepository.findById(id)
             .orElseThrow(() -> new AppException("User not found with id: " + id, HttpStatus.NOT_FOUND));
     }
@@ -115,11 +116,11 @@ public class UserServiceImpl implements UserService {
      * Wrapper around validateUserExists for internal use.
      *
      * @param id the user ID
-     * @return the User entity
+     * @return {User} entity
      * @throws AppException with 404 NOT_FOUND if user doesn't exist
      */
     @Override
-    public User getUserEntityById(Long id) {
+    public User getUserEntityById(UUID id) {
         return validateUserExists(id);
     }
 
@@ -179,7 +180,7 @@ public class UserServiceImpl implements UserService {
      * @throws AppException with 404 NOT_FOUND if user doesn't exist
      */
     @Override
-    public UserResponseDTO getUserById(Long id) {
+    public UserResponseDTO getUserById(UUID id) {
         User user = validateUserExists(id);
         return userMapper.toResponseDTO(user);
     }
@@ -235,7 +236,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public UserResponseDTO updateUser(Long id, UserRequestDTO dto) {
+    public UserResponseDTO updateUser(UUID id, UserRequestDTO dto) {
         // Step 1: Validate user exists
         User user = validateUserExists(id);
 
@@ -269,7 +270,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public boolean deleteUser(Long id) {
+    public boolean deleteUser(UUID id) {
         // Step 1: Validate user exists
         validateUserExists(id);
         

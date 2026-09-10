@@ -7,6 +7,7 @@ import com.vg.shared.exception.AppException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserService {
 
@@ -37,7 +38,7 @@ public interface UserService {
      * @param userId the user ID to exclude from the check
      * @throws AppException if email already exists (HTTP 409 Conflict)
      */
-    void validateEmailUniqueForUpdate(String email, Long userId);
+    void validateEmailUniqueForUpdate(String email, UUID userId);
 
     /**
      * Validates that the DNI is not already in use by another user.
@@ -46,7 +47,7 @@ public interface UserService {
      * @param userId the user ID to exclude from the check
      * @throws AppException if DNI already exists (HTTP 409 Conflict)
      */
-    void validateDniUniqueForUpdate(String dni, Long userId);
+    void validateDniUniqueForUpdate(String dni, UUID userId);
 
     /**
      * Validates that a user exists by ID.
@@ -55,7 +56,7 @@ public interface UserService {
      * @return User entity
      * @throws AppException if user not found (HTTP 404 Not Found)
      */
-    User validateUserExists(Long id);
+    User validateUserExists(UUID id);
 
     // ============================================
     // ENTITY METHODS
@@ -78,7 +79,7 @@ public interface UserService {
      * @return User entity
      * @throws AppException if user not found (HTTP 404 Not Found)
      */
-    User getUserEntityById(Long id);
+    User getUserEntityById(UUID id);
 
     /**
      * Finds a user by email.
@@ -118,7 +119,7 @@ public interface UserService {
      * @return UserResponseDTO containing the user data
      * @throws AppException if user not found (HTTP 404 Not Found)
      */
-    UserResponseDTO getUserById(Long id);
+    UserResponseDTO getUserById(UUID id);
 
     /**
      * Retrieves a user by their email.
@@ -154,7 +155,7 @@ public interface UserService {
      * @throws AppException if user not found (HTTP 404 Not Found)
      * @throws AppException if email or DNI already in use by another user (HTTP 409 Conflict)
      */
-    UserResponseDTO updateUser(Long id, UserRequestDTO dto);
+    UserResponseDTO updateUser(UUID id, UserRequestDTO dto);
 
     /**
      * Deletes a user by their ID.
@@ -163,5 +164,5 @@ public interface UserService {
      * @return true if the user was successfully deleted
      * @throws AppException if user not found (HTTP 404 Not Found)
      */
-    boolean deleteUser(Long id);
+    boolean deleteUser(UUID id);
 }

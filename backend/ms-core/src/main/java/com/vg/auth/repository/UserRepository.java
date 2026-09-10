@@ -4,12 +4,13 @@ import com.vg.auth.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repository interface for User entity operations.
  * Extends JpaRepository to provide CRUD and pagination capabilities.
  */
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, UUID> {
 
     /**
      * Finds a user by their email address.
@@ -51,7 +52,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @param id the user ID to exclude from the check
      * @return true if a user exists with the given email (excluding the specified ID), false otherwise
      */
-    boolean existsByEmailAndIdNot(String email, Long id);
+    boolean existsByEmailAndIdNot(String email, UUID id);
 
     /**
      * Checks if a user exists with the given DNI, excluding a specific user ID.
@@ -61,5 +62,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @param id the user ID to exclude from the check
      * @return true if a user exists with the given DNI (excluding the specified ID), false otherwise
      */
-    boolean existsByDniAndIdNot(String dni, Long id);
+    boolean existsByDniAndIdNot(String dni, UUID id);
 }

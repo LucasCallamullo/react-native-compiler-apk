@@ -1,38 +1,54 @@
 package com.vg.auth.dto.response;
 
-import com.vg.auth.model.UserRole;
+import java.util.Optional;
 
 /**
- * Authentication response DTO returned after successful login or registration.
- * Contains JWT tokens and user information.
+ * Data Transfer Object returned after successful authentication (login or registration).
+ * Contains the access token, refresh token, token metadata, and user profile information.
+ *
+ * @param accessToken  the JWT access token used to authorize protected API requests
+ * @param refreshToken the long-lived refresh token used to obtain a new access token
+ * @param tokenType    the authorization scheme (e.g., "Bearer")
+ * @param expiresIn    the access token validity duration in milliseconds
+ * @param detail       an optional detailed message or contextual information regarding the authentication
+ * @param user         the nested profile information of the authenticated user
  */
 public record AuthResponseDTO(
     String accessToken,
     String refreshToken,
     String tokenType,
     Long expiresIn,
-    String email,
-    UserRole role,
-    String firstName,
-    String lastName,
-    String message
+    Optional<String> detail,
+    UserResponseDTO user
 ) {
     /**
-     * Convenience constructor that automatically sets tokenType to "Bearer".
-     * 
-     * Use this constructor when you want to follow the OAuth2 standard
-     * without explicitly specifying "Bearer" each time.
+     * Convenience constructor that automatically defaults tokenType to "Bearer".
      *
-     * @param accessToken the JWT access token
-     * @param refreshToken the refresh token
-     * @param expiresIn the expiration time in milliseconds
-     * @param email the user's email
-     * @param role the user's role
-     * @param firstName the user's first name
-     * @param lastName the user's last name
-     * @param message the result message
+     * @param accessToken  the JWT access token
+     * @param refreshToken the long-lived refresh token
+     * @param expiresIn    the access token validity duration in milliseconds
+     * @param detail       an optional detailed message regarding the authentication outcome
+     * @param user         the nested profile information of the authenticated user
      */
-    public AuthResponseDTO(String accessToken, String refreshToken, Long expiresIn, String email, UserRole role, String firstName, String lastName, String message) {
-        this(accessToken, refreshToken, "Bearer", expiresIn, email, role, firstName, lastName, message);
+    // 1. Primary convenience constructor using Optional
+    public AuthResponseDTO(
+        String accessToken, 
+        String refreshToken, 
+        Long expiresIn, 
+        Optional<String> detail, 
+        UserResponseDTO user) {
+        
+        this(accessToken, refreshToken, "Bearer", expiresIn, detail, user);
+    }
+
+    // 2. Additional constructor that converts a plain String to Optional
+    public AuthResponseDTO(
+        String accessToken, 
+        String refreshToken, 
+        Long expiresIn, 
+        String detail, 
+        UserResponseDTO user) {
+        
+        this(accessToken, refreshToken, "Bearer", expiresIn, Optional.ofNullable(detail), user);
     }
 }

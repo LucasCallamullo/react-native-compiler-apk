@@ -5,6 +5,7 @@ import com.vg.auth.dto.request.RefreshTokenRequestDTO;
 import com.vg.auth.dto.request.RegisterRequestDTO;
 import com.vg.auth.dto.response.AuthResponseDTO;
 import com.vg.auth.dto.response.RefreshTokenResponseDTO;
+import com.vg.auth.mapper.UserMapper;
 import com.vg.auth.model.User;
 import com.vg.auth.model.UserRole;
 import com.vg.auth.service.AuthService;
@@ -28,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     @Override
     public AuthResponseDTO login(LoginRequestDTO loginRequest) {
@@ -53,15 +55,15 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
         // Step 5: Return authentication response with both tokens
+        var userDto = userMapper.toResponseDTO(user);
+
+        // Step 7: Return authentication response
         return new AuthResponseDTO(
             accessToken,
             refreshToken,
             jwtService.getAccessTokenExpiration(),
-            user.getEmail(),
-            user.getRole(),
-            user.getFirstName(),
-            user.getLastName(),
-            "Login successful"
+            "Login successful", 
+            userDto
         );
     }
 
@@ -100,16 +102,15 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtService.generateAccessToken(savedUser.getEmail(), claims);
         String refreshToken = jwtService.generateRefreshToken(savedUser.getEmail());
 
+        var userDto = userMapper.toResponseDTO(savedUser);
+
         // Step 7: Return authentication response
         return new AuthResponseDTO(
             accessToken,
             refreshToken,
             jwtService.getAccessTokenExpiration(),
-            savedUser.getEmail(),
-            savedUser.getRole(),
-            savedUser.getFirstName(),
-            savedUser.getLastName(),
-            "Registration successful"
+            "Registration successful", 
+            userDto
         );
     }
 
@@ -181,15 +182,15 @@ public class AuthServiceImpl implements AuthService {
         User user = userService.findUserByEmail(email)
             .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
 
+        var userDto = userMapper.toResponseDTO(user);
+
+        // Step 7: Return authentication response
         return new AuthResponseDTO(
             token,
             null, // No refresh token for validation endpoint
             jwtService.getAccessTokenExpiration(),
-            user.getEmail(),
-            user.getRole(),
-            user.getFirstName(),
-            user.getLastName(),
-            "Token is valid"
+            "Token is valid", 
+            userDto
         );
     }
 }

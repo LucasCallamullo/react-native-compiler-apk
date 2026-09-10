@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public record ApiResponse<T>(
     LocalDateTime timestamp,
     int status,
-    String message,
+    String detail,
     T data,
     boolean success
 ) {
@@ -23,11 +23,11 @@ public record ApiResponse<T>(
     /**
      * Creates a success response with the current timestamp.
      * 
-     * @param message success message
+     * @param detail success message
      * @param data the actual data
      */
-    public ApiResponse(String message, T data) {
-        this(LocalDateTime.now(), 200, message, data, true);
+    public ApiResponse(String detail, T data) {
+        this(LocalDateTime.now(), 200, detail, data, true);
     }
     
     /**
@@ -43,10 +43,10 @@ public record ApiResponse<T>(
      * Creates a success response with custom status code.
      * 
      * @param status HTTP status code
-     * @param message success message
+     * @param detail success message
      * @param data the actual data
      */
-    public ApiResponse(int status, String message, T data) {
-        this(LocalDateTime.now(), status, message, data, true);
+    public ApiResponse(int status, String detail, T data) {
+        this(LocalDateTime.now(), status, detail, data, true);
     }
 }
