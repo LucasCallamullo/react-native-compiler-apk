@@ -1,0 +1,71 @@
+package com.vg.file.model;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import com.vg.auth.model.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+
+
+@Getter 
+@Setter
+@NoArgsConstructor 
+@Builder
+@AllArgsConstructor
+
+@Entity
+@Table(name = "files")
+public class FileEntity {
+    
+
+    @Id 
+    @GeneratedValue (strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column (nullable = false, length = 10)
+    private String extension;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private FileType type;
+
+    @Column(nullable = false)
+    private String description;
+
+    @CreationTimestamp 
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createAt;
+
+    @UpdateTimestamp
+    @Column(name = "UpdateAt")
+    private LocalDateTime updateAt;
+
+
+}
