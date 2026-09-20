@@ -56,7 +56,7 @@ public class FileEntity {
     @Enumerated(EnumType.STRING)
     private FileType type;
 
-    @Column(nullable = false)
+    @Column
     private String description;
 
     @CreationTimestamp 

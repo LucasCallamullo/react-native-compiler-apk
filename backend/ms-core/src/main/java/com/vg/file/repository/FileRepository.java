@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.vg.file.model.FileEntity;
 import com.vg.file.model.FileType;
 
-public interface repositoryFile extends JpaRepository<FileEntity, UUID> {
+public interface FileRepository extends JpaRepository<FileEntity, UUID> {
 
         // Buscar por nombre exacto
     Optional<FileEntity> findByName(String name);
@@ -36,6 +36,6 @@ public interface repositoryFile extends JpaRepository<FileEntity, UUID> {
     long countByUserId(UUID userId);
 
     // Borrar todos los archivos de un usuario
-    void deleteByUserId(UUID userId);
+    void deleteByUserIdAndName(UUID userId, String name);
  
 }
