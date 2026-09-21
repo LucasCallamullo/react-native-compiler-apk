@@ -29,8 +29,12 @@ public interface FileRepository extends JpaRepository<FileEntity, UUID> {
     // Búsqueda por nombre parcial (LIKE)
     List<FileEntity> findByNameContainingIgnoreCase(String name);
 
+    boolean existsByName(String name);
+
     // Verificar si existe un archivo con ese nombre para un usuario
     boolean existsByNameAndUserId(String name, UUID userId);
+
+    boolean existsByNameAndIdNot(String name, UUID fileId);
 
     // Contar archivos por usuario
     long countByUserId(UUID userId);

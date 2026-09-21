@@ -19,6 +19,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,7 +35,9 @@ import lombok.Setter;
 @AllArgsConstructor
 
 @Entity
-@Table(name = "files")
+@Table(name = "files", uniqueConstraints = {
+    @UniqueConstraint (columnNames = "name") })
+    
 public class FileEntity {
     
 
@@ -48,9 +51,22 @@ public class FileEntity {
     @Column (nullable = false, length = 10)
     private String extension;
 
+    @Column (nullable = false)
+    private String storagePath;
+
+    
+    @Column(nullable = false)
+    private Long sizeBytes;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private FileAccessLevel accessLevel;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    /*Esta hasta ver la implementación en frontend o si contentType*/
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -61,11 +77,11 @@ public class FileEntity {
 
     @CreationTimestamp 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "UpdateAt")
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
 
 
 }

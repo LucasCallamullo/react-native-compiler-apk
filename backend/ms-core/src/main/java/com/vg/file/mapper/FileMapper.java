@@ -1,38 +1,26 @@
 package com.vg.file.mapper;
 
-import com.vg.auth.model.User;
-import com.vg.file.dto.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import com.vg.file.dto.request.FileRequestDTO;
 import com.vg.file.model.FileEntity;
 
-public class FileMapper {
-        public FileEntity toEntity(FileRequestDTO dto, User user) {
-        return FileEntity.builder()
-                .name(dto.getName())
-                .extension(dto.getExtension())
-                .user(user)
-                .type(dto.getType())
-                .description(dto.getDescription())
-                .build();
-    }
+@Mapper(componentModel = "spring")
+public interface FileMapper {
+ 
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    FileEntity toEntity(FileRequestDTO dto);
 
-    public FileResponseDTO toResponseDTO(FileEntity entity) {
-        return FileResponseDTO.builder()
-                .id(entity.getId())
-                .name(entity.getName())
-                .extension(entity.getExtension())
-                .userId(entity.getUser().getId())
-                .userName(entity.getUser().getFirstName())   // ajusta según tu entidad User
-                .type(entity.getType())
-                .description(entity.getDescription())
-                .createAt(entity.getCreateAt())
-                .updateAt(entity.getUpdateAt())
-                .build();
-    }
+    @Mapping(target = "userId", source = "user.id")
+    FileRequestDTO toResponseDto(FileEntity fileEntity);
 
-    public void updateEntity(FileEntity entity, FileUpdateDTO dto) {
-        if (dto.getName() != null)        entity.setName(dto.getName());
-        if (dto.getExtension() != null)   entity.setExtension(dto.getExtension());
-        if (dto.getType() != null)        entity.setType(dto.getType());
-        if (dto.getDescription() != null) entity.setDescription(dto.getDescription());
-    }
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    void updateEntity(FileRequestDTO dto, @MappingTarget FileEntity fileEntity);
 }

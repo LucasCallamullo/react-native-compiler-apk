@@ -3,16 +3,16 @@ package com.vg.file.service;
 import java.util.List;
 import java.util.UUID;
 
-import com.vg.file.dto.FileRequestDTO;
-import com.vg.file.dto.FileResponseDTO;
-import com.vg.file.dto.FileUpdateDTO;
+
+import com.vg.file.dto.request.FileRequestDTO;
+import com.vg.file.dto.responde.FileResponseDTO;
 import com.vg.file.model.FileType;
 
-public interface FIleService {
+public interface FileService {
         
     FileResponseDTO create(FileRequestDTO dto);
 
-    FileResponseDTO findById(UUID id);
+    FileResponseDTO findById(UUID fileId);
 
     List<FileResponseDTO> findAll();
 
@@ -22,9 +22,11 @@ public interface FIleService {
 
     List<FileResponseDTO> searchByName(String name);
 
-    FileResponseDTO update(UUID id, FileUpdateDTO dto);
+    public void validateNameUniqueForUpdate(String name, UUID fileId);
 
-    void delete(UUID id);
+    void validateNameUnique(String name);
+
+    void delete(UUID fileId);
 
     long countByUser(UUID userId);
 }
