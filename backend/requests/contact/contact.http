@@ -1,0 +1,133 @@
+### REST Client Test File for Contact CRUD Operations
+### Base URL: http://localhost:8080
+
+@baseUrl = http://localhost:8080
+@apiAuth = {{baseUrl}}/api/v1/auth
+@apiContacts = {{baseUrl}}/api/v1/contacts
+
+### ============================================
+### SETUP: Register User (needed for testing contacts)
+### ============================================
+
+### 0. Register User - Success
+# @name registerUser
+POST {{apiAuth}}/register
+Content-Type: application/json
+
+{
+    "firstName": "María",
+    "lastName": "López",
+    "email": "maria.lopez@mail.com",
+    "password": "123456",
+    "dni": "55667788",
+    "phone": "1123456789"
+}
+
+### ============================================
+### SUCCESS CASES
+### ============================================
+
+### 1. Create Contact - Success
+# @name createContact
+POST {{apiContacts}}
+Content-Type: application/json
+
+{
+    "name": "Juan Pérez",
+    "email": "juan.perez@example.com",
+    "phone": "1123456789",
+    "userId": "{{registerUser.response.body.data.user.id}}"
+}
+
+### 2. Get Contact By ID - Success
+# @name getContactById
+GET {{apiContacts}}/{{createContact.response.body.data.id}}
+Content-Type: application/json
+
+### 3. List Contacts By User - Success
+# @name listContactsByUser
+GET {{apiContacts}}/user/{{registerUser.response.body.data.user.id}}
+Content-Type: application/json
+
+### 4. Update Contact - Success
+# @name updateContact
+PUT {{apiContacts}}/{{createContact.response.body.data.id}}
+Content-Type: application/json
+
+{
+    "name": "Juan Pérez Actualizado",
+    "email": "juan.nuevo@example.com",
+    "phone": "1199999999",
+    "userId": "{{registerUser.response.body.data.user.id}}"
+}
+
+### 5. Delete Contact - Success
+# @name deleteContact
+DELETE {{apiContacts}}/{{createContact.response.body.data.id}}
+Content-Type: application/json
+
+### 6. Get Deleted Contact - Not Found (404)
+# @name getDeletedContact
+GET {{apiContacts}}/{{createContact.response.body.data.id}}
+Content-Type: application/json
+
+### ============================================
+### ERROR CASES
+### ============================================
+
+### 7. Create Contact - Missing name (400)
+# @name createContactNoName
+POST {{apiContacts}}
+Content-Type: application/json
+
+{
+    "email": "sinnombre@example.com",
+    "phone": "1123456789",
+    "userId": "{{registerUser.response.body.data.user.id}}"
+}
+
+### 8. Create Contact - Invalid email (400)
+# @name createContactBadEmail
+POST {{apiContacts}}
+Content-Type: application/json
+
+{
+    "name": "Juan",
+    "email": "esto-no-es-un-email",
+    "phone": "1123456789",
+    "userId": "{{registerUser.response.body.data.user.id}}"
+}
+
+### 9. Create Contact - Non-existent userId (404)
+# @name createContactBadUser
+POST {{apiContacts}}
+Content-Type: application/json
+
+{
+    "name": "Fantasma",
+    "email": "fantasma@example.com",
+    "phone": "1123456789",
+    "userId": "00000000-0000-0000-0000-000000000000"
+}
+
+### 10. Create Contact - Duplicate email (409)
+# @name createContactDuplicate
+POST {{apiContacts}}
+Content-Type: application/json
+
+{
+    "name": "Otra Persona",
+    "email": "juan.perez@example.com",
+    "phone": "1188888888",
+    "userId": "{{registerUser.response.body.data.user.id}}"
+}
+
+### 11. Get Contact - Malformed UUID (400)
+# @name getContactBadUuid
+GET {{apiContacts}}/esto-no-es-un-uuid
+Content-Type: application/json
+
+### 12. Delete Contact - Non-existent UUID (404)
+# @name deleteContactBadUuid
+DELETE {{apiContacts}}/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
