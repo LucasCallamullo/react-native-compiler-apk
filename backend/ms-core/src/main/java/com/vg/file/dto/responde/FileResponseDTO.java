@@ -15,8 +15,7 @@ public record FileResponseDTO(
     FileType type,
     String storagePath,
     Long sizeBytes,
-    UUID userId,
-    String userName,    
+    UUID userId,    
     FileAccessLevel accessLevel,
     LocalDateTime createdAt,
     LocalDateTime updatedAt

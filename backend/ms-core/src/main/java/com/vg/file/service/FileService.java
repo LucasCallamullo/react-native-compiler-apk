@@ -6,27 +6,35 @@ import java.util.UUID;
 
 import com.vg.file.dto.request.FileRequestDTO;
 import com.vg.file.dto.responde.FileResponseDTO;
+import com.vg.file.model.FileEntity;
 import com.vg.file.model.FileType;
 
 public interface FileService {
         
-    FileResponseDTO create(FileRequestDTO dto);
+    // VALIDATION METHODS
 
-    FileResponseDTO findById(UUID fileId);
-
-    List<FileResponseDTO> findAll();
-
-    List<FileResponseDTO> findByUserId(UUID userId);
-
-    List<FileResponseDTO> findByUserIdAndType(UUID userId, FileType type);
-
-    List<FileResponseDTO> searchByName(String name);
-
-    public void validateNameUniqueForUpdate(String name, UUID fileId);
+    void validateNameUniqueForUpdate(String name, UUID id);
 
     void validateNameUnique(String name);
 
-    void delete(UUID fileId);
+    FileEntity validateFileExists(UUID id);
+    
+    // ENTITY METHODS
 
-    long countByUser(UUID userId);
+    FileEntity save(FileEntity file);
+
+    FileEntity getFileEntityById(UUID id);
+
+    // CRUD METHODS
+
+    FileResponseDTO getFileById(UUID id);
+
+    FileResponseDTO createFile(FileRequestDTO dto);
+
+    List<FileResponseDTO> findAllFiles();
+
+    FileResponseDTO updateFile(UUID id, FileRequestDTO dto);
+
+    void delete(UUID id);
+
 }

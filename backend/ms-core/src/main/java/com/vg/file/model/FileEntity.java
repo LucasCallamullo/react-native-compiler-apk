@@ -37,7 +37,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "files", uniqueConstraints = {
     @UniqueConstraint (columnNames = "name") })
-    
+    // Hacer que sea unico por nombre y usuario -> ACORDARME
 public class FileEntity {
     
 
@@ -80,7 +80,7 @@ public class FileEntity {
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "UpdateAt")
+    @Column(name = "Update_at", nullable = false)
     private LocalDateTime updatedAt;
 
 
