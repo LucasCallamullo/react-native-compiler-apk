@@ -1,64 +1,68 @@
 server:
   port: 8080
+  # [AGREGADO] Mejora el formato de errores por defecto de Spring:
+  # incluye el mensaje y los errores de validación, pero nunca el stacktrace.
+  error:
+    include-message: always
+    include-stacktrace: never
+    include-binding-errors: always
 
 spring:
   application:
     name: ms-core
-  
+
   datasource:
-    # url: jdbc:h2:mem:fleetdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    # driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:appvgdb
+    # [AGREGADO] DB_CLOSE_DELAY=-1 mantiene viva la BD en memoria
+    # mientras la JVM esté corriendo (evita que se borre entre conexiones).
+    url: jdbc:h2:mem:appvgdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
     username: sa
-    password: 
-  
+    password:
+
+  # [AGREGADO] Habilita la consola web de H2 para inspeccionar tablas
+  # visualmente en: http://localhost:8080/h2-console
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
   jpa:
     hibernate:
-      ddl-auto: create
-    # show-sql: true
-
+      # [CAMBIO] Antes: create (borraba TODA la BD en cada reinicio).
+      # Ahora: update → mantiene los datos entre reinicios. Clave para
+      # no perder usuarios/contactos mientras se prueba con Postman.
+      ddl-auto: update
+    # [DESCOMENTADO] Muestra las queries SQL en consola para debug.
+    show-sql: true
+    # [AGREGADO] Buena práctica: evita el antipatrón "Open Session in View"
+    # y fuerza a que las relaciones lazy se carguen dentro de la transacción.
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
-    # database-platform: org.hibernate.dialect.H2Dialect
+
+  # [AGREGADO] Configuración de Jackson (serialización JSON).
+  # Sin esto, las fechas se envían como números (milisegundos) y el front
+  # recibe datos menos legibles. También tolera campos extra enviados por el front.
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false   # Fechas en ISO-8601 en lugar de milisegundos
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false  # Ignora campos desconocidos del front
 
 # ============================================
 # LOGGING CONFIGURATION
 # ============================================
 logging:
-  
-  # ============================================
-  # LOG LEVELS (Filters)
-  # ============================================
-  # Defines which log messages are displayed.
-  # Priority order: TRACE < DEBUG < INFO < WARN < ERROR
-  # 
-  # When set to INFO: shows INFO, WARN, ERROR (hides DEBUG and TRACE)
-  # ============================================
-  # level:
-    # Application packages
-    # com.vg.controller: WARN         
-    # com.vg.filter: INFO                        # logging filter / middleware
-    
-  
-  # ============================================
-  # LOG PATTERNS (Format)
-  # ============================================
   pattern:
-    # Console output format (human-readable, color-friendly)
-    # %d{pattern} - timestamp (yyyy-MM-dd HH:mm:ss)
-    # %level      - log level (INFO, DEBUG, ERROR, etc.)
-    # %msg        - the actual log message
-    # %n          - new line
-    # console: "%d{yyyy-MM-dd HH:mm:ss} - %level - %msg%n"
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} - %highlight(%-5level) - %msg%n"
-    
-    # File output format (more detailed for debugging)
-    # %thread     - name of the thread that generated the log
-    # %logger{36} - source class name (limited to 36 chars)
     file: "%d{yyyy-MM-dd HH:mm:ss} - %level - [%thread] - %logger{36} - %msg%n%n"
-  
+
+# ============================================
 # JWT Configuration
+# ============================================
 jwt:
   secret: ${JWT_SECRET:clave_secreta_de_prueba_1234567890}
   expiration: ${JWT_EXPIRATION:86400000} # 24 horas en milisegundos
