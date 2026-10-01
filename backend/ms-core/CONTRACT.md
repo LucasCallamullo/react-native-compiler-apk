@@ -1,6 +1,6 @@
 # Contract - Módulo Contact
 
-**Versión:** 1.0
+**Versión:** 2.0
 **Base URL:** `http://localhost:8080`
 **Prefijo:** `/api/v1/contacts`
 **Content-Type:** `application/json`
@@ -10,10 +10,29 @@
 ## Convenciones generales
 
 - Todas las respuestas (éxito y error) vienen envueltas en un objeto JSON estándar.
-- Los **UUIDs** deben enviarse con guiones: `f9e8d7c6-b5a4-3210-fedc-ba9876543210`.
-- Las **fechas** se devuelven en formato ISO-8601: `2026-09-27T10:50:00`.
+- El **`id`** del contacto es un **Long** autogenerado (número entero).
+- El **`userId`** es un **UUID** con guiones: `f9e8d7c6-b5a4-3210-fedc-ba9876543210`.
+- Las **fechas** se devuelven en formato ISO-8601: `2026-09-30T10:50:00`.
 - El **`userId`** es el UUID del usuario dueño del contacto (se obtiene de `/api/v1/auth/register` o `/api/v1/auth/login`).
 - Todos los endpoints son **públicos** actualmente (no requieren JWT).
+
+---
+
+## Doble factor de seguridad (id + userId)
+
+Los endpoints de **lectura individual**, **actualización** y **eliminación** requieren **dos identificadores** que deben coincidir para el mismo registro:
+
+- `id` (**Long**): ID interno autogenerado por la base de datos.
+- `userId` (**UUID**): UUID del usuario dueño del contacto.
+
+El repositorio expone un método JPQL dedicado:
+
+```java
+@Query("SELECT c FROM Contact c WHERE c.id = :id AND c.user.id = :userId")
+Optional<Contact> findByIdAndUserId(@Param("id") Long id, @Param("userId") UUID userId);
+```
+
+**Beneficio:** un atacante no puede acceder a un contacto ajeno adivinando el `id` secuencial. Debe conocer también el `userId` del dueño.
 
 ---
 
@@ -23,7 +42,7 @@
 
 ```json
 {
-  "timestamp": "2026-09-27T10:50:00",
+  "timestamp": "2026-09-30T10:50:00",
   "status": 200,
   "detail": "Success",
   "data": { },
@@ -35,10 +54,10 @@
 
 ```json
 {
-  "timestamp": "2026-09-27T10:50:00",
+  "timestamp": "2026-09-30T10:50:00",
   "status": 404,
-  "detail": "Contact not found with id: f9e8d7c6-b5a4-3210-fedc-ba9876543210",
-  "path": "/api/v1/contacts/f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "detail": "Contact not found with id: 1 for user: a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "path": "/api/v1/contacts/1/user/a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "success": false
 }
 ```
@@ -75,20 +94,22 @@
 
 ```json
 {
-  "timestamp": "2026-09-27T10:52:00",
+  "timestamp": "2026-09-30T10:52:00",
   "status": 201,
   "detail": "Success",
   "data": {
-    "id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+    "id": 1,
     "name": "María López",
     "email": "maria@example.com",
     "phone": "1123456789",
     "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "createdAt": "2026-09-27T10:52:00"
+    "createdAt": "2026-09-30T10:52:00"
   },
   "success": true
 }
 ```
+
+**Nota:** El campo `id` es un **Long autogenerado**. Lo devuelve la API en la respuesta y debe usarse en los siguientes requests.
 
 **Errores:**
 
@@ -100,26 +121,33 @@
 
 ---
 
-### 2. GET - Obtener contacto por ID
+### 2. GET - Obtener contacto por Id y UserId
 
-**URL:** `GET /api/v1/contacts/{id}`
+**URL:** `GET /api/v1/contacts/{id}/user/{userId}`
 
-**Ejemplo:** `GET /api/v1/contacts/f9e8d7c6-b5a4-3210-fedc-ba9876543210`
+**Path params:**
+
+| Param | Tipo | Descripción |
+|---|---|---|
+| id | Long | ID interno del contacto |
+| userId | UUID | UUID del usuario dueño |
+
+**Ejemplo:** `GET /api/v1/contacts/1/user/a1b2c3d4-e5f6-7890-abcd-ef1234567890`
 
 **Response 200 OK:**
 
 ```json
 {
-  "timestamp": "2026-09-27T10:53:00",
+  "timestamp": "2026-09-30T10:53:00",
   "status": 200,
   "detail": "Success",
   "data": {
-    "id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+    "id": 1,
     "name": "María López",
     "email": "maria@example.com",
     "phone": "1123456789",
     "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "createdAt": "2026-09-27T10:52:00"
+    "createdAt": "2026-09-30T10:52:00"
   },
   "success": true
 }
@@ -129,8 +157,8 @@
 
 | Status | Causa |
 |---|---|
-| 400 | El id no es un UUID válido |
-| 404 | No existe un contacto con ese ID |
+| 400 | El `id` no es un Long válido, o el `userId` no es un UUID válido |
+| 404 | No existe un contacto con esa combinación id + userId |
 
 ---
 
@@ -144,25 +172,25 @@
 
 ```json
 {
-  "timestamp": "2026-09-27T10:54:00",
+  "timestamp": "2026-09-30T10:54:00",
   "status": 200,
   "detail": "Success",
   "data": [
     {
-      "id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+      "id": 1,
       "name": "María López",
       "email": "maria@example.com",
       "phone": "1123456789",
       "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "createdAt": "2026-09-27T10:52:00"
+      "createdAt": "2026-09-30T10:52:00"
     },
     {
-      "id": "b1a2c3d4-e5f6-7890-abcd-1234567890ab",
+      "id": 2,
       "name": "Juan Pérez",
       "email": "juan@example.com",
       "phone": "1187654321",
       "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "createdAt": "2026-09-27T10:53:00"
+      "createdAt": "2026-09-30T10:53:00"
     }
   ],
   "success": true
@@ -182,7 +210,16 @@
 
 ### 4. PUT - Actualizar contacto
 
-**URL:** `PUT /api/v1/contacts/{id}`
+**URL:** `PUT /api/v1/contacts/{id}/user/{userId}`
+
+**Path params:**
+
+| Param | Tipo | Descripción |
+|---|---|---|
+| id | Long | ID interno del contacto |
+| userId | UUID | UUID del usuario dueño |
+
+**Ejemplo:** `PUT /api/v1/contacts/1/user/a1b2c3d4-e5f6-7890-abcd-ef1234567890`
 
 **Request body:**
 
@@ -201,16 +238,16 @@
 
 ```json
 {
-  "timestamp": "2026-09-27T10:55:00",
+  "timestamp": "2026-09-30T10:55:00",
   "status": 200,
   "detail": "Success",
   "data": {
-    "id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+    "id": 1,
     "name": "María López Actualizada",
     "email": "maria.nueva@example.com",
     "phone": "1199999999",
     "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "createdAt": "2026-09-27T10:52:00"
+    "createdAt": "2026-09-30T10:52:00"
   },
   "success": true
 }
@@ -220,7 +257,7 @@
 
 | Status | Causa |
 |---|---|
-| 400 | El id no es un UUID válido, o el body no cumple validaciones |
+| 400 | El id no es Long válido, o el body no cumple validaciones |
 | 404 | El contacto no existe, o el nuevo userId no existe |
 | 409 | El nuevo email ya está en uso por otro contacto del mismo usuario |
 
@@ -228,7 +265,16 @@
 
 ### 5. DELETE - Eliminar contacto
 
-**URL:** `DELETE /api/v1/contacts/{id}`
+**URL:** `DELETE /api/v1/contacts/{id}/user/{userId}`
+
+**Path params:**
+
+| Param | Tipo | Descripción |
+|---|---|---|
+| id | Long | ID interno del contacto |
+| userId | UUID | UUID del usuario dueño |
+
+**Ejemplo:** `DELETE /api/v1/contacts/1/user/a1b2c3d4-e5f6-7890-abcd-ef1234567890`
 
 **Response 204 No Content:**
 
@@ -238,8 +284,8 @@ Sin body.
 
 | Status | Causa |
 |---|---|
-| 400 | El id no es un UUID válido |
-| 404 | No existe un contacto con ese ID |
+| 400 | El id no es un Long válido, o el userId no es un UUID válido |
+| 404 | No existe un contacto con esa combinación id + userId |
 
 ---
 
@@ -247,25 +293,25 @@ Sin body.
 
 ### ContactResponseDTO
 
-```
+```typescript
 {
-  id: string;         // UUID con guiones
+  id: number;         // Long autogenerado (ej: 1, 2, 3...)
   name: string;
   email: string;
   phone: string;
   userId: string;     // UUID del usuario dueño
-  createdAt: string;  // ISO-8601 (ej: "2026-09-27T10:52:00")
+  createdAt: string;  // ISO-8601 (ej: "2026-09-30T10:52:00")
 }
 ```
 
 ### ContactRequestDTO
 
-```
+```typescript
 {
   name: string;    // 2-100 chars (requerido)
   email: string;   // email válido (requerido)
   phone: string;   // 7-15 dígitos (requerido)
-  userId: string;  // UUID (requerido)
+  userId: string;  // UUID del dueño (requerido)
 }
 ```
 
@@ -278,7 +324,7 @@ Sin body.
 | 200 | OK | GET y PUT exitosos |
 | 201 | Created | POST exitoso |
 | 204 | No Content | DELETE exitoso |
-| 400 | Bad Request | Validación fallida o UUID mal formado |
+| 400 | Bad Request | Validación fallida, Long o UUID mal formados |
 | 404 | Not Found | Recurso (contacto o usuario) no existe |
 | 409 | Conflict | Duplicado (email ya existe para ese user) |
 | 500 | Internal Server Error | Error inesperado del servidor |
@@ -291,7 +337,7 @@ Sin body.
 
 ```json
 {
-  "timestamp": "2026-09-27T10:56:00",
+  "timestamp": "2026-09-30T10:56:00",
   "status": 400,
   "detail": "Email is required, Phone must contain only numbers and be between 7 and 15 digits",
   "path": "/api/v1/contacts",
@@ -305,10 +351,22 @@ Los múltiples errores de validación se concatenan con comas en `detail`.
 
 ```json
 {
-  "timestamp": "2026-09-27T10:56:00",
+  "timestamp": "2026-09-30T10:56:00",
   "status": 404,
-  "detail": "Contact not found with id: f9e8d7c6-b5a4-3210-fedc-ba9876543210",
-  "path": "/api/v1/contacts/f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+  "detail": "Contact not found with id: 1 for user: a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "path": "/api/v1/contacts/1/user/a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "success": false
+}
+```
+
+### Long mal formado (400)
+
+```json
+{
+  "timestamp": "2026-09-30T10:56:00",
+  "status": 400,
+  "detail": "Invalid parameter 'id' with value 'abc'. Expected type: Long",
+  "path": "/api/v1/contacts/abc/user/a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "success": false
 }
 ```
@@ -317,10 +375,10 @@ Los múltiples errores de validación se concatenan con comas en `detail`.
 
 ```json
 {
-  "timestamp": "2026-09-27T10:56:00",
+  "timestamp": "2026-09-30T10:56:00",
   "status": 400,
-  "detail": "Invalid parameter 'id' with value 'abc-123'. Expected type: UUID",
-  "path": "/api/v1/contacts/abc-123",
+  "detail": "Invalid parameter 'userId' with value 'abc-123'. Expected type: UUID",
+  "path": "/api/v1/contacts/1/user/abc-123",
   "success": false
 }
 ```
@@ -329,7 +387,7 @@ Los múltiples errores de validación se concatenan con comas en `detail`.
 
 ```json
 {
-  "timestamp": "2026-09-27T10:56:00",
+  "timestamp": "2026-09-30T10:56:00",
   "status": 409,
   "detail": "Contact already exists with email: maria@example.com for this user",
   "path": "/api/v1/contacts",
@@ -346,7 +404,8 @@ Los múltiples errores de validación se concatenan con comas en `detail`.
 3. Los errores 400 de validación devuelven los mensajes concatenados con comas en `detail`.
 4. Al eliminar un contacto, esperar un 204 y no parsear el body.
 5. Al actualizar con PUT, enviar todos los campos.
-6. Los IDs son UUIDs: tratarlos como `string` en TypeScript, no como `number`.
+6. **El `id` del contacto es un `number` (Long), no un `string`.** En TypeScript, tipar como `number`.
+7. **Los endpoints de GET individual, PUT y DELETE requieren `id` + `userId` en el path:** `/{id}/user/{userId}`.
 
 ---
 
@@ -359,11 +418,9 @@ Para obtener un userId válido:
 
 ---
 
----
-
 ## Colección de Postman
 
-En la carpeta `postman/` está la colección completa con los 13 casos de prueba (6 casos felices + 7 de error, incluyendo el "03b" de usuario inexistente).
+En la carpeta `postman/` está la colección completa con los casos de prueba (felices + error + doble factor).
 
 **Archivo:** `postman/VG-Contacts-API.postman_collection.json`
 
@@ -382,12 +439,12 @@ La colección usa variables de entorno. Antes de ejecutar, crear un environment 
 |---|---|
 | `baseUrl` | `http://localhost:8080` |
 | `userId` | UUID del usuario registrado (se obtiene del request `00 - Register User`) |
-| `contactId` | UUID del contacto creado (se obtiene del request `01 - Create Contact`) |
+| `contactId` | ID numérico del contacto creado (se obtiene del request `01 - Create Contact`) |
 
 ### Orden sugerido de ejecución
 
 1. Ejecutar `00 - Register User` → copiar `data.user.id` y guardarlo en la variable `userId`.
-2. Ejecutar `01 - Create Contact` → copiar `data.id` y guardarlo en la variable `contactId`.
+2. Ejecutar `01 - Create Contact` → copiar `data.id` (numérico) y guardarlo en la variable `contactId`.
 3. Ejecutar el resto de los requests en orden.
 
 ### Casos de prueba cubiertos
@@ -396,7 +453,7 @@ La colección usa variables de entorno. Antes de ejecutar, crear un environment 
 |---|---|---|---|
 | 00 | Register User | POST | 201 / 409 |
 | 01 | Create Contact | POST | 201 |
-| 02 | Get Contact By Id | GET | 200 |
+| 02 | Get Contact By Id + UserId | GET | 200 |
 | 03 | List Contacts By User | GET | 200 |
 | 03b | List Contacts (usuario inexistente) | GET | 404 |
 | 04 | Update Contact | PUT | 200 |
@@ -406,8 +463,10 @@ La colección usa variables de entorno. Antes de ejecutar, crear un environment 
 | 08 | POST email inválido | POST | 400 |
 | 09 | POST userId inexistente | POST | 404 |
 | 10 | POST email duplicado | POST | 409 |
-| 11 | GET UUID mal formado | GET | 400 |
-| 12 | DELETE UUID inexistente | DELETE | 404 |
+| 11 | GET Long mal formado | GET | 400 |
+| 12 | DELETE Id inexistente | DELETE | 404 |
+| 13 | Get Contact - id OK, userId FALSO | GET | 404 |
+| 14 | Delete Contact - id FALSO, userId OK | DELETE | 404 |
 
 ---
 
@@ -427,7 +486,7 @@ probar los endpoints directamente desde VS Code con la extensión
    "REST Client: Run All" (todos en cascada).
 
 El archivo usa `# @name` para capturar valores dinámicamente (`userId`,
-`contactId`) y evitar copiar/pegar UUIDs manualmente.
+`contactId`) y evitar copiar/pegar IDs manualmente.
 
 ---
 

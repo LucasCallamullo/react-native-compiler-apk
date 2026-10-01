@@ -1,5 +1,6 @@
 ### REST Client Test File for Contact CRUD Operations
 ### Base URL: http://localhost:8080
+### Security: read single / update / delete require id (Long) + userId (UUID)
 
 @baseUrl = http://localhost:8080
 @apiAuth = {{baseUrl}}/api/v1/auth
@@ -39,9 +40,9 @@ Content-Type: application/json
     "userId": "{{registerUser.response.body.data.user.id}}"
 }
 
-### 2. Get Contact By ID - Success
-# @name getContactById
-GET {{apiContacts}}/{{createContact.response.body.data.id}}
+### 2. Get Contact By Id + UserId - Success
+# @name getContactByIdAndUser
+GET {{apiContacts}}/{{createContact.response.body.data.id}}/user/{{registerUser.response.body.data.user.id}}
 Content-Type: application/json
 
 ### 3. List Contacts By User - Success
@@ -51,7 +52,7 @@ Content-Type: application/json
 
 ### 4. Update Contact - Success
 # @name updateContact
-PUT {{apiContacts}}/{{createContact.response.body.data.id}}
+PUT {{apiContacts}}/{{createContact.response.body.data.id}}/user/{{registerUser.response.body.data.user.id}}
 Content-Type: application/json
 
 {
@@ -63,12 +64,12 @@ Content-Type: application/json
 
 ### 5. Delete Contact - Success
 # @name deleteContact
-DELETE {{apiContacts}}/{{createContact.response.body.data.id}}
+DELETE {{apiContacts}}/{{createContact.response.body.data.id}}/user/{{registerUser.response.body.data.user.id}}
 Content-Type: application/json
 
 ### 6. Get Deleted Contact - Not Found (404)
 # @name getDeletedContact
-GET {{apiContacts}}/{{createContact.response.body.data.id}}
+GET {{apiContacts}}/{{createContact.response.body.data.id}}/user/{{registerUser.response.body.data.user.id}}
 Content-Type: application/json
 
 ### ============================================
@@ -122,12 +123,27 @@ Content-Type: application/json
     "userId": "{{registerUser.response.body.data.user.id}}"
 }
 
-### 11. Get Contact - Malformed UUID (400)
-# @name getContactBadUuid
-GET {{apiContacts}}/esto-no-es-un-uuid
+### 11. Get Contact - Malformed Id (400)
+# @name getContactBadId
+GET {{apiContacts}}/esto-no-es-un-numero/user/{{registerUser.response.body.data.user.id}}
 Content-Type: application/json
 
-### 12. Delete Contact - Non-existent UUID (404)
-# @name deleteContactBadUuid
-DELETE {{apiContacts}}/00000000-0000-0000-0000-000000000000
+### 12. Delete Contact - Non-existent Id (404)
+# @name deleteContactBadId
+DELETE {{apiContacts}}/999999/user/{{registerUser.response.body.data.user.id}}
+Content-Type: application/json
+
+### ============================================
+### DOUBLE-FACTOR SECURITY TESTS
+### These verify that id + userId must BOTH match.
+### ============================================
+
+### 13. Get Contact - Correct id, wrong userId (404)
+# @name getContactWrongUser
+GET {{apiContacts}}/{{createContact.response.body.data.id}}/user/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+
+### 14. Delete Contact - Wrong id, correct userId (404)
+# @name deleteContactWrongId
+DELETE {{apiContacts}}/999999/user/{{registerUser.response.body.data.user.id}}
 Content-Type: application/json

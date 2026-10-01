@@ -8,44 +8,30 @@ import java.util.UUID;
 
 public interface ContactService {
 
-    /**
-     * Creates a new contact for a specific user.
-     *
-     * @param dto the contact data (includes userId)
-     * @return the created contact
-     */
     ContactResponseDTO createContact(ContactRequestDTO dto);
 
     /**
-     * Retrieves a contact by its ID.
+     * Retrieves a contact by its internal id AND the owner user id.
+     * Implements the double-factor security check (id + userId).
      *
-     * @param id the contact UUID
+     * @param id     the contact Long id
+     * @param userId the owner user UUID
      * @return the contact data
      */
-    ContactResponseDTO getContactById(UUID id);
+    ContactResponseDTO getContactByIdAndUserId(Long id, UUID userId);
 
     /**
      * Retrieves all contacts for a specific user.
-     *
-     * @param userId the user UUID
-     * @return list of contacts belonging to the user
      */
     List<ContactResponseDTO> getContactsByUserId(UUID userId);
 
     /**
-     * Updates an existing contact.
-     *
-     * @param id the contact UUID
-     * @param dto the updated contact data
-     * @return the updated contact
+     * Updates a contact identified by id + userId.
      */
-    ContactResponseDTO updateContact(UUID id, ContactRequestDTO dto);
+    ContactResponseDTO updateContact(Long id, UUID userId, ContactRequestDTO dto);
 
     /**
-     * Deletes a contact by its ID.
-     *
-     * @param id the contact UUID
-     * @return true if deleted successfully
+     * Deletes a contact identified by id + userId.
      */
-    boolean deleteContact(UUID id);
+    boolean deleteContact(Long id, UUID userId);
 }

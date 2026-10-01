@@ -15,6 +15,9 @@ import java.util.UUID;
  * REST controller for managing contact operations.
  * All endpoints are prefixed with /api/v1/contacts.
  *
+ * Security: read single / update / delete require BOTH id (Long) and userId (UUID)
+ * as a double-factor safety mechanism.
+ *
  * Note: Responses are automatically wrapped by ApiResponseAdvice.
  */
 @RestController
@@ -26,9 +29,6 @@ public class ContactController {
 
     /**
      * Creates a new contact for a specific user.
-     *
-     * @param dto the contact data (includes userId)
-     * @return the created contact data
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -37,21 +37,19 @@ public class ContactController {
     }
 
     /**
-     * Retrieves a contact by its ID.
+     * Retrieves a contact by its id AND the owner user id (double-factor check).
      *
-     * @param id the contact UUID
-     * @return the contact data
+     * Example: GET /api/v1/contacts/1/user/550e8400-e29b-41d4-a716-446655440000
      */
-    @GetMapping("/{id}")
-    public ContactResponseDTO getContactById(@PathVariable UUID id) {
-        return contactService.getContactById(id);
+    @GetMapping("/{id}/user/{userId}")
+    public ContactResponseDTO getContactByIdAndUserId(
+            @PathVariable Long id,
+            @PathVariable UUID userId) {
+        return contactService.getContactByIdAndUserId(id, userId);
     }
 
     /**
      * Retrieves all contacts belonging to a specific user.
-     *
-     * @param userId the user UUID
-     * @return list of contacts
      */
     @GetMapping("/user/{userId}")
     public List<ContactResponseDTO> getContactsByUserId(@PathVariable UUID userId) {
@@ -59,31 +57,28 @@ public class ContactController {
     }
 
     /**
-     * Updates an existing contact.
+     * Updates a contact identified by id AND owner user id.
      *
-     * @param id the contact UUID
-     * @param dto the updated contact data
-     * @return the updated contact data
+     * Example: PUT /api/v1/contacts/1/user/550e8400-e29b-41d4-a716-446655440000
      */
-    @PutMapping("/{id}")
+    @PutMapping("/{id}/user/{userId}")
     public ContactResponseDTO updateContact(
-            @PathVariable UUID id,
+            @PathVariable Long id,
+            @PathVariable UUID userId,
             @Valid @RequestBody ContactRequestDTO dto) {
-        return contactService.updateContact(id, dto);
+        return contactService.updateContact(id, userId, dto);
     }
 
     /**
-     * Deletes a contact by its ID.
+     * Deletes a contact identified by id AND owner user id.
      *
-     * @param id the contact UUID
+     * Example: DELETE /api/v1/contacts/1/user/550e8400-e29b-41d4-a716-446655440000
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}/user/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteContact(@PathVariable UUID id) {
-        contactService.deleteContact(id);
+    public void deleteContact(
+            @PathVariable Long id,
+            @PathVariable UUID userId) {
+        contactService.deleteContact(id, userId);
     }
 }
-
-/*
-Importante: Como tienes ApiResponseAdvice activo, NO debes usar ResponseEntity ni envolver en ApiResponse. El advice se encarga de envolver automáticamente. Solo devuelves el DTO directamente.
-*/

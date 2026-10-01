@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record ContactResponseDTO(
-    UUID id,
+    Long id,          // Cambió de UUID a Long
     String name,
     String email,
     String phone,
