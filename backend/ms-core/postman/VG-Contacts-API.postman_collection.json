@@ -69,7 +69,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/v1/contacts/{{contactId}}",
+          "raw": "{{baseUrl}}/api/v1/contacts/{{contactId}}/user/{{userId}}",
           "host": [
             "{{baseUrl}}"
           ],
@@ -77,7 +77,9 @@
             "api",
             "v1",
             "contacts",
-            "{{contactId}}"
+            "{{contactId}}",
+            "user",
+            "{{userId}}"
           ]
         }
       },
@@ -140,7 +142,7 @@
           }
         },
         "url": {
-          "raw": "{{baseUrl}}/api/v1/contacts/{{contactId}}",
+          "raw": "{{baseUrl}}/api/v1/contacts/{{contactId}}/user/{{userId}}",
           "host": [
             "{{baseUrl}}"
           ],
@@ -148,7 +150,9 @@
             "api",
             "v1",
             "contacts",
-            "{{contactId}}"
+            "{{contactId}}",
+            "user",
+            "{{userId}}"
           ]
         }
       },
@@ -160,7 +164,7 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/v1/contacts/{{contactId}}",
+          "raw": "{{baseUrl}}/api/v1/contacts/{{contactId}}/user/{{userId}}",
           "host": [
             "{{baseUrl}}"
           ],
@@ -168,7 +172,9 @@
             "api",
             "v1",
             "contacts",
-            "{{contactId}}"
+            "{{contactId}}",
+            "user",
+            "{{userId}}"
           ]
         }
       },
@@ -292,7 +298,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/v1/contacts/esto-no-es-un-uuid",
+          "raw": "{{baseUrl}}/api/v1/contacts/esto-no-es-un-uuid/user/{{userId}}",
           "host": [
             "{{baseUrl}}"
           ],
@@ -300,7 +306,9 @@
             "api",
             "v1",
             "contacts",
-            "esto-no-es-un-uuid"
+            "esto-no-es-un-uuid",
+            "user",
+            "{{userId}}"
           ]
         }
       },
@@ -312,7 +320,7 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/v1/contacts/00000000-0000-0000-0000-000000000000",
+          "raw": "{{baseUrl}}/api/v1/contacts//999999/user/{{userId}}",
           "host": [
             "{{baseUrl}}"
           ],
@@ -320,7 +328,54 @@
             "api",
             "v1",
             "contacts",
+            "",
+            "999999",
+            "user",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "13 - Get Contact - id OK, userId FALSO (404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/contacts/{{contactId}}/user/00000000-0000-0000-0000-000000000000",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "contacts",
+            "{{contactId}}",
+            "user",
             "00000000-0000-0000-0000-000000000000"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "14 - Delete Contact - id FALSO, userId OK (404)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/contacts/999999/user/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "contacts",
+            "999999",
+            "user",
+            "{{userId}}"
           ]
         }
       },
