@@ -12,17 +12,23 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ContactMapper {
 
-    // Mapea userId (UUID) del DTO al user.id de la entidad
-    @Mapping(source = "userId", target = "user.id")
+    // Ignoramos "user" e "id": el servicio los setea manualmente
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Contact toEntity(ContactRequestDTO dto);
 
-    // Mapea user.id de la entidad al userId del DTO de respuesta
+    // user.id (UUID) → userId (UUID)
     @Mapping(source = "user.id", target = "userId")
     ContactResponseDTO toResponseDTO(Contact entity);
 
     List<ContactResponseDTO> toResponseDTOList(List<Contact> entities);
 
-    // Actualiza una entidad existente desde un DTO
-    @Mapping(source = "userId", target = "user.id")
+    // Ignoramos "user" e "id" en update
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     void updateEntity(ContactRequestDTO dto, @MappingTarget Contact entity);
-} 
+}

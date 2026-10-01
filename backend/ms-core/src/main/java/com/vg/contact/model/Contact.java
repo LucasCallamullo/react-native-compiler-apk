@@ -10,7 +10,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "contacts")
@@ -20,9 +19,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Contact {
 
+    // PK interna: Long autogenerado
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -33,8 +33,7 @@ public class Contact {
     @Column(nullable = false, length = 20)
     private String phone;
 
-    // Relación ManyToOne con User según el DER (FK user_id)
-    // Un contacto pertenece a un solo usuario
+    // Relación ManyToOne con User (FK user_id de tipo UUID)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

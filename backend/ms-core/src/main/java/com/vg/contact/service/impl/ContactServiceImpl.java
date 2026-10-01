@@ -19,8 +19,13 @@ import java.util.UUID;
 
 /**
  * Implementation of ContactService.
- * Handles all contact-related business logic.
  * Reuses UserService to validate the existence of the owner user.
+ *
+ * Security note:
+ * Every "read single / update / delete" operation requires BOTH
+ * the contact id (Long) AND the owner user id (UUID) to match.
+ * This prevents a user from accessing contacts of another user
+ * just by guessing the contact id.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,16 +33,13 @@ public class ContactServiceImpl implements ContactService {
 
     private final ContactRepository contactRepository;
     private final ContactMapper contactMapper;
-    // Reutilizamos UserService (ya existente en el módulo auth)
     private final UserService userService;
 
     @Override
     @Transactional
     public ContactResponseDTO createContact(ContactRequestDTO dto) {
-        // Step 1: Validate user exists (reusing existing UserService method)
         User user = userService.validateUserExists(dto.userId());
 
-        // Step 2: Prevent duplicate contact email per user (optional business rule)
         if (contactRepository.existsByEmailAndUserId(dto.email(), dto.userId())) {
             throw new AppException(
                 "Contact already exists with email: " + dto.email() + " for this user",
@@ -45,59 +47,48 @@ public class ContactServiceImpl implements ContactService {
             );
         }
 
-        // Step 3: Map DTO to Entity
         Contact contact = contactMapper.toEntity(dto);
-
-        // Step 4: Attach the managed User entity (avoids transient reference issues)
         contact.setUser(user);
 
-        // Step 5: Save to database
         Contact savedContact = contactRepository.save(contact);
-
-        // Step 6: Return as DTO
         return contactMapper.toResponseDTO(savedContact);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ContactResponseDTO getContactById(UUID id) {
-        Contact contact = findContactOrThrow(id);
+    public ContactResponseDTO getContactByIdAndUserId(Long id, UUID userId) {
+        Contact contact = findContactByIdAndUserIdOrThrow(id, userId);
         return contactMapper.toResponseDTO(contact);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ContactResponseDTO> getContactsByUserId(UUID userId) {
-        // Validate the user exists before listing (consistent error handling)
         userService.validateUserExists(userId);
         return contactMapper.toResponseDTOList(contactRepository.findByUserId(userId));
     }
 
     @Override
     @Transactional
-    public ContactResponseDTO updateContact(UUID id, ContactRequestDTO dto) {
-        // Step 1: Find contact or throw 404
-        Contact contact = findContactOrThrow(id);
+    public ContactResponseDTO updateContact(Long id, UUID userId, ContactRequestDTO dto) {
+        Contact contact = findContactByIdAndUserIdOrThrow(id, userId);
 
-        // Step 2: If userId changed, validate the new user
+        // Si cambia el dueño del contacto, validar y actualizar
         if (!contact.getUser().getId().equals(dto.userId())) {
             User newUser = userService.validateUserExists(dto.userId());
             contact.setUser(newUser);
         }
 
-        // Step 3: Map DTO fields into the existing entity
         contactMapper.updateEntity(dto, contact);
 
-        // Step 4: Save
         Contact updatedContact = contactRepository.save(contact);
-
         return contactMapper.toResponseDTO(updatedContact);
     }
 
     @Override
     @Transactional
-    public boolean deleteContact(UUID id) {
-        Contact contact = findContactOrThrow(id);
+    public boolean deleteContact(Long id, UUID userId) {
+        Contact contact = findContactByIdAndUserIdOrThrow(id, userId);
         contactRepository.delete(contact);
         return true;
     }
@@ -107,14 +98,14 @@ public class ContactServiceImpl implements ContactService {
     // ============================================
 
     /**
-     * Finds a contact by ID or throws a 404 AppException.
-     *
-     * @param id the contact UUID
-     * @return the Contact entity
-     * @throws AppException with 404 NOT_FOUND if contact doesn't exist
+     * Finds a contact by its internal id AND owner user id.
+     * Both must match, implementing the double-factor security check.
      */
-    private Contact findContactOrThrow(UUID id) {
-        return contactRepository.findById(id)
-            .orElseThrow(() -> new AppException("Contact not found with id: " + id, HttpStatus.NOT_FOUND));
+    private Contact findContactByIdAndUserIdOrThrow(Long id, UUID userId) {
+        return contactRepository.findByIdAndUserId(id, userId)
+            .orElseThrow(() -> new AppException(
+                "Contact not found with id: " + id + " for user: " + userId,
+                HttpStatus.NOT_FOUND
+            ));
     }
 }
