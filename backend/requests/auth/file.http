@@ -1,0 +1,144 @@
+### Variables globales
+@host = http://localhost:8080
+@owner = juan
+# Pega aquí el UUID que devuelva el upload para reutilizarlo en los siguientes requests
+@fileId = 23d91850-847f-4d83-814a-8dcde0eb3a2b
+
+### ============================================
+### 1. SUBIR UN ARCHIVO
+### ============================================
+# En IntelliJ: la ruta del archivo es relativa al .http o absoluta.
+# Cambia la ruta por un archivo real de tu máquina.
+POST {{host}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="foto.jpg"
+Content-Type: image/jpeg
+
+< ./fixtures/foto.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="owner"
+
+{{owner}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### ============================================
+### 2. SUBIR UN ARCHIVO DE TEXTO
+### ============================================
+POST {{host}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="notas.txt"
+Content-Type: text/plain
+
+< ./fixtures/notas.txt
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="owner"
+
+{{owner}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### ============================================
+### 3. SUBIR SIN ESPECIFICAR OWNER (usa "anonymous")
+### ============================================
+POST {{host}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="anonimo.txt"
+Content-Type: text/plain
+
+< ./fixtures/notas.txt
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### ============================================
+### 4. LISTAR ARCHIVOS DE UN OWNER
+### ============================================
+GET {{host}}/api/files?owner={{owner}}
+Accept: application/json
+
+### ============================================
+### 5. LISTAR ARCHIVOS DE "anonymous"
+### ============================================
+GET {{host}}/api/files?owner=anonymous
+Accept: application/json
+
+### ============================================
+### 6. LISTAR SIN PARÁMETRO (default = anonymous)
+### ============================================
+GET {{host}}/api/files
+Accept: application/json
+
+### ============================================
+### 7. DESCARGAR / VISUALIZAR UN ARCHIVO
+### ============================================
+# Reemplaza {{fileId}} con un UUID real de la respuesta del upload.
+GET {{host}}/api/files/{{fileId}}
+Accept: */*
+
+### ============================================
+### 8. VER SOLO LOS HEADERS DE UN ARCHIVO
+### ============================================
+HEAD {{host}}/api/files/{{fileId}}
+
+### ============================================
+### 9. BORRAR UN ARCHIVO
+### ============================================
+DELETE {{host}}/api/files/{{fileId}}
+
+### ============================================
+### 10. ERROR: descargar UUID inexistente → 404/500
+### ============================================
+GET {{host}}/api/files/00000000-0000-0000-0000-000000000000
+
+### ============================================
+### 11. ERROR: UUID malformado → 400
+### ============================================
+GET {{host}}/api/files/no-es-un-uuid
+
+### ============================================
+### 12. ERROR: subir archivo vacío → 400
+### ============================================
+POST {{host}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="vacio.txt"
+Content-Type: text/plain
+
+< ./fixtures/vacio.txt
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### ============================================
+### 13. ERROR: archivo > 50MB → 413
+### ============================================
+# Genera antes: dd if=/dev/zero of=fixtures/grande.bin bs=1M count=60
+POST {{host}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="grande.bin"
+Content-Type: application/octet-stream
+
+< ./fixtures/grande.bin
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### ============================================
+### 14. ERROR: nombre con path traversal
+### ============================================
+# Debe sanitizarse a "passwd" — verifica que NO se escribe fuera de storage.root
+POST {{host}}/api/files/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="../../../etc/passwd"
+Content-Type: text/plain
+
+< ./fixtures/notas.txt
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="owner"
+
+{{owner}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
