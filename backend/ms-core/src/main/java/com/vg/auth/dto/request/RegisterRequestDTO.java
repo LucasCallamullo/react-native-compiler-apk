@@ -1,6 +1,6 @@
 package com.vg.auth.dto.request;
 
-// import com.vg.auth.model.UserRole;
+
 import jakarta.validation.constraints.*;
 
 public record RegisterRequestDTO(

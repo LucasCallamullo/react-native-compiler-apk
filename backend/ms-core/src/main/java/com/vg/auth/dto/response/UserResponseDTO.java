@@ -1,9 +1,9 @@
 package com.vg.auth.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
-import com.vg.auth.model.UserRole;
 
 /**
  * Data Transfer Object representing user account details in API responses.
@@ -24,7 +24,7 @@ public record UserResponseDTO(
     String email,
     String dni,
     String phone,
-    UserRole role,
-    LocalDateTime createdAt
-    // LocalDateTime updatedAt
+    List<String> roles,
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
 ) {}
