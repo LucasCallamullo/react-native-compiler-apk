@@ -1,0 +1,122 @@
+### Variables de entorno
+@baseUrl = http://localhost:8080/api/v1/files
+@userId = 0b11c8bf-db03-4faa-b970-1daecbef3117
+# Reemplazar con el ID devuelto en la respuesta del upload:
+@fileId = 1
+
+### 1. Subir un archivo (multipart/form-data)
+# Nota: Creá un archivo de prueba (ej: test.txt) en la misma carpeta que este .http
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="userId"
+
+{{userId}}
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="test.txt"
+Content-Type: text/plain
+
+< ./test.txt
+--WebAppBoundary--
+
+### Subir imagen PNG (multipart/form-data)
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="userId"
+
+{{userId}}
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="despliegue.png"
+Content-Type: image/png
+
+< ./despliegue.png
+--WebAppBoundary--
+
+### Subir archivo PDF Mantenimiento
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="userId"
+
+{{userId}}
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="Mantenimiento.pdf"
+Content-Type: application/pdf
+
+< ./Mantenimiento.pdf
+--WebAppBoundary--
+
+###  Subir HTML (presupuesto.html)
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="userId"
+
+{{userId}}
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="presupuesto.html"
+Content-Type: text/html
+
+< ./presupuesto.html
+--WebAppBoundary--
+
+### Subir Imagen JPEG (imagen.jpeg)
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="userId"
+
+{{userId}}
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="imagen.jpeg"
+Content-Type: image/jpeg
+
+< ./imagen.jpeg
+--WebAppBoundary--
+
+### Subir Planilla Excel (planilla.xlsx)
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="userId"
+
+{{userId}}
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="planilla.xlsx"
+Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+
+< ./planilla.xlsx
+--WebAppBoundary--
+
+###  Subir Video MP4 (video.mp4)
+POST {{baseUrl}}/upload
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="userId"
+
+{{userId}}
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="video.mp4"
+Content-Type: video/mp4
+
+< ./video.mp4
+--WebAppBoundary--
+
+
+### 2. Listar todos los archivos del usuario
+GET {{baseUrl}}?userId={{userId}}
+Accept: application/json
+
+### 3. Descargar / Visualizar archivo por ID
+GET {{baseUrl}}/{{fileId}}
+
+### 4. Eliminar archivo por ID
+DELETE {{baseUrl}}/{{fileId}}

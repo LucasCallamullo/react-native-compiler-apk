@@ -7,6 +7,10 @@ server:
     include-stacktrace: never
     include-binding-errors: always
 
+storage:
+    root: ${user.home}/file-storage
+    max-file-size: 50MB
+
 spring:
   application:
     name: ms-core
@@ -52,6 +56,17 @@ spring:
     deserialization:
       fail-on-unknown-properties: false  # Ignora campos desconocidos del front
 
+  
+
+  
+  servlet:
+      multipart:
+        max-file-size: 1024MB
+        max-request-size: 2048MB 
+
+  h2:
+    console:
+      enabled: true 
 # ============================================
 # LOGGING CONFIGURATION
 # ============================================
@@ -67,3 +82,4 @@ jwt:
   secret: ${JWT_SECRET:clave_secreta_de_prueba_1234567890}
   expiration: ${JWT_EXPIRATION:86400000} # 24 horas en milisegundos
   issuer: ms-core
+
