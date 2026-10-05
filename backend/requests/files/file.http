@@ -1,6 +1,6 @@
 ### Variables de entorno
 @baseUrl = http://localhost:8080/api/v1/files
-@userId = 29e1d398-4ac9-49c8-b512-8a4ce2d318fd
+@userId = 0b11c8bf-db03-4faa-b970-1daecbef3117
 # Reemplazar con el ID devuelto en la respuesta del upload:
 @fileId = 1
 

@@ -15,13 +15,30 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Controlador REST para la gestión de archivos.
+ * Base URL: /api/v1/files
+ * Inyección por constructor vía Lombok (@RequiredArgsConstructor).
+ */
 @RestController
 @RequestMapping("/api/v1/files")
 @RequiredArgsConstructor
 public class FileController {
 
+    /**
+     * Servicio de almacenamiento de archivos (implementación concreta).
+     */
     private final FileStorageServiceImpl service;
 
+    /**
+     * Sube un archivo asociado a un usuario.
+     * Consume multipart/form-data.
+     *
+     * @param file   archivo subido (parte "file" del formulario)
+     * @param userId id del usuario propietario (parámetro "userId")
+     * @return metadatos del archivo guardado
+     * @throws IOException si ocurre un error de E/S durante el almacenamiento
+     */
     // Subir archivo (multipart/form-data)
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FileResponse> upload(
@@ -31,12 +48,26 @@ public class FileController {
         return ResponseEntity.ok(service.store(file, userId));
     }
 
+    /**
+     * Lista todos los archivos pertenecientes a un usuario.
+     *
+     * @param userId id del usuario propietario (query param "userId")
+     * @return lista de metadatos de los archivos del usuario
+     */
     // Listar archivos del owner
     @GetMapping
     public List<FileResponse> list(@RequestParam("userId") UUID userId) {
         return service.listByUserId(userId);
     }
 
+    /**
+     * Descarga o visualiza un archivo por su id.
+     * Se devuelve con Content-Disposition "inline" para permitir visualización en el navegador.
+     *
+     * @param id id del archivo almacenado
+     * @return recurso listo para descarga con su tipo MIME y cabecera de disposición
+     * @throws IOException si ocurre un error de E/S al cargar el recurso
+     */
     // Descargar / visualizar
     @GetMapping("/{id}")
     public ResponseEntity<Resource> download(@PathVariable Long id) throws IOException {
@@ -50,6 +81,13 @@ public class FileController {
                 .body(resource);
     }
 
+    /**
+     * Elimina un archivo (registro en BD y archivo físico).
+     *
+     * @param id id del archivo a eliminar
+     * @return respuesta 204 No Content si la eliminación fue exitosa
+     * @throws IOException si ocurre un error de E/S durante el borrado
+     */
     // Borrar
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) throws IOException {
