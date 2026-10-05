@@ -47,15 +47,6 @@ public interface AuthService {
     RefreshTokenResponseDTO refreshToken(RefreshTokenRequestDTO refreshRequest);
 
     /**
-     * Validates a JWT token and returns the associated user email.
-     *
-     * @param token the JWT token to validate
-     * @return the email extracted from the token
-     * @throws AppException if token is invalid or expired (HTTP 401 Unauthorized)
-     */
-    String validateToken(String token);
-
-    /**
      * Extracts user information from a valid JWT token.
      *
      * @param token the JWT token

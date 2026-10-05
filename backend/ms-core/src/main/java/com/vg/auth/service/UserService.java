@@ -31,33 +31,6 @@ public interface UserService {
      */
     void validateDniUnique(String dni);
 
-    /**
-     * Validates that the email is not already in use by another user.
-     *
-     * @param email the email to validate
-     * @param userId the user ID to exclude from the check
-     * @throws AppException if email already exists (HTTP 409 Conflict)
-     */
-    void validateEmailUniqueForUpdate(String email, UUID userId);
-
-    /**
-     * Validates that the DNI is not already in use by another user.
-     *
-     * @param dni the DNI to validate
-     * @param userId the user ID to exclude from the check
-     * @throws AppException if DNI already exists (HTTP 409 Conflict)
-     */
-    void validateDniUniqueForUpdate(String dni, UUID userId);
-
-    /**
-     * Validates that a user exists by ID.
-     *
-     * @param id the user ID
-     * @return User entity
-     * @throws AppException if user not found (HTTP 404 Not Found)
-     */
-    User validateUserExists(UUID id);
-
     // ============================================
     // ENTITY METHODS
     // ============================================
@@ -79,7 +52,18 @@ public interface UserService {
      * @return User entity
      * @throws AppException if user not found (HTTP 404 Not Found)
      */
-    User getUserEntityById(UUID id);
+    User findUserByIdWithRoles(UUID id);
+
+    User validateUserExists(UUID id);
+
+    /**
+     * Finds a user by email with roles eagerly loaded.
+     * Use for authentication flows that need to build JWT claims with roles.
+     *
+     * @param email the user email
+     * @return Optional containing the user with roles if found, empty otherwise
+     */
+    Optional<User> findUserByEmailWithRoles(String email);
 
     /**
      * Finds a user by email.
@@ -90,27 +74,9 @@ public interface UserService {
      */
     Optional<User> findUserByEmail(String email);
 
-    /**
-     * Finds a user by DNI.
-     * Returns Optional to allow different error handling per use case.
-     *
-     * @param dni the user DNI
-     * @return Optional containing the user if found, empty otherwise
-     */
-    Optional<User> findUserByDni(String dni);
-
     // ============================================
     // CRUD METHODS
     // ============================================
-
-    /**
-     * Creates a new user from the provided DTO.
-     *
-     * @param dto the user data transfer object containing the user details
-     * @return UserResponseDTO containing the created user data
-     * @throws AppException if email or DNI already exists (HTTP 409 Conflict)
-     */
-    UserResponseDTO createUser(UserRequestDTO dto);
 
     /**
      * Retrieves a user by their ID and returns as DTO.
@@ -120,24 +86,6 @@ public interface UserService {
      * @throws AppException if user not found (HTTP 404 Not Found)
      */
     UserResponseDTO getUserById(UUID id);
-
-    /**
-     * Retrieves a user by their email.
-     *
-     * @param email the user email
-     * @return UserResponseDTO containing the user data
-     * @throws AppException if user not found (HTTP 404 Not Found)
-     */
-    UserResponseDTO getUserByEmail(String email);
-
-    /**
-     * Retrieves a user by their DNI.
-     *
-     * @param dni the user DNI
-     * @return UserResponseDTO containing the user data
-     * @throws AppException if user not found (HTTP 404 Not Found)
-     */
-    UserResponseDTO getUserByDni(String dni);
 
     /**
      * Retrieves all users from the system.
