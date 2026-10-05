@@ -5,6 +5,8 @@ import lombok.*;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.vg.auth.model.User;
+
 @Entity
 @Table(name = "stored_files")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -32,6 +34,7 @@ public class StoredFile {
     @Column(nullable = false)
     private Instant uploadedAt;
 
-    @Column(nullable = false)
-    private String owner;           // username o "anonymous"
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }
