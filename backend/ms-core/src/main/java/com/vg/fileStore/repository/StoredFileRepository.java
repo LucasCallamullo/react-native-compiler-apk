@@ -9,7 +9,7 @@ import com.vg.fileStore.model.StoredFile;
 import java.util.List;
 import java.util.UUID;
 
-public interface StoredFileRepository extends JpaRepository<StoredFile, UUID> {
+public interface StoredFileRepository extends JpaRepository<StoredFile, Long> {
         // Derivación: findBy + User_Id (el campo se llama "user", su id es "id")
     List<StoredFile> findByUserIdOrderByUploadedAtDesc(UUID userId);
 

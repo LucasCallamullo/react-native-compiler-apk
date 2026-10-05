@@ -1,8 +1,8 @@
 ### Variables de entorno
 @baseUrl = http://localhost:8080/api/v1/files
-@userId = 63e1227b-6d20-4d62-b5d2-182b70f93dd4
+@userId = 29e1d398-4ac9-49c8-b512-8a4ce2d318fd
 # Reemplazar con el ID devuelto en la respuesta del upload:
-@fileId = 88c41a9d-031c-4efa-9efc-309b0b94b8f9
+@fileId = 1
 
 ### 1. Subir un archivo (multipart/form-data)
 # Nota: Creá un archivo de prueba (ej: test.txt) en la misma carpeta que este .http

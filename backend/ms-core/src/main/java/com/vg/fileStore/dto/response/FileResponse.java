@@ -10,7 +10,7 @@ import java.util.UUID;
  * userId va plano (UUID) para no disparar el lazy load de User.
  */
 public record FileResponse(
-        UUID id,
+        Long id,
         String originalName,
         String contentType,
         long size,

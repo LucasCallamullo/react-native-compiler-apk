@@ -107,7 +107,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     @Transactional(readOnly = true)
-    public Resource loadAsResource(UUID id) {
+    public Resource loadAsResource(Long id) {
         StoredFile meta = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("No existe archivo con id: " + id));
 
@@ -131,7 +131,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     @Transactional(readOnly = true)
-    public StoredFile getMeta(UUID id) {
+    public StoredFile getMeta(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("No existe archivo con id: " + id));
     }
@@ -146,7 +146,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     @Transactional
-    public void delete(UUID id) {
+    public void delete(Long id) {
         StoredFile meta = getMeta(id);
         Path path = root.resolve(meta.getRelativePath()).normalize();
 

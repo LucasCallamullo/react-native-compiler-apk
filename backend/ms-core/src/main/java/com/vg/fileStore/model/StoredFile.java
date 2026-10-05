@@ -3,7 +3,7 @@ package com.vg.fileStore.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
-import java.util.UUID;
+
 
 import com.vg.auth.model.User;
 
@@ -13,8 +13,8 @@ import com.vg.auth.model.User;
 public class StoredFile {
 
     @Id
-    @GeneratedValue
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String originalName;

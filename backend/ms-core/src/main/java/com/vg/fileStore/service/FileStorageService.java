@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
+
 public interface FileStorageService {
 
     /**
@@ -25,7 +26,7 @@ public interface FileStorageService {
      * @param id id del archivo almacenado
      * @return recurso listo para descarga
      */
-    Resource loadAsResource(UUID id);
+    Resource loadAsResource(Long id);
 
     /**
      * Obtiene los metadatos de un archivo.
@@ -33,7 +34,7 @@ public interface FileStorageService {
      * @param id id del archivo
      * @return entidad StoredFile
      */
-    StoredFile getMeta(UUID id);
+    StoredFile getMeta(Long id);
 
     /**
      * Lista todos los archivos de un usuario.
@@ -48,5 +49,5 @@ public interface FileStorageService {
      *
      * @param id id del archivo
      */
-    void delete(UUID id);
+    void delete(Long id);
 }

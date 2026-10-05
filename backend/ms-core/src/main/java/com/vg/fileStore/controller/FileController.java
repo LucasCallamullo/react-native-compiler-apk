@@ -39,7 +39,7 @@ public class FileController {
 
     // Descargar / visualizar
     @GetMapping("/{id}")
-    public ResponseEntity<Resource> download(@PathVariable UUID id) throws IOException {
+    public ResponseEntity<Resource> download(@PathVariable Long id) throws IOException {
         StoredFile meta = service.getMeta(id);
         Resource resource = service.loadAsResource(id);
 
@@ -52,7 +52,7 @@ public class FileController {
 
     // Borrar
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) throws IOException {
+    public ResponseEntity<Void> delete(@PathVariable Long id) throws IOException {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
