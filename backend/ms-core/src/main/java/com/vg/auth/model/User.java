@@ -1,14 +1,13 @@
 package com.vg.auth.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -16,14 +15,17 @@ import java.util.UUID;
     @UniqueConstraint(columnNames = "email"),
     @UniqueConstraint(columnNames = "dni")
 })
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "roles")
+@EqualsAndHashCode(exclude = "roles")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    // @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false, length = 100)
@@ -44,9 +46,14 @@ public class User {
     @Column(length = 20)
     private String phone;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
+    /**
+     * Roles assigned to this user.
+     * Using explicit join entity (UserRoles) instead of @ManyToMany
+     * to allow future metadata on the relationship.
+     */
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<UserRoles> roles = new HashSet<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -55,4 +62,26 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    /**
+     * Ensures an ID is assigned before the entity is persisted.
+     * 
+     * Why this exists:
+     * - We removed @GeneratedValue(strategy = GenerationType.UUID) to have full control
+     *   over the generated ID. With @GeneratedValue, Hibernate always generates a new UUID,
+     *   ignoring any manually assigned one (which breaks seeding with fixed UUIDs).
+     * - This @PrePersist callback runs right before the INSERT is executed.
+     *   If no ID was provided, a random UUID is generated (the common case for normal user creation).
+     *   If an ID was provided (e.g., seeded test users with fixed UUIDs), it is respected as-is.
+     * 
+     * Common cases:
+     * - Normal user creation: id is null → generate a random UUID.
+     * - Seeded users: id is set explicitly → keep the provided UUID.
+     */
+    @PrePersist
+    public void ensureId() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+    }
 }
