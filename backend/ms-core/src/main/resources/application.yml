@@ -35,15 +35,25 @@ spring:
       # [CAMBIO] Antes: create (borraba TODA la BD en cada reinicio).
       # Ahora: update → mantiene los datos entre reinicios. Clave para
       # no perder usuarios/contactos mientras se prueba con Postman.
-      ddl-auto: update
+      ddl-auto: create
+
     # [DESCOMENTADO] Muestra las queries SQL en consola para debug.
     show-sql: true
+    
     # [AGREGADO] Buena práctica: evita el antipatrón "Open Session in View"
     # y fuerza a que las relaciones lazy se carguen dentro de la transacción.
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
+
+        ## HABILITAR BATCHS LOAD
+        order_inserts: true
+        order_updates: true
+
+        jdbc:
+          batch_size: 50
+        
 
   # [AGREGADO] Configuración de Jackson (serialización JSON).
   # Sin esto, las fechas se envían como números (milisegundos) y el front

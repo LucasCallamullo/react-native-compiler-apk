@@ -1,7 +1,10 @@
 package com.vg.auth.dto.request;
 
-import com.vg.auth.model.UserRole;
 import jakarta.validation.constraints.*;
+
+import java.util.List;
+
+import com.vg.auth.model.utils.RolType;
 
 public record UserRequestDTO(
 
@@ -29,15 +32,30 @@ public record UserRequestDTO(
     @Pattern(regexp = "^[0-9]{7,15}$", message = "Phone must contain only numbers and be between 7 and 15 digits")
     String phone,
 
-    UserRole role
+    // Optional: if null/empty, USER role is assigned by default
+    List<RolType> roles
 
 ) {
+
+    /**
+     * Validates that no ADMIN role is being assigned via API.
+     * Returns true (valid) if roles is null/empty OR none of them is ADMIN.
+     */
     @AssertTrue(message = "ADMIN role cannot be assigned via API")
     public boolean isRoleValid() {
-        return role == null || role != UserRole.ADMIN;
+        if (roles == null || roles.isEmpty()) {
+            return true;
+        }
+        return roles.stream().noneMatch(r -> r == RolType.ADMIN);
     }
-    
-    public UserRole getRoleOrDefault() {
-        return role != null ? role : UserRole.USER;
+
+    /**
+     * Returns the roles to assign, defaulting to USER if none were provided.
+     */
+    public List<RolType> getRolesOrDefault() {
+        if (roles == null || roles.isEmpty()) {
+            return List.of(RolType.USER);
+        }
+        return roles;
     }
 }

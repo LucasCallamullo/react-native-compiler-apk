@@ -6,10 +6,13 @@ import com.vg.auth.dto.request.RegisterRequestDTO;
 import com.vg.auth.dto.response.AuthResponseDTO;
 import com.vg.auth.dto.response.RefreshTokenResponseDTO;
 import com.vg.auth.mapper.UserMapper;
+
+import com.vg.auth.model.Rol;
 import com.vg.auth.model.User;
-import com.vg.auth.model.UserRole;
+
 import com.vg.auth.service.AuthService;
 import com.vg.auth.service.JwtService;
+import com.vg.auth.service.RolService;
 import com.vg.auth.service.UserService;
 import com.vg.shared.exception.AppException;
 
@@ -20,21 +23,26 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserService userService;
+    private final RolService rolService;
+
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+
     private final UserMapper userMapper;
 
     @Override
     public AuthResponseDTO login(LoginRequestDTO loginRequest) {
-        // Step 1: Find user by email
-        User user = userService.findUserByEmail(loginRequest.email())
+        // Step 1: Find user by email with roles eagerly loaded
+        User user = userService.findUserByEmailWithRoles(loginRequest.email())
             .orElseThrow(() -> new AppException("Invalid credentials", HttpStatus.UNAUTHORIZED));
 
         // Step 2: Validate password using BCrypt
@@ -43,76 +51,63 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Step 3: Build claims for JWT
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", user.getRole().name());
-        claims.put("userId", user.getId());
-        claims.put("email", user.getEmail());
-        claims.put("firstName", user.getFirstName());
-        claims.put("lastName", user.getLastName());
+        var claims = buildUserClaims(user);
 
         // Step 4: Generate access token and refresh token
-        String accessToken = jwtService.generateAccessToken(user.getEmail(), claims);
-        String refreshToken = jwtService.generateRefreshToken(user.getEmail());
+        String accessToken = jwtService.generateAccessToken(user.getId(), claims);
+        String refreshToken = jwtService.generateRefreshToken(user.getId());
 
-        // Step 5: Return authentication response with both tokens
-        var userDto = userMapper.toResponseDTO(user);
-
-        // Step 7: Return authentication response
+        // Step 5: Return authentication response with both tokens & user response dto
         return new AuthResponseDTO(
             accessToken,
             refreshToken,
             jwtService.getAccessTokenExpiration(),
             "Login successful", 
-            userDto
+            userMapper.toResponseDTO(user)        // Return user response dto
         );
     }
 
+
     @Override
     @Transactional
-    public AuthResponseDTO register(RegisterRequestDTO registerRequest) {
+    public AuthResponseDTO register(RegisterRequestDTO request) {
         // Step 1: Validate email is unique
-        userService.validateEmailUnique(registerRequest.email());
+        userService.validateEmailUnique(request.email());
 
         // Step 2: Validate DNI is unique
-        userService.validateDniUnique(registerRequest.dni());
+        userService.validateDniUnique(request.dni());
 
-        // Step 3: Create user with USER role by default
-        User user = User.builder()
-            .firstName(registerRequest.firstName())
-            .lastName(registerRequest.lastName())
-            .email(registerRequest.email())
-            .password(passwordEncoder.encode(registerRequest.password()))
-            .dni(registerRequest.dni())
-            .phone(registerRequest.phone())
-            .role(UserRole.USER)
-            .build();
+        // Step 3: Map DTO to User entity
+        User user = userMapper.registerToEntity(request);
+        user.setPassword(passwordEncoder.encode(request.password()));
 
-        // Step 4: Save user using UserService
+        // Step 4: Assign default USER role (returns the Rol, no modifica el user)
+        List<Rol> roles = rolService.assignDefaultRole(user);
+
+        // Step 5: Save user & generate uuid
         User savedUser = userService.save(user);
 
-        // Step 5: Build claims for JWT
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", savedUser.getRole().name());
-        claims.put("userId", savedUser.getId());
-        claims.put("email", savedUser.getEmail());
-        claims.put("firstName", savedUser.getFirstName());
-        claims.put("lastName", savedUser.getLastName());
+        // Step 6: Save UserRoles manually
+        // List<UserRoles> userRoles = rolService.saveRoles(savedUser, roles);
+        rolService.saveRoles(savedUser, roles);
 
-        // Step 6: Generate access token and refresh token
-        String accessToken = jwtService.generateAccessToken(savedUser.getEmail(), claims);
-        String refreshToken = jwtService.generateRefreshToken(savedUser.getEmail());
+        // Step 7: Build claims for JWT
+        var claims = buildUserClaims(savedUser);
 
-        var userDto = userMapper.toResponseDTO(savedUser);
+        // Step 8: Generate access token and refresh token
+        String accessToken = jwtService.generateAccessToken(savedUser.getId(), claims);
+        String refreshToken = jwtService.generateRefreshToken(savedUser.getId());
 
-        // Step 7: Return authentication response
+        // Step 9: Return authentication response
         return new AuthResponseDTO(
             accessToken,
             refreshToken,
             jwtService.getAccessTokenExpiration(),
             "Registration successful", 
-            userDto
+            userMapper.toResponseDTO(savedUser)    // get AuthResponseDTO
         );
     }
+
 
     @Override
     public boolean logout(String token) {
@@ -136,23 +131,17 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Step 3: Extract email from token
-        String email = jwtService.extractEmail(token);
+        UUID userId = jwtService.extractUserId(token);
         
         // Step 4: Find user by email
-        User user = userService.findUserByEmail(email)
-            .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
+        User user = userService.findUserByIdWithRoles(userId);
 
-        // Step 5: Build claims for new tokens
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", user.getRole().name());
-        claims.put("userId", user.getId());
-        claims.put("email", user.getEmail());
-        claims.put("firstName", user.getFirstName());
-        claims.put("lastName", user.getLastName());
+        // Step 5: Build claims for JWT
+        var claims = buildUserClaims(user);
 
         // Step 6: Generate new access token and refresh token
-        String newAccessToken = jwtService.generateAccessToken(user.getEmail(), claims);
-        String newRefreshToken = jwtService.generateRefreshToken(user.getEmail());
+        String newAccessToken = jwtService.generateAccessToken(user.getId(), claims);
+        String newRefreshToken = jwtService.generateRefreshToken(user.getId());
 
         // Step 7: Return response with new tokens
         return new RefreshTokenResponseDTO(
@@ -163,26 +152,31 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
-    @Override
-    public String validateToken(String token) {
-        if (!jwtService.isTokenValid(token)) {
-            throw new AppException("Invalid or expired token", HttpStatus.UNAUTHORIZED);
-        }
-        return jwtService.extractEmail(token);
+    
+    // ---------------------- PRIVATE HELPER TO GET CLAIMS FOR JWT
+    
+    private Map<String, Object> buildUserClaims(User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", user.getRoles().stream()
+            .map(ur -> ur.getRole().getName())
+            .toList());
+        claims.put("userId", user.getId());
+        claims.put("email", user.getEmail());
+        claims.put("firstName", user.getFirstName());
+        claims.put("lastName", user.getLastName());
+        return claims;
     }
 
     @Override
     public AuthResponseDTO getUserInfoFromToken(String token) {
+        // stupid method to get me/
         if (!jwtService.isTokenValid(token)) {
             throw new AppException("Invalid or expired token", HttpStatus.UNAUTHORIZED);
         }
 
-        String email = jwtService.extractEmail(token);
+        UUID userId = jwtService.extractUserId(token);
         
-        User user = userService.findUserByEmail(email)
-            .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
-
-        var userDto = userMapper.toResponseDTO(user);
+        User user = userService.findUserByIdWithRoles(userId);
 
         // Step 7: Return authentication response
         return new AuthResponseDTO(
@@ -190,7 +184,7 @@ public class AuthServiceImpl implements AuthService {
             null, // No refresh token for validation endpoint
             jwtService.getAccessTokenExpiration(),
             "Token is valid", 
-            userDto
+            userMapper.toResponseDTO(user)
         );
     }
 }

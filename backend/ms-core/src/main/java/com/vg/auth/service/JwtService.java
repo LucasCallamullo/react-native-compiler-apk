@@ -1,17 +1,21 @@
 package com.vg.auth.service;
 
 import com.vg.auth.config.JwtProperties;
+import com.vg.shared.exception.AppException;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -30,41 +34,19 @@ public class JwtService {
     }
 
     /**
-     * Generates an access JWT token for the given email.
-     *
-     * @param email the user email
-     * @return the generated JWT token
-     */
-    public String generateAccessToken(String email) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("email", email);
-        claims.put("issuer", jwtProperties.getIssuer());
-        claims.put("type", "access");
-        
-        return Jwts.builder()
-                .claims(claims)
-                .subject(email)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtProperties.getExpiration()))
-                .signWith(secretKey)
-                .compact();
-    }
-
-    /**
      * Generates an access JWT token with custom claims.
      *
-     * @param email the user email
+     * @param userId the user ID unique
      * @param claims additional claims to include
      * @return the generated JWT token
      */
-    public String generateAccessToken(String email, Map<String, Object> claims) {
-        claims.put("email", email);
+    public String generateAccessToken(UUID userId, Map<String, Object> claims) {
         claims.put("issuer", jwtProperties.getIssuer());
         claims.put("type", "access");
         
         return Jwts.builder()
                 .claims(claims)
-                .subject(email)
+                .subject(userId.toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtProperties.getExpiration()))
                 .signWith(secretKey)
@@ -74,55 +56,21 @@ public class JwtService {
     /**
      * Generates a refresh JWT token with longer expiration (7 days).
      *
-     * @param email the user email
+     * @param userId the user ID unique
      * @return the generated refresh token
      */
-    public String generateRefreshToken(String email) {
+    public String generateRefreshToken(UUID userId) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("email", email);
         claims.put("issuer", jwtProperties.getIssuer());
         claims.put("type", "refresh");
         
         return Jwts.builder()
                 .claims(claims)
-                .subject(email)
+                .subject(userId.toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
                 .signWith(secretKey)
                 .compact();
-    }
-
-    /**
-     * Generates a refresh token with custom claims.
-     *
-     * @param email the user email
-     * @param claims additional claims to include
-     * @return the generated refresh token
-     */
-    public String generateRefreshToken(String email, Map<String, Object> claims) {
-        claims.put("email", email);
-        claims.put("issuer", jwtProperties.getIssuer());
-        claims.put("type", "refresh");
-        
-        return Jwts.builder()
-                .claims(claims)
-                .subject(email)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION))
-                .signWith(secretKey)
-                .compact();
-    }
-
-    /**
-     * Validates a JWT token.
-     *
-     * @param token the JWT token
-     * @param email the expected email
-     * @return true if the token is valid
-     */
-    public boolean validateToken(String token, String email) {
-        final String extractedEmail = extractEmail(token);
-        return (extractedEmail.equals(email) && !isTokenExpired(token));
     }
 
     /**
@@ -131,8 +79,13 @@ public class JwtService {
      * @param token the JWT token
      * @return the email
      */
-    public String extractEmail(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public UUID extractUserId(String token) {
+        String subject = extractClaim(token, Claims::getSubject);
+        try {
+            return UUID.fromString(subject);
+        } catch (IllegalArgumentException e) {
+            throw new AppException("Invalid user id in token", HttpStatus.UNAUTHORIZED);
+        }
     }
 
     /**
@@ -179,16 +132,6 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-    }
-
-    /**
-     * Checks if the token is expired.
-     *
-     * @param token the JWT token
-     * @return true if expired
-     */
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
     }
 
     /**

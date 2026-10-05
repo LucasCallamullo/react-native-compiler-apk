@@ -63,50 +63,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    /**
-     * Validates that an email is not already used by another user.
-     * Used during update operations to exclude the current user from the check.
-     *
-     * @param email the email to check
-     * @param userId the user ID to exclude from the check
-     * @throws AppException with 409 CONFLICT if email is used by another user
-     */
-    @Override
-    public void validateEmailUniqueForUpdate(String email, UUID userId) {
-        if (userRepository.existsByEmailAndIdNot(email, userId)) {
-            throw new AppException("Email already in use: " + email, HttpStatus.CONFLICT);
-        }
-    }
-
-    /**
-     * Validates that a DNI is not already used by another user.
-     * Used during update operations to exclude the current user from the check.
-     *
-     * @param dni the DNI to check
-     * @param userId the user ID to exclude from the check
-     * @throws AppException with 409 CONFLICT if DNI is used by another user
-     */
-    @Override
-    public void validateDniUniqueForUpdate(String dni, UUID userId) {
-        if (userRepository.existsByDniAndIdNot(dni, userId)) {
-            throw new AppException("DNI already in use: " + dni, HttpStatus.CONFLICT);
-        }
-    }
-
-    /**
-     * Validates that a user exists by ID and returns the user entity.
-     * Reusable method used across multiple service operations.
-     *
-     * @param id the user ID to find
-     * @return the User entity if found
-     * @throws AppException with 404 NOT_FOUND if user doesn't exist
-     */
-    @Override
-    public User validateUserExists(UUID id) {
-        return userRepository.findById(id)
-            .orElseThrow(() -> new AppException("User not found with id: " + id, HttpStatus.NOT_FOUND));
-    }
-
     // ============================================
     // ENTITY METHODS
     // ============================================
@@ -120,8 +76,14 @@ public class UserServiceImpl implements UserService {
      * @throws AppException with 404 NOT_FOUND if user doesn't exist
      */
     @Override
-    public User getUserEntityById(UUID id) {
-        return validateUserExists(id);
+    public User findUserByIdWithRoles(UUID id) {
+        return userRepository.findUserByIdWithRoles(id)
+            .orElseThrow(() -> new AppException("User Not Found With ID: " + id, HttpStatus.NOT_FOUND));
+    }
+
+    public User validateUserExists(UUID id) {
+        return userRepository.findById(id)
+            .orElseThrow(() -> new AppException("User Not Found With ID: " + id, HttpStatus.NOT_FOUND));
     }
 
     @Override
@@ -135,95 +97,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findUserByDni(String dni) {
-        return userRepository.findByDni(dni);
+    public Optional<User> findUserByEmailWithRoles(String email) {
+        return userRepository.findByEmailWithRoles(email);
     }
 
     // ============================================
-    // CRUD METHODS
+    //    METHODS    |        UPDATE - DELETE
     // ============================================
-
-    /**
-     * Creates a new user.
-     *
-     * @param dto the user data
-     * @return the created user data
-     * @throws AppException with 409 CONFLICT if email or DNI already exists
-     */
-    @Override
-    @Transactional
-    public UserResponseDTO createUser(UserRequestDTO dto) {
-        // Step 1: Validate email is unique
-        validateEmailUnique(dto.email());
-        
-        // Step 2: Validate DNI is unique
-        validateDniUnique(dto.dni());
-
-        // Step 3: Map DTO to Entity
-        User user = userMapper.toEntity(dto);
-        
-        // Step 4: Encrypt password using BCrypt (never store plain text passwords!)
-        user.setPassword(passwordEncoder.encode(dto.password()));
-        
-        // Step 5: Save to database
-        User savedUser = userRepository.save(user);
-        
-        // Step 6: Return as DTO
-        return userMapper.toResponseDTO(savedUser);
-    }
-
-    /**
-     * Retrieves a user by ID and returns as DTO.
-     *
-     * @param id the user ID
-     * @return the user data
-     * @throws AppException with 404 NOT_FOUND if user doesn't exist
-     */
-    @Override
-    public UserResponseDTO getUserById(UUID id) {
-        User user = validateUserExists(id);
-        return userMapper.toResponseDTO(user);
-    }
-
-    /**
-     * Retrieves a user by email.
-     *
-     * @param email the user email
-     * @return the user data
-     * @throws AppException with 404 NOT_FOUND if user doesn't exist
-     */
-    @Override
-    public UserResponseDTO getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new AppException("User not found with email: " + email, HttpStatus.NOT_FOUND));
-        return userMapper.toResponseDTO(user);
-    }
-
-    /**
-     * Retrieves a user by DNI.
-     *
-     * @param dni the user DNI
-     * @return the user data
-     * @throws AppException with 404 NOT_FOUND if user doesn't exist
-     */
-    @Override
-    public UserResponseDTO getUserByDni(String dni) {
-        User user = userRepository.findByDni(dni)
-            .orElseThrow(() -> new AppException("User not found with DNI: " + dni, HttpStatus.NOT_FOUND));
-        return userMapper.toResponseDTO(user);
-    }
-
-    /**
-     * Retrieves all users.
-     *
-     * @return list of all user data
-     */
-    @Override
-    public List<UserResponseDTO> getAllUsers() {
-        return userRepository.findAll().stream()
-            .map(userMapper::toResponseDTO)
-            .collect(Collectors.toList());
-    }
 
     /**
      * Updates an existing user.
@@ -238,13 +118,17 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponseDTO updateUser(UUID id, UserRequestDTO dto) {
         // Step 1: Validate user exists
-        User user = validateUserExists(id);
+        User user = findUserByIdWithRoles(id);
 
         // Step 2: Validate email is unique (excluding current user)
-        validateEmailUniqueForUpdate(dto.email(), id);
+        if (userRepository.existsByEmailAndIdNot(dto.email(), id)) {
+            throw new AppException("Email already in use: " + dto.email(), HttpStatus.CONFLICT);
+        }
         
         // Step 3: Validate DNI is unique (excluding current user)
-        validateDniUniqueForUpdate(dto.dni(), id);
+        if (userRepository.existsByDniAndIdNot(dto.dni(), id)) {
+            throw new AppException("DNI already in use: " + dto.dni(), HttpStatus.CONFLICT);
+        }
 
         // Step 4: Map DTO to existing entity (updates firstName, lastName, etc.)
         userMapper.updateEntity(dto, user);
@@ -272,12 +156,41 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public boolean deleteUser(UUID id) {
         // Step 1: Validate user exists
-        validateUserExists(id);
+        findUserByIdWithRoles(id);
         
         // Step 2: Delete from database
         userRepository.deleteById(id);
         
         // Step 3: Return success
         return true;
+    }
+
+    // ============================================
+    //    METHODS    |       GET
+    // ============================================
+
+    /**
+     * Retrieves a user by ID and returns as DTO.
+     *
+     * @param id the user ID
+     * @return the user data
+     * @throws AppException with 404 NOT_FOUND if user doesn't exist
+     */
+    @Override
+    public UserResponseDTO getUserById(UUID id) {
+        User user = findUserByIdWithRoles(id);
+        return userMapper.toResponseDTO(user);
+    }
+
+    /**
+     * Retrieves all users.
+     *
+     * @return list of all user data
+     */
+    @Override
+    public List<UserResponseDTO> getAllUsers() {
+        return userRepository.findAllWithRoles().stream()
+            .map(userMapper::toResponseDTO)
+            .collect(Collectors.toList());
     }
 }
