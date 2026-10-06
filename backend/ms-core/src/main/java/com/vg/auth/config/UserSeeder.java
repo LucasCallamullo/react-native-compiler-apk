@@ -129,7 +129,13 @@ public class UserSeeder {
             .role(adminRol)
             .build();
 
-        userRolesRepository.saveAll(List.of(testUserRole, adminUserRole));
+        UserRoles adminUserRole2 = UserRoles.builder()
+            .id(new UserRolesId(adminUser.getId(), userRol.getId()))
+            .user(adminUser)
+            .role(userRol)
+            .build();
+
+        userRolesRepository.saveAll(List.of(testUserRole, adminUserRole, adminUserRole2));
     }
 
     // ------------------------------------------------------------
