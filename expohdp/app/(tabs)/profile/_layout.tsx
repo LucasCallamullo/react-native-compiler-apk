@@ -2,22 +2,20 @@ import { Stack } from 'expo-router';
 import { useAppTheme } from '@shared/context/ThemeProvider';
 
 export default function ProfileLayout() {
-  const { getColor } = useAppTheme();
-  const bgColor = getColor('bg-card');
-  const fgColor = getColor('text-fg');
+  const { getVar } = useAppTheme();
 
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: bgColor,
+          backgroundColor: getVar('--color-surface-1'),
         },
-        headerTintColor: fgColor,
+        headerTintColor: getVar('--color-content'),
         headerTitleStyle: {
           fontWeight: '600',
         },
         contentStyle: {
-          backgroundColor: getColor('bg-bg'),
+          backgroundColor: getVar('--color-surface-0'),
         },
       }}
     >
@@ -28,17 +26,21 @@ export default function ProfileLayout() {
           headerShown: false,
         }}
       />
+
       <Stack.Screen
         name="share"
         options={{
           title: 'Compartir Historial',
+          headerShown: false,
           presentation: 'modal',
         }}
       />
+
       <Stack.Screen
         name="config"
         options={{
           title: 'Configuración',
+          headerShown: false,
         }}
       />
     </Stack>

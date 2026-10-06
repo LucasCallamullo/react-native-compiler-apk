@@ -15,7 +15,8 @@ import { RefreshTokenRequest, RefreshTokenApiResponse } from '@features/auth/typ
  * - Android Emulator: http://10.0.2.2:8080/api
  * - iOS Simulator: http://localhost:8080/api
  */
-export const API_BASE_URL = 'http://192.168.100.124:8080/api';
+// export const API_BASE_URL = 'http://192.168.100.124:8080/api';
+export const API_BASE_URL = 'https://perm-reformist-unmoving.ngrok-free.dev/api';
 
 
 /**

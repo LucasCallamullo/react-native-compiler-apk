@@ -2,22 +2,20 @@ import { Stack } from 'expo-router';
 import { useAppTheme } from '@shared/context/ThemeProvider';
 
 export default function EmergencyLayout() {
-  const { getColor } = useAppTheme();
-  const bgColor = getColor('bg-card');
-  const fgColor = getColor('text-fg');
+  const { getVar } = useAppTheme();
 
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: bgColor,
+          backgroundColor: getVar('--color-surface-0'),
         },
-        headerTintColor: fgColor,
+        headerTintColor: getVar('--color-content'),
         headerTitleStyle: {
           fontWeight: '600',
         },
         contentStyle: {
-          backgroundColor: getColor('bg-bg'),
+          backgroundColor: getVar('--color-surface-0'),
         },
       }}
     >
@@ -27,6 +25,14 @@ export default function EmergencyLayout() {
           title: 'Emergencia',
           headerShown: false,
         }}
+      />
+
+      <Stack.Screen 
+        name="new_contact" 
+        options={{ 
+          title: 'Nuevo Contacto',
+          headerShown: false,
+        }} 
       />
     </Stack>
   );

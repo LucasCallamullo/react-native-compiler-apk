@@ -9,7 +9,6 @@ import {
   PhoneCall,
   UserPlus,
   AlertTriangle,
-  ArrowLeft,
 } from 'lucide-react-native';
 
 // Types
@@ -20,7 +19,6 @@ interface Contact {
   initial: string;
 }
 
-// Mock data - replace with actual contacts from your app
 const CONTACTS: Contact[] = [
   { id: '1', name: 'Juan Pérez', phone: '+54 11 2345-6789', initial: 'J' },
   { id: '2', name: 'María García', phone: '+54 11 3456-7890', initial: 'M' },
@@ -29,26 +27,14 @@ const CONTACTS: Contact[] = [
 
 export default function EmergencyScreen() {
   const router = useRouter();
-  const { getColor } = useAppTheme();
+  const { getVar } = useAppTheme();
 
-  // Dynamic colors from theme
-  const fgColor = getColor('text-fg');
-  const fgMutedColor = getColor('text-fg-muted');
-  const cardBgColor = getColor('bg-card');
-  const borderColor = getColor('border-border');
-  const primaryColor = getColor('text-primary');
-  const primaryFgColor = getColor('text-primary-fg');
-
-  // Status colors
-  const errorColor = getColor('text-error');
-  const errorBgColor = getColor('bg-error');
-  const errorBorderColor = getColor('border-error');
-  const successColor = getColor('text-success');
-  const successBgColor = getColor('bg-success');
-  const successBorderColor = getColor('border-success');
-  const purpleLightColor = getColor('bg-purple-light');
-  const purpleBgColor = getColor('bg-purple-bg');
-  const purpleBorderColor = getColor('border-purple');
+  // Colores para props nativas (íconos)
+  const errorColor = getVar('--color-error');
+  const successColor = getVar('--color-success');
+  const primaryColor = getVar('--color-main-500');
+  const mainFgColor = getVar('--color-surface-0'); // texto sobre fondos main
+  const white = '#ffffff';
 
   const triggerEmergency = () => {
     Alert.alert(
@@ -60,78 +46,51 @@ export default function EmergencyScreen() {
   return (
     <ScreenCustom safeTop>
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
-        {/* Header with back button */}
-        <View className="flex-row items-center gap-3 mb-1">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="w-10 h-10 rounded-full border items-center justify-center active:opacity-70"
-            style={{
-              backgroundColor: cardBgColor,
-              borderColor: borderColor,
-            }}
-          >
-            <ArrowLeft color={fgColor} size={20} />
-          </TouchableOpacity>
-          <View className="flex-row items-center gap-2">
-            <AlertTriangle color={errorColor} size={24} />
-            <Text className="text-xl font-bold" style={{ color: fgColor }}>
-              Emergencias
-            </Text>
-          </View>
+        {/* Header */}
+        <View className="flex-row items-center gap-2 mb-1">
+          <AlertTriangle color={errorColor} size={24} />
+          <Text className="text-xl font-bold text-content">Emergencias</Text>
         </View>
 
-        <Text className="text-sm mb-4" style={{ color: fgMutedColor }}>
+        <Text className="text-sm mb-4 text-content-muted">
           Contactos de emergencia y ubicación en tiempo real
         </Text>
 
         {/* Panic Button */}
         <TouchableOpacity
           onPress={triggerEmergency}
-          className="py-4 rounded-2xl items-center justify-center flex-row gap-2 border mb-5 active:opacity-80"
-          style={{
-            backgroundColor: errorBgColor,
-            borderColor: errorBorderColor,
-          }}
+          className="py-4 rounded-2xl items-center justify-center flex-row gap-2 border mb-5 active:opacity-80 bg-error-bg border-error-border"
         >
-          <Siren color="#ffffff" size={24} />
-          <Text className="text-primary font-bold text-base">
+          <Siren color={errorColor} size={24} />
+          <Text className="text-error-fg font-bold text-base">
             ¡EMERGENCIA! (Llamar a todos)
           </Text>
         </TouchableOpacity>
 
         {/* GPS Card */}
-        <View
-          className="rounded-2xl p-4 flex-row items-center justify-between mb-5 border"
-          style={{
-            backgroundColor: successBgColor,
-            borderColor: successBorderColor,
-          }}
-        >
+        <View className="rounded-2xl p-4 flex-row items-center justify-between mb-5 border bg-success-bg border-success-border">
           <View className="flex-1 pr-2">
             <View className="flex-row items-center gap-1.5 mb-1">
               <MapPin color={successColor} size={16} />
-              <Text className="font-semibold text-sm" style={{ color: successColor }}>
+              <Text className="font-semibold text-sm text-success-fg">
                 Ubicación en tiempo real
               </Text>
             </View>
-            <Text className="text-xs" style={{ color: fgColor }}>
+            <Text className="text-xs text-content">
               -34.6037, -58.3816 · CABA
             </Text>
-            <Text className="text-[10px] mt-1" style={{ color: successColor }}>
+            <Text className="text-[10px] mt-1 text-success-fg">
               Actualizando cada 5 segundos
             </Text>
           </View>
-          <TouchableOpacity
-            className="px-3 py-2 rounded-full flex-row items-center gap-1 active:opacity-80"
-            style={{ backgroundColor: successColor }}
-          >
-            <Share2 color="#ffffff" size={14} />
+          <TouchableOpacity className="px-3 py-2 rounded-full flex-row items-center gap-1 active:opacity-80 bg-success">
+            <Share2 color={white} size={14} />
             <Text className="text-white text-xs font-semibold">Compartir</Text>
           </TouchableOpacity>
         </View>
 
         {/* Emergency Contacts */}
-        <Text className="text-base font-bold mb-3" style={{ color: fgColor }}>
+        <Text className="text-base font-bold mb-3 text-content">
           Contactos de emergencia
         </Text>
 
@@ -139,34 +98,24 @@ export default function EmergencyScreen() {
           {CONTACTS.map((contact) => (
             <View
               key={contact.id}
-              className="flex-row items-center rounded-2xl p-3 border"
-              style={{
-                backgroundColor: cardBgColor,
-                borderColor: borderColor,
-              }}
+              className="flex-row items-center rounded-2xl p-3 border bg-surface-1 border-border"
             >
-              <View
-                className="w-10 h-10 rounded-full items-center justify-center mr-3 border"
-                style={{
-                  backgroundColor: cardBgColor,
-                  borderColor: borderColor,
-                }}
-              >
-                <Text className="font-bold" style={{ color: primaryColor }}>
+              <View className="w-10 h-10 rounded-full items-center justify-center mr-3 border bg-surface-1 border-border">
+                <Text className="font-bold text-main-500">
                   {contact.initial}
                 </Text>
               </View>
               <View className="flex-1">
-                <Text className="font-medium" style={{ color: fgColor }}>
+                <Text className="font-medium text-content">
                   {contact.name}
                 </Text>
-                <Text className="text-xs" style={{ color: fgMutedColor }}>
+                <Text className="text-xs text-content-muted">
                   {contact.phone}
                 </Text>
               </View>
-              <TouchableOpacity className="bg-primary px-3 py-2 rounded-full flex-row items-center gap-1.5 active:opacity-80">
-                <PhoneCall color={primaryFgColor} size={14} />
-                <Text className="text-primary-fg font-semibold text-xs">Llamar</Text>
+              <TouchableOpacity className="bg-main-500 px-3 py-2 rounded-full flex-row items-center gap-1.5 active:opacity-80">
+                <PhoneCall color={mainFgColor} size={14} />
+                <Text className="text-surface-0 font-semibold text-xs">Llamar</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -174,14 +123,11 @@ export default function EmergencyScreen() {
 
         {/* Add Contact Button */}
         <TouchableOpacity
-          className="py-3 rounded-full flex-row items-center justify-center gap-2 mb-6 active:opacity-80 border"
-          style={{
-            backgroundColor: purpleBgColor,
-            borderColor: purpleBorderColor,
-          }}
+          onPress={() => router.push('/emergency/new_contact')}
+          className="py-3 rounded-full flex-row items-center justify-center gap-2 mb-6 active:opacity-80 border bg-main-700 border-main-500"
         >
-          <UserPlus color={purpleLightColor} size={18} />
-          <Text className="font-semibold" style={{ color: purpleLightColor }}>
+          <UserPlus color={primaryColor} size={18} />
+          <Text className="font-semibold text-content">
             Agregar contacto de emergencia
           </Text>
         </TouchableOpacity>

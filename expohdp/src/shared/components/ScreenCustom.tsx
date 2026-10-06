@@ -26,7 +26,7 @@ export function ScreenCustom({
   const insets = useSafeAreaInsets();
 
   const paddingStyle = {
-    paddingTop: safeTop ? insets.top : 0,
+    paddingTop: safeTop ? insets.top + 8 : 0,
     paddingBottom: safeBottom ? insets.bottom : 0,
   };
 

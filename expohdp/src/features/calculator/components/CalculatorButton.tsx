@@ -44,14 +44,17 @@ export default function CalculatorButton({
   const getButtonStyles = (): string => {
     switch (type) {
       case 'equals':
-        return 'bg-primary active:opacity-80';
+        return 'bg-main-700 active:opacity-80';
+
       case 'operator':
-        return 'bg-secondary active:opacity-80';
+        return 'bg-main-500 active:opacity-80';
+
       case 'clear':
-        return 'bg-accent border border-border active:opacity-70';
+        return 'bg-red-500 border border-border active:opacity-70';
+
       case 'number':
       default:
-        return 'bg-popover active:bg-accent';
+        return 'bg-surface-2 active:bg-surface-0';
     }
   };
 
@@ -61,14 +64,14 @@ export default function CalculatorButton({
   const getTextStyles = (): string => {
     switch (type) {
       case 'equals':
-        return 'text-primary-fg font-bold';
+        return 'text-content font-bold';
       case 'operator':
-        return 'text-secondary-fg font-semibold';
+        return 'text-content font-semibold';
       case 'clear':
-        return 'text-fg-muted font-medium';
+        return 'text-content font-medium';
       case 'number':
       default:
-        return 'text-fg font-medium';
+        return 'text-content font-medium';
     }
   };
 
@@ -83,7 +86,7 @@ export default function CalculatorButton({
         onPress={onPress}
         activeOpacity={0.7}
       >
-        <Text className={`text-3xl ${getTextStyles()}`}>{label}</Text>
+        <Text className={`text-4xl ${getTextStyles()}`}>{label}</Text>
       </TouchableOpacity>
     </View>
   );

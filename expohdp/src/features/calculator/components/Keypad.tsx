@@ -63,7 +63,7 @@ const BUTTONS: CalculatorButtonData[] = [
 
 export default function Keypad({ onPress }: KeypadProps) {
   return (
-    <View className="flex-row flex-wrap px-2 pb-6 bg-card border-t border-border">
+    <View className="flex-row flex-wrap px-2 pb-6 bg-surface-1 border-t border-border">
       {BUTTONS.map((button) => (
         <CalculatorButton
           key={button.label}
