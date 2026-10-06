@@ -1,0 +1,114 @@
+### Test Auth Controller
+
+@baseUrl = http://localhost:8080
+@apiTest = {{baseUrl}}/api/v1/test-auth
+@apiAuth = {{baseUrl}}/api/v1/auth
+
+### ============================================
+### 1. Login as USER (test@gmail.com)
+### ============================================
+
+# @name loginUser
+POST {{apiAuth}}/login
+Content-Type: application/json
+
+{
+    "email": "test@gmail.com",
+    "password": "123456"
+}
+
+### 
+@userToken = {{loginUser.response.body.data.accessToken}}
+
+### ============================================
+### 2. Login as ADMIN (admin@gmail.com)
+### ============================================
+
+# @name loginAdmin
+POST {{apiAuth}}/login
+Content-Type: application/json
+
+{
+    "email": "admin@gmail.com",
+    "password": "123456"
+}
+
+### ============================================
+### TESTS WITH USER TOKEN
+### ============================================
+
+### Public - should work (200)
+GET {{apiTest}}/public
+
+### Authenticated - should work (200) with USER token
+GET {{apiTest}}/authenticated
+Authorization: Bearer {{loginUser.response.body.data.accessToken}}
+
+### USER endpoint - should work (200) with USER token
+GET {{apiTest}}/user
+Authorization: Bearer {{loginUser.response.body.data.accessToken}}
+
+### ADMIN endpoint - should FAIL (403) with USER token
+GET {{apiTest}}/admin
+Authorization: Bearer {{loginUser.response.body.data.accessToken}}
+
+### USER-OR-ADMIN - should work (200) with USER token
+GET {{apiTest}}/user-or-admin
+Authorization: Bearer {{loginUser.response.body.data.accessToken}}
+
+### USER-AND-ADMIN - should FAIL (403) with USER token
+GET {{apiTest}}/user-and-admin
+Authorization: Bearer {{loginUser.response.body.data.accessToken}}
+
+### Me - should work (200)
+GET {{apiTest}}/me
+Authorization: Bearer {{loginUser.response.body.data.accessToken}}
+
+### Manual check - should work (200)
+GET {{apiTest}}/manual-check
+Authorization: Bearer {{loginUser.response.body.data.accessToken}}
+
+### ============================================
+### TESTS WITH ADMIN TOKEN
+### ============================================
+
+### Authenticated - should work (200) with ADMIN token
+GET {{apiTest}}/authenticated
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+### USER endpoint - should FAIL (403) with ADMIN token (only has ADMIN role)
+GET {{apiTest}}/user
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+### ADMIN endpoint - should work (200) with ADMIN token
+GET {{apiTest}}/admin
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+### USER-OR-ADMIN - should work (200) with ADMIN token
+GET {{apiTest}}/user-or-admin
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+### ADMIN-BY-AUTHORITY - should work (200) with ADMIN token
+GET {{apiTest}}/admin-by-authority
+Authorization: Bearer {{loginAdmin.response.body.data.accessToken}}
+
+### ============================================
+### TESTS WITHOUT TOKEN
+### ============================================
+
+### Public - should work (200) without token
+GET {{apiTest}}/public
+
+### Authenticated - should FAIL (401) without token
+GET {{apiTest}}/authenticated
+
+### Admin - should FAIL (401) without token
+GET {{apiTest}}/admin
+
+### ============================================
+### TESTS WITH INVALID TOKEN
+### ============================================
+
+### Authenticated - should FAIL (401) with garbage token
+GET {{apiTest}}/authenticated
+Authorization: Bearer not-a-valid-token
