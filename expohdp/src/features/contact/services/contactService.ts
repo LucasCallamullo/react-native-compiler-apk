@@ -1,4 +1,5 @@
-import apiClient, { USE_MOCK } from '@shared/api/client';
+import apiClient from '@shared/api/client';
+import { getUseMock } from '@shared/config/devConfig';
 import {
   Contact,
   ContactApiResponse,
@@ -30,7 +31,7 @@ export const contactService = {
    * Fetches the list of emergency contacts for the current user.
    */
   list: async (): Promise<Contact[]> => {
-    if (USE_MOCK) return MOCK_CONTACTS;
+    if (getUseMock()) return MOCK_CONTACTS;
 
     const response = await apiClient.get<ContactListApiResponse>('/v1/contacts');
     return response.data.data.map(withInitial);
@@ -40,7 +41,7 @@ export const contactService = {
    * Fetches a single contact by ID.
    */
   getById: async (id: string): Promise<Contact> => {
-    if (USE_MOCK) {
+    if (getUseMock()) {
       const found = MOCK_CONTACTS.find((c) => c.id === id);
       if (!found) throw new Error('Contact not found');
       return found;
@@ -54,7 +55,7 @@ export const contactService = {
    * Creates a new emergency contact.
    */
   create: async (payload: CreateContactRequest): Promise<Contact> => {
-    if (USE_MOCK) {
+    if (getUseMock()) {
       const newContact = withInitial({
         id: String(Date.now()),
         name: payload.name,
@@ -73,7 +74,7 @@ export const contactService = {
    * Updates an existing contact.
    */
   update: async (id: string, payload: UpdateContactRequest): Promise<Contact> => {
-    if (USE_MOCK) {
+    if (getUseMock()) {
       const idx = MOCK_CONTACTS.findIndex((c) => c.id === id);
       if (idx === -1) throw new Error('Contact not found');
       MOCK_CONTACTS[idx] = { ...MOCK_CONTACTS[idx], ...payload };
@@ -91,7 +92,7 @@ export const contactService = {
    * Deletes a contact.
    */
   remove: async (id: string): Promise<void> => {
-    if (USE_MOCK) {
+    if (getUseMock()) {
       const idx = MOCK_CONTACTS.findIndex((c) => c.id === id);
       if (idx !== -1) MOCK_CONTACTS.splice(idx, 1);
       return;

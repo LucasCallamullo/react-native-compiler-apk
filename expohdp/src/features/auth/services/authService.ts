@@ -1,7 +1,8 @@
 // ============================================
 // AUTH SERVICE
 // ============================================
-import apiClient, { USE_MOCK } from '@shared/api/client';
+import apiClient from '@shared/api/client';
+import { getUseMock } from '@shared/config/devConfig';
 
 import { ApiResponse } from '@shared/types/commonTypes';
 import {
@@ -58,7 +59,7 @@ export const authService = {
    * @returns Resolves to `LoginResponse` payload containing `accessToken`, `refreshToken`, and user attributes.
    */
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    if (USE_MOCK) return MOCK_AUTH_RESPONSE;
+    if (getUseMock()) return MOCK_AUTH_RESPONSE;
 
     const request: LoginRequest = { email, password };
     const response = await apiClient.post<LoginApiResponse>('/v1/auth/login', request);
@@ -86,7 +87,7 @@ export const authService = {
     dni: string;
     phone: string;
   }): Promise<LoginResponse> => {
-    if (USE_MOCK) return MOCK_AUTH_RESPONSE;
+    if (getUseMock()) return MOCK_AUTH_RESPONSE;
 
     const response = await apiClient.post<LoginApiResponse>('/v1/auth/register', userData);
     // Unwraps the `ApiResponse` payload (`response.data.data`).
@@ -99,7 +100,7 @@ export const authService = {
    * @returns Resolves to the server confirmation message or status payload.
    */
   logout: async (): Promise<{ message: string }> => {
-    if (USE_MOCK) return { message: 'Logout successful' };
+    if (getUseMock()) return { message: 'Logout successful' };
 
     const response = await apiClient.post<ApiResponse<{ message: string }>>('/v1/auth/logout');
     return response.data.data;
@@ -113,7 +114,7 @@ export const authService = {
    * @returns Resolves to `RefreshTokenResponse` containing the newly issued `accessToken`.
    */
   refreshToken: async (refreshToken: string): Promise<RefreshTokenResponse> => {
-    if (USE_MOCK) {
+    if (getUseMock()) {
       return {
         accessToken: MOCK_AUTH_RESPONSE.accessToken,
         refreshToken: MOCK_AUTH_RESPONSE.refreshToken,
@@ -139,7 +140,7 @@ export const authService = {
    * @returns Resolves to user details extracted from the validated token.
    */
   validateToken: async (): Promise<UserInfo> => {
-    if (USE_MOCK) return MOCK_USER;
+    if (getUseMock()) return MOCK_USER;
 
     const response = await apiClient.get<UserInfoApiResponse>('/v1/auth/validate');
     return response.data.data;
