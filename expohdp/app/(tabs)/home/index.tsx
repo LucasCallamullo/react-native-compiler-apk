@@ -5,6 +5,14 @@ import { useAppTheme } from '@shared/context/ThemeProvider';
 import { ScreenCustom } from '@shared/components/ScreenCustom';
 import { useAuth } from '@features/auth/context/AuthContext';
 
+
+import { useState } from 'react';
+import { DevSettings } from 'react-native';
+import { getUseMock, getBackend, toggleUseMock, toggleBackend } from '@shared/config/devConfig';
+import { useQueryClient } from '@tanstack/react-query';
+
+
+
 export default function HomeScreen() {
   const router = useRouter();
   const { theme, setTheme, getVar } = useAppTheme();
@@ -19,6 +27,29 @@ export default function HomeScreen() {
   const successColor = getVar('--color-success');
   const warningColor = getVar('--color-warning');
 
+
+  // ! THIS IS ONLY FOR TESTING STATES
+  const queryClient = useQueryClient();
+  const [useMock, setUseMockState] = useState(getUseMock());
+  const [backend, setBackendState] = useState(getBackend());
+
+  const handleToggleMock = async () => {
+    const next = await toggleUseMock();
+    setUseMockState(next);
+    queryClient.clear(); // refetchea todo con la nueva fuente
+    // Opcional: recargar la app si algún módulo cacheó el valor
+    // DevSettings.reload();
+  };
+
+  const handleToggleBackend = async () => {
+    const next = await toggleBackend();
+    setBackendState(next);
+    queryClient.clear();
+  };
+
+
+
+  // + THIS IS FOR PROTECTED SETTINGS
   const handleProtectedAction = (screenPath: string) => {
     if (!isAuthenticated) {
       router.replace('/login');
@@ -221,6 +252,34 @@ export default function HomeScreen() {
             </Text>
           </View>
         </View>
+
+
+
+
+
+
+        <TouchableOpacity
+          onPress={handleToggleMock}
+          className="w-full border py-3 rounded-2xl flex-row items-center justify-center gap-2 mb-4 bg-surface-1 border-border"
+        >
+          <Text className="font-medium text-sm text-error-fg">
+            Backend: {useMock ? 'MOCK' : 'API'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleToggleBackend}
+          disabled={useMock}
+          className={`w-full border py-3 rounded-2xl flex-row items-center justify-center gap-2 mb-8 bg-surface-1 border-border ${
+            useMock ? 'opacity-40' : ''
+          }`}
+        >
+          <Text className="font-medium text-sm text-error-fg">
+            Server: {backend.toUpperCase()}
+          </Text>
+        </TouchableOpacity>
+
+
       </ScrollView>
     </ScreenCustom>
   );

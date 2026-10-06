@@ -3,6 +3,8 @@ import * as SecureStore from 'expo-secure-store';
 
 import { RefreshTokenRequest, RefreshTokenApiResponse } from '@features/auth/types/authTypes';
 
+import { getApiBaseUrl, getUseMock } from '@shared/config/devConfig';
+
 
 // ============================================
 // TYPES
@@ -16,11 +18,8 @@ import { RefreshTokenRequest, RefreshTokenApiResponse } from '@features/auth/typ
  * - iOS Simulator: http://localhost:8080/api
  */
 // export const API_BASE_URL = 'http://192.168.100.124:8080/api';
-export const API_BASE_URL = 'https://perm-reformist-unmoving.ngrok-free.dev/api';
-
-
-//! CONFIGURATION MOCK USE DATA  (set = true in development)
-export const USE_MOCK = false;
+// export const API_BASE_URL = 'https://perm-reformist-unmoving.ngrok-free.dev/api';  // 'LUCAS'
+// export const API_BASE_URL = 'https://myself-lazy-simply.ngrok-free.dev/';    // 'TOMY'
 
 /**
  * Extended request config with retry flag
@@ -37,7 +36,7 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
  * Custom Axios instance pre-configured for global API communication.
  */
 const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -113,7 +112,7 @@ apiClient.interceptors.response.use(
 
         // Direct axios instance to avoid recursive interceptor calls
         const response = await axios.post<RefreshTokenApiResponse>(
-          `${API_BASE_URL}/v1/auth/refresh`,
+          `${getApiBaseUrl()}/v1/auth/refresh`,
           { refreshToken } as RefreshTokenRequest
         );
 

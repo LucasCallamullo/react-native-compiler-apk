@@ -4,6 +4,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useAppTheme } from '@shared/context/ThemeProvider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+// app/_layout.tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+
+import { initDevConfig } from '@shared/config/devConfig';
+
 import '../global.css';
 import { useColorScheme } from 'react-native';
 import { AuthProvider } from '@features/auth/context/AuthContext';
@@ -14,6 +20,15 @@ function RootLayoutContent() {
   const { theme, getVar } = useAppTheme();
   const systemTheme = useColorScheme();
   
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    initDevConfig().finally(() => setReady(true));
+  }, []);
+
+  if (!ready) return null;
+  
+
   const isDarkTheme =
     theme === 'theme-dark' ||
     theme === 'theme-pink' ||
@@ -74,9 +89,6 @@ function RootLayoutContent() {
     </>
   );
 }
-
-// app/_layout.tsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
   defaultOptions: {

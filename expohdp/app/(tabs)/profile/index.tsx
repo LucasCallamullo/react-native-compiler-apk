@@ -35,7 +35,6 @@ export default function ProfileScreen() {
 
   // Colores para props nativas (íconos)
   const primaryColor = getVar('--color-main-500');
-  const mainFgColor = getVar('--color-main-700');
   const mutedColor = getVar('--color-content-muted');
   const infoColor = getVar('--color-info');
   const successColor = getVar('--color-success');
@@ -180,7 +179,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
         {/* Gender Violence Section */}
-        <View className="rounded-2xl p-4 border-l-4 border-error border-y border-r mb-4 bg-surface-1 border-border">
+        <View className="rounded-2xl p-4 border-l-4 border-error border-y border-r mb-4 bg-surface-1">
           <View className="flex-row items-start gap-3">
             <View className="p-2 rounded-full border bg-error-bg border-error-border">
               <AlertTriangle color={errorColor} size={20} />
