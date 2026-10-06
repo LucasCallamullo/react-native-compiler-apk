@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -86,6 +87,30 @@ public class JwtService {
         } catch (IllegalArgumentException e) {
             throw new AppException("Invalid user id in token", HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    /**
+     * Extracts the email from the JWT token.
+     *
+     * @param token the JWT token
+     * @return the email stored in the "email" claim
+     */
+    public String extractEmail(String token) {
+        return extractClaim(token, claims -> claims.get("email", String.class));
+    }
+
+    /**
+     * Extracts the roles from the JWT token.
+     *
+     * @param token the JWT token
+     * @return the list of role names stored in the "roles" claim, or empty list if absent
+     */
+    public List<String> extractRoles(String token) {
+        Object roles = extractClaim(token, claims -> claims.get("roles"));
+        if (roles instanceof List<?> list) {
+            return list.stream().map(Object::toString).toList();
+        }
+        return List.of();
     }
 
     /**
