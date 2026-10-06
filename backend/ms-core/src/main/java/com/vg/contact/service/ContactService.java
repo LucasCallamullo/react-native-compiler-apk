@@ -8,7 +8,10 @@ import java.util.UUID;
 
 public interface ContactService {
 
-    ContactResponseDTO createContact(ContactRequestDTO dto);
+    List<ContactResponseDTO> getAll();
+    List<ContactResponseDTO> getByUserId(UUID userId);
+
+    ContactResponseDTO createContact(ContactRequestDTO dto, UUID userId);
 
     /**
      * Retrieves a contact by its internal id AND the owner user id.

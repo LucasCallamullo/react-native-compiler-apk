@@ -2,8 +2,6 @@ package com.vg.contact.dto.request;
 
 import jakarta.validation.constraints.*;
 
-import java.util.UUID;
-
 public record ContactRequestDTO(
 
     @NotBlank(message = "Name is required")
@@ -17,9 +15,5 @@ public record ContactRequestDTO(
 
     @NotBlank(message = "Phone is required")
     @Pattern(regexp = "^[0-9]{7,15}$", message = "Phone must contain only numbers and be between 7 and 15 digits")
-    String phone,
-
-    @NotNull(message = "User ID is required")
-    UUID userId
-
+    String phone
 ) {}

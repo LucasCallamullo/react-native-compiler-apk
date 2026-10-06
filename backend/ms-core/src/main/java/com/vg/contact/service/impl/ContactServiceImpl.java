@@ -9,6 +9,7 @@ import com.vg.contact.model.Contact;
 import com.vg.contact.repository.ContactRepository;
 import com.vg.contact.service.ContactService;
 import com.vg.shared.exception.AppException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,12 +36,28 @@ public class ContactServiceImpl implements ContactService {
     private final ContactMapper contactMapper;
     private final UserService userService;
 
+
+    @Transactional(readOnly = true)
+    public List<ContactResponseDTO> getAll() {
+        return contactRepository.findAll().stream()
+            .map(contactMapper::toResponseDTO)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ContactResponseDTO> getByUserId(UUID userId) {
+        return contactRepository.findByUserId(userId).stream()
+            .map(contactMapper::toResponseDTO)
+            .toList();
+    }
+
+
     @Override
     @Transactional
-    public ContactResponseDTO createContact(ContactRequestDTO dto) {
-        User user = userService.validateUserExists(dto.userId());
+    public ContactResponseDTO createContact(ContactRequestDTO dto, UUID userId) {
+        User user = userService.validateUserExists(userId);
 
-        if (contactRepository.existsByEmailAndUserId(dto.email(), dto.userId())) {
+        if (contactRepository.existsByEmailAndUserId(dto.email(), userId)) {
             throw new AppException(
                 "Contact already exists with email: " + dto.email() + " for this user",
                 HttpStatus.CONFLICT
@@ -74,8 +91,8 @@ public class ContactServiceImpl implements ContactService {
         Contact contact = findContactByIdAndUserIdOrThrow(id, userId);
 
         // Si cambia el dueño del contacto, validar y actualizar
-        if (!contact.getUser().getId().equals(dto.userId())) {
-            User newUser = userService.validateUserExists(dto.userId());
+        if (!contact.getUser().getId().equals(userId)) {
+            User newUser = userService.validateUserExists(userId);
             contact.setUser(newUser);
         }
 
