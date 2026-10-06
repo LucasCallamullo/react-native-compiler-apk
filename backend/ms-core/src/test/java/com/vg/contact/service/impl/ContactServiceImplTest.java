@@ -28,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -87,38 +86,37 @@ class ContactServiceImplTest {
         contactId = 1L;
 
         user = User.builder()
-                .id(userId)
-                .firstName("Test")
-                .lastName("User")
-                .email("test@example.com")
-                .password("encodedPassword")
-                .dni("12345678")
-                .phone("1123456789")
-                .build();
+            .id(userId)
+            .firstName("Test")
+            .lastName("User")
+            .email("test@example.com")
+            .password("encodedPassword")
+            .dni("12345678")
+            .phone("1123456789")
+            .build();
 
         contact = Contact.builder()
-                .id(contactId)
-                .name("María López")
-                .email("maria@example.com")
-                .phone("1123456789")
-                .user(user)
-                .createdAt(LocalDateTime.now())
-                .build();
+            .id(contactId)
+            .name("María López")
+            .email("maria@example.com")
+            .phone("1123456789")
+            .user(user)
+            .createdAt(LocalDateTime.now())
+            .build();
 
         requestDTO = new ContactRequestDTO(
-                "María López",
-                "maria@example.com",
-                "1123456789",
-                userId
+            "María López",
+            "maria@example.com",
+            "1123456789"
         );
 
         responseDTO = new ContactResponseDTO(
-                contactId,
-                "María López",
-                "maria@example.com",
-                "1123456789",
-                userId,
-                LocalDateTime.now()
+            contactId,
+            "María López",
+            "maria@example.com",
+            "1123456789",
+            userId,
+            LocalDateTime.now()
         );
     }
 
@@ -142,7 +140,7 @@ class ContactServiceImplTest {
             when(contactMapper.toResponseDTO(contact)).thenReturn(responseDTO);
 
             // Act
-            ContactResponseDTO result = contactService.createContact(requestDTO);
+            ContactResponseDTO result = contactService.createContact(requestDTO, user.getId());
 
             // Assert
             assertThat(result).isNotNull();
@@ -174,7 +172,7 @@ class ContactServiceImplTest {
             ArgumentCaptor<Contact> contactCaptor = ArgumentCaptor.forClass(Contact.class);
 
             // Act
-            contactService.createContact(requestDTO);
+            contactService.createContact(requestDTO, user.getId());
 
             // Assert
             verify(contactRepository).save(contactCaptor.capture());
@@ -190,7 +188,7 @@ class ContactServiceImplTest {
                     .thenThrow(new AppException("User not found", HttpStatus.NOT_FOUND));
 
             // Act & Assert
-            assertThatThrownBy(() -> contactService.createContact(requestDTO))
+            assertThatThrownBy(() -> contactService.createContact(requestDTO, user.getId()))
                     .isInstanceOf(AppException.class)
                     .hasMessage("User not found")
                     .extracting("status")
@@ -208,7 +206,7 @@ class ContactServiceImplTest {
                     .thenReturn(true);
 
             // Act & Assert
-            assertThatThrownBy(() -> contactService.createContact(requestDTO))
+            assertThatThrownBy(() -> contactService.createContact(requestDTO, user.getId()))
                     .isInstanceOf(AppException.class)
                     .hasMessageContaining("Contact already exists with email")
                     .extracting("status")
@@ -360,8 +358,11 @@ class ContactServiceImplTest {
             // Arrange
             when(contactRepository.findByIdAndUserId(contactId, userId))
                     .thenReturn(Optional.of(contact));
+
             doNothing().when(contactMapper).updateEntity(requestDTO, contact);
+
             when(contactRepository.save(contact)).thenReturn(contact);
+
             when(contactMapper.toResponseDTO(contact)).thenReturn(responseDTO);
 
             // Act
@@ -376,6 +377,7 @@ class ContactServiceImplTest {
             verify(contactRepository).save(contact);
         }
 
+        /* 
         @Test
         @DisplayName("Should validate and set new user when userId changes")
         void shouldValidateNewUserWhenUserIdChanges() {
@@ -385,13 +387,14 @@ class ContactServiceImplTest {
             ContactRequestDTO updateDTO = new ContactRequestDTO(
                     "María López",
                     "maria@example.com",
-                    "1123456789",
-                    newUserId
+                    "1123456789"
             );
 
             when(contactRepository.findByIdAndUserId(contactId, userId))
                     .thenReturn(Optional.of(contact));
+
             when(userService.validateUserExists(newUserId)).thenReturn(newUser);
+
             doNothing().when(contactMapper).updateEntity(updateDTO, contact);
             when(contactRepository.save(contact)).thenReturn(contact);
             when(contactMapper.toResponseDTO(contact)).thenReturn(responseDTO);
@@ -402,7 +405,7 @@ class ContactServiceImplTest {
             // Assert
             assertThat(contact.getUser()).isEqualTo(newUser);
             verify(userService).validateUserExists(newUserId);
-        }
+        } */
 
         @Test
         @DisplayName("Should throw AppException 404 when contact is not found")

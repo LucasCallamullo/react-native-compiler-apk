@@ -3,9 +3,15 @@ package com.vg.contact.controller;
 import com.vg.contact.dto.request.ContactRequestDTO;
 import com.vg.contact.dto.response.ContactResponseDTO;
 import com.vg.contact.service.ContactService;
+import com.vg.shared.security.Roles;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+
+import com.vg.auth.security.UserPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,13 +33,32 @@ public class ContactController {
 
     private final ContactService contactService;
 
+    // GET ALL CONTACTS BY ROLES
+    @GetMapping()
+    public List<ContactResponseDTO> getAllByUserOrRol(
+        @AuthenticationPrincipal UserPrincipal principal){
+
+        UUID userId = principal.getUserId();
+        List<String> roles = principal.getRoles();
+
+        if (Roles.isAdmin(roles)) {
+            return contactService.getAll();
+        }
+
+        return contactService.getByUserId(userId);
+    }
+
     /**
      * Creates a new contact for a specific user.
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ContactResponseDTO createContact(@Valid @RequestBody ContactRequestDTO dto) {
-        return contactService.createContact(dto);
+    public ContactResponseDTO createContact(
+        @AuthenticationPrincipal UserPrincipal principal,
+        @Valid @RequestBody ContactRequestDTO dto) {
+
+        UUID userId = principal.getUserId();
+        return contactService.createContact(dto, userId);
     }
 
     /**

@@ -1,0 +1,52 @@
+@baseUrl = http://localhost:8080
+@apiAuth = {{baseUrl}}/api/v1/auth
+
+### ! AJUSTA SEGUN CORRESPONDA 
+@yourEndpoint = {{baseUrl}}/api/v1
+
+
+# =====================================================================
+# ?       ESTRUCTURA BASE PARA TESTEAR TUS ENDPOINTS CON TOKENSS
+# =====================================================================
+
+### 1. Login as USER (test@gmail.com)
+# @name loginUser
+POST {{apiAuth}}/login
+Content-Type: application/json
+
+{
+    "email": "test@gmail.com",
+    "password": "123456"
+}
+
+### set token user
+@userToken = {{loginUser.response.body.data.accessToken}}
+
+### 1b. Login as ADMIN (admin@gmail.com)
+
+# @name loginAdmin
+POST {{apiAuth}}/login
+Content-Type: application/json
+
+{
+    "email": "admin@gmail.com",
+    "password": "123456"
+}
+
+### set token admin
+@adminToken = {{loginAdmin.response.body.data.accessToken}}
+
+
+# =====================================================================
+#    ? TUS ENDPOINTS -
+# =====================================================================
+
+### pruebas por distintos roles o solo uno como quieras
+GET {{yourEndpoint}}/tuEndpoint
+Authorization: Bearer {{userToken}}
+
+
+### 
+GET {{yourEndpoint}}/tuEndpoint2
+Authorization: Bearer {{adminToken}}
+
