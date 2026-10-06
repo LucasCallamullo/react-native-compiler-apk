@@ -43,6 +43,7 @@ const themeVariables: Record<ThemeType, Record<string, string>> = {
     '--color-info-bg': '#172554',
     '--color-info-fg': '#93c5fd',
     '--color-info-border': '#1e3a8a',
+    '--color-white': '#ffffff',
   },
 
   'theme-light': {
@@ -72,6 +73,7 @@ const themeVariables: Record<ThemeType, Record<string, string>> = {
     '--color-info-bg': '#dbeafe',
     '--color-info-fg': '#1e3a8a',
     '--color-info-border': '#93c5fd',
+    '--color-white': '#ffffff',
   },
 
   'theme-pink': {
@@ -101,6 +103,7 @@ const themeVariables: Record<ThemeType, Record<string, string>> = {
     '--color-info-bg': '#172554',
     '--color-info-fg': '#93c5fd',
     '--color-info-border': '#1e3a8a',
+    '--color-white': '#ffffff',
   },
 
   'theme-blue': {
@@ -130,6 +133,7 @@ const themeVariables: Record<ThemeType, Record<string, string>> = {
     '--color-info-bg': '#172554',
     '--color-info-fg': '#93c5fd',
     '--color-info-border': '#1e3a8a',
+    '--color-white': '#ffffff',
   },
 };
 
@@ -159,7 +163,8 @@ export type ThemeVarName =
   | '--color-info'
   | '--color-info-bg'
   | '--color-info-fg'
-  | '--color-info-border';
+  | '--color-info-border'
+  | '--color-white';
   
 // ============================================
 // CONTEXT

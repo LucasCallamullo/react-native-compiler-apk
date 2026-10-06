@@ -66,9 +66,10 @@ export function DraggableLockButton({
       <AnimatedPressable
         onPress={onPress}
         style={[animatedStyle, { position: 'absolute', top: 0, left: 0 }]}
-        className="w-16 h-16 bg-card border border-border rounded-full items-center justify-center shadow-lg active:bg-popover z-50"
+        className="w-17 h-17 bg-surface-2 border border-border 
+          rounded-full items-center justify-center shadow-lg active:bg-popover z-50"
       >
-        <Calculator color={iconColor} size={28} />
+        <Calculator color={iconColor} size={29} />
       </AnimatedPressable>
     </GestureDetector>
   );

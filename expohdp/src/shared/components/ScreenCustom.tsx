@@ -26,13 +26,13 @@ export function ScreenCustom({
   const insets = useSafeAreaInsets();
 
   const paddingStyle = {
-    paddingTop: safeTop ? insets.top + 8 : 0,
-    paddingBottom: safeBottom ? insets.bottom : 0,
+    paddingTop: safeTop ? insets.top + 16 : 0,
+    paddingBottom: safeBottom ? insets.bottom + 8 : 0,
   };
 
   return (
     <View 
-      className={`flex-1 bg-bg ${className}`}
+      className={`flex-1 px-4 ${className}`}
       style={paddingStyle}
       {...props}
     >
