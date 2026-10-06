@@ -11,15 +11,13 @@ import { AuthProvider } from '@features/auth/context/AuthContext';
 export { useAppTheme } from '@shared/context/ThemeProvider';
 
 function RootLayoutContent() {
-  const { theme, getColor } = useAppTheme();
+  const { theme, getVar } = useAppTheme();
   const systemTheme = useColorScheme();
   
-  const isDarkTheme = theme === 'theme-dark' || theme === 'theme-violet' || 
-                      (theme === 'theme-light' ? false : systemTheme === 'dark');
-
-  // Resolve dynamic colors for stack screens
-  const bgColor = getColor('bg-bg');
-  const fgColor = getColor('text-fg');
+  const isDarkTheme =
+    theme === 'theme-dark' ||
+    theme === 'theme-pink' ||
+    theme === 'theme-blue';
 
   return (
     <>
@@ -32,15 +30,14 @@ function RootLayoutContent() {
         initialRouteName="calculator"
         screenOptions={{
           headerStyle: {
-            backgroundColor: bgColor,
+            backgroundColor: getVar('--color-surface-0'),
           },
-          headerTintColor: fgColor,
+          headerTintColor: getVar('--color-content'),
           headerTitleStyle: {
             fontWeight: '600',
           },
-          // Ensures stack screens respect the theme background
           contentStyle: {
-            backgroundColor: bgColor,
+            backgroundColor: getVar('--color-surface-0'),
           },
         }}
       >

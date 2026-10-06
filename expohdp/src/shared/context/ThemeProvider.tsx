@@ -4,240 +4,170 @@ import { ReactNode, useState, createContext, useContext } from 'react';
 // ============================================
 // TYPES
 // ============================================
-type ThemeType = 'theme-dark' | 'theme-light' | 'theme-violet';
+type ThemeType = 'theme-dark' | 'theme-light' | 'theme-pink' | 'theme-blue';
 
 interface ThemeProviderProps {
   children: ReactNode;
 }
 
 // ============================================
-// THEME VARIABLES MAPPING
+// THEME VARIABLES
+// Claves = nombres de variables CSS (con --)
+// Valores = lo que NativeWind inyecta en runtime
 // ============================================
-const themeVariables = {
+const themeVariables: Record<ThemeType, Record<string, string>> = {
   'theme-dark': {
-    // Backgrounds & Layering
-    '--color-bg': '#09090b',
-    '--color-card': '#18181b',
-    '--color-popover': '#27272a',
-
-    // Typography & Legibility
-    '--color-fg': '#f4f4f5',
-    '--color-fg-muted': '#a1a1aa',
-
-    // Brand & Accent Colors
-    '--color-primary': '#a855f7',
-    '--color-primary-fg': '#ffffff',
-    '--color-secondary': '#8b5cf6',
-    '--color-secondary-fg': '#ffffff',
-    '--color-accent': '#27272a',
-
-    // Borders & Form Inputs
+    '--color-surface-0': '#09090b',
+    '--color-surface-1': '#18181b',
+    '--color-surface-2': '#27272a',
+    '--color-surface-3': '#3f3f46',
+    '--color-content': '#f4f4f5',
+    '--color-content-muted': '#a1a1aa',
+    '--color-main-300': '#c084fc',
+    '--color-main-500': '#a855f7',
+    '--color-main-700': '#7e22ce',
     '--color-border': '#27272a',
-    '--color-input': '#27272a',
-
-    // Status & Semantic Colors
     '--color-success': '#4ade80',
     '--color-success-bg': '#052e16',
-    '--color-success-border': '#166534',
     '--color-success-fg': '#86efac',
-
+    '--color-success-border': '#166534',
     '--color-error': '#f87171',
     '--color-error-bg': '#450a0a',
-    '--color-error-border': '#991b1b',
     '--color-error-fg': '#fca5a5',
-
+    '--color-error-border': '#991b1b',
     '--color-warning': '#fbbf24',
     '--color-warning-bg': '#451a03',
-    '--color-warning-border': '#92400e',
     '--color-warning-fg': '#fcd34d',
-
+    '--color-warning-border': '#92400e',
     '--color-info': '#60a5fa',
     '--color-info-bg': '#172554',
-    '--color-info-border': '#1e3a8a',
     '--color-info-fg': '#93c5fd',
-
-    '--color-purple-light': '#c084fc',
-    '--color-purple-bg': '#2e1065',
-    '--color-purple-border': '#581c87',
-
-    // Zinc Colors
-    '--color-zinc-800': '#27272a',
-    '--color-zinc-900': '#18181b',
-    '--color-zinc-950': '#09090b',
+    '--color-info-border': '#1e3a8a',
   },
 
   'theme-light': {
-    // Backgrounds & Layering
-    '--color-bg': '#ffffff',
-    '--color-card': '#f4f4f5',
-    '--color-popover': '#ffffff',
-
-    // Typography & Legibility
-    '--color-fg': '#18181b',
-    '--color-fg-muted': '#71717a',
-
-    // Brand & Accent Colors
-    '--color-primary': '#7c3aed',
-    '--color-primary-fg': '#ffffff',
-    '--color-secondary': '#6d28d9',
-    '--color-secondary-fg': '#ffffff',
-    '--color-accent': '#e4e4e7',
-
-    // Borders & Form Inputs
+    '--color-surface-0': '#ffffff',
+    '--color-surface-1': '#f4f4f5',
+    '--color-surface-2': '#e4e4e7',
+    '--color-surface-3': '#d4d4d8',
+    '--color-content': '#18181b',
+    '--color-content-muted': '#71717a',
+    '--color-main-300': '#a78bfa',
+    '--color-main-500': '#7c3aed',
+    '--color-main-700': '#5b21b6',
     '--color-border': '#e4e4e7',
-    '--color-input': '#e4e4e7',
-
-    // Status & Semantic Colors
     '--color-success': '#16a34a',
     '--color-success-bg': '#dcfce7',
-    '--color-success-border': '#86efac',
     '--color-success-fg': '#14532d',
-
+    '--color-success-border': '#86efac',
     '--color-error': '#dc2626',
     '--color-error-bg': '#fee2e2',
-    '--color-error-border': '#fca5a5',
     '--color-error-fg': '#7f1d1d',
-
+    '--color-error-border': '#fca5a5',
     '--color-warning': '#d97706',
     '--color-warning-bg': '#fef3c7',
-    '--color-warning-border': '#fcd34d',
     '--color-warning-fg': '#78350f',
-
+    '--color-warning-border': '#fcd34d',
     '--color-info': '#2563eb',
     '--color-info-bg': '#dbeafe',
-    '--color-info-border': '#93c5fd',
     '--color-info-fg': '#1e3a8a',
-
-    '--color-purple-light': '#7c3aed',
-    '--color-purple-bg': '#f5f3ff',
-    '--color-purple-border': '#c4b5fd',
-
-    // Zinc Colors
-    '--color-zinc-800': '#d4d4d8',
-    '--color-zinc-900': '#e4e4e7',
-    '--color-zinc-950': '#f4f4f5',
+    '--color-info-border': '#93c5fd',
   },
 
-  'theme-violet': {
-    // Backgrounds & Layering
-    '--color-bg': '#1e0b36',
-    '--color-card': '#2e1065',
-    '--color-popover': '#581c87',
-
-    // Typography & Legibility
-    '--color-fg': '#faf5ff',
-    '--color-fg-muted': '#d8b4fe',
-
-    // Brand & Accent Colors
-    '--color-primary': '#ec4899',
-    '--color-primary-fg': '#ffffff',
-    '--color-secondary': '#d946ef',
-    '--color-secondary-fg': '#ffffff',
-    '--color-accent': '#4c1d95',
-
-    // Borders & Form Inputs
+  'theme-pink': {
+    '--color-surface-0': '#1e0b36',
+    '--color-surface-1': '#2e1065',
+    '--color-surface-2': '#581c87',
+    '--color-surface-3': '#6b21a8',
+    '--color-content': '#faf5ff',
+    '--color-content-muted': '#d8b4fe',
+    '--color-main-300': '#f9a8d4',
+    '--color-main-500': '#ec4899',
+    '--color-main-700': '#be185d',
     '--color-border': '#581c87',
-    '--color-input': '#581c87',
-
-    // Status & Semantic Colors
     '--color-success': '#4ade80',
     '--color-success-bg': '#052e16',
-    '--color-success-border': '#166534',
     '--color-success-fg': '#86efac',
-
+    '--color-success-border': '#166534',
     '--color-error': '#f87171',
     '--color-error-bg': '#450a0a',
-    '--color-error-border': '#991b1b',
     '--color-error-fg': '#fca5a5',
-
+    '--color-error-border': '#991b1b',
     '--color-warning': '#fbbf24',
     '--color-warning-bg': '#451a03',
-    '--color-warning-border': '#92400e',
     '--color-warning-fg': '#fcd34d',
-
+    '--color-warning-border': '#92400e',
     '--color-info': '#60a5fa',
     '--color-info-bg': '#172554',
-    '--color-info-border': '#1e3a8a',
     '--color-info-fg': '#93c5fd',
+    '--color-info-border': '#1e3a8a',
+  },
 
-    '--color-purple-light': '#d8b4fe',
-    '--color-purple-bg': '#3b0764',
-    '--color-purple-border': '#7e22ce',
-
-    // Zinc Colors
-    '--color-zinc-800': '#3b0764',
-    '--color-zinc-900': '#4c1d95',
-    '--color-zinc-950': '#1e0b36',
+  'theme-blue': {
+    '--color-surface-0': '#0a1128',
+    '--color-surface-1': '#0f1e3d',
+    '--color-surface-2': '#1e3a5f',
+    '--color-surface-3': '#2d4a7c',
+    '--color-content': '#eff6ff',
+    '--color-content-muted': '#93c5fd',
+    '--color-main-300': '#7dd3fc',
+    '--color-main-500': '#3b82f6',
+    '--color-main-700': '#1d4ed8',
+    '--color-border': '#1e3a5f',
+    '--color-success': '#4ade80',
+    '--color-success-bg': '#052e16',
+    '--color-success-fg': '#86efac',
+    '--color-success-border': '#166534',
+    '--color-error': '#f87171',
+    '--color-error-bg': '#450a0a',
+    '--color-error-fg': '#fca5a5',
+    '--color-error-border': '#991b1b',
+    '--color-warning': '#fbbf24',
+    '--color-warning-bg': '#451a03',
+    '--color-warning-fg': '#fcd34d',
+    '--color-warning-border': '#92400e',
+    '--color-info': '#60a5fa',
+    '--color-info-bg': '#172554',
+    '--color-info-fg': '#93c5fd',
+    '--color-info-border': '#1e3a8a',
   },
 };
 
-// ============================================
-// MAP: Clase Tailwind → Variable CSS
-// ============================================
-const classToVarMap = {
-  // Text colors
-  'text-fg': '--color-fg',
-  'text-fg-muted': '--color-fg-muted',
-  'text-primary': '--color-primary',
-  'text-primary-fg': '--color-primary-fg',
-  'text-secondary': '--color-secondary',
-  'text-secondary-fg': '--color-secondary-fg',
-  'text-success': '--color-success',
-  'text-success-fg': '--color-success-fg',
-  'text-error': '--color-error',
-  'text-error-fg': '--color-error-fg',
-  'text-warning': '--color-warning',
-  'text-warning-fg': '--color-warning-fg',
-  'text-info': '--color-info',
-  'text-info-fg': '--color-info-fg',
-
-  // Background colors
-  'bg-bg': '--color-bg',
-  'bg-card': '--color-card',
-  'bg-popover': '--color-popover',
-  'bg-primary': '--color-primary',
-  'bg-primary-fg': '--color-primary-fg',
-  'bg-secondary': '--color-secondary',
-  'bg-secondary-fg': '--color-secondary-fg',
-  'bg-accent': '--color-accent',
-  'bg-input': '--color-input',
-  'bg-success': '--color-success-bg',
-  'bg-success-fg': '--color-success-fg',
-  'bg-error': '--color-error-bg',
-  'bg-error-fg': '--color-error-fg',
-  'bg-warning': '--color-warning-bg',
-  'bg-warning-fg': '--color-warning-fg',
-  'bg-info': '--color-info-bg',
-  'bg-info-fg': '--color-info-fg',
-  'bg-purple-light': '--color-purple-light',
-  'bg-purple-bg': '--color-purple-bg',
-  'bg-purple-border': '--color-purple-border',
-
-  // Border colors
-  'border-border': '--color-border',
-  'border-primary': '--color-primary',
-  'border-secondary': '--color-secondary',
-  'border-success': '--color-success-border',
-  'border-error': '--color-error-border',
-  'border-warning': '--color-warning-border',
-  'border-info': '--color-info-border',
-  'border-purple': '--color-purple-border',
-
-  // Zinc colors
-  'bg-zinc-800': '--color-zinc-800',
-  'bg-zinc-900': '--color-zinc-900',
-  'bg-zinc-950': '--color-zinc-950',
-};
-
-type TailwindClass = keyof typeof classToVarMap;
-
+export type ThemeVarName =
+  | '--color-surface-0'
+  | '--color-surface-1'
+  | '--color-surface-2'
+  | '--color-surface-3'
+  | '--color-content'
+  | '--color-content-muted'
+  | '--color-main-300'
+  | '--color-main-500'
+  | '--color-main-700'
+  | '--color-border'
+  | '--color-success'
+  | '--color-success-bg'
+  | '--color-success-fg'
+  | '--color-success-border'
+  | '--color-error'
+  | '--color-error-bg'
+  | '--color-error-fg'
+  | '--color-error-border'
+  | '--color-warning'
+  | '--color-warning-bg'
+  | '--color-warning-fg'
+  | '--color-warning-border'
+  | '--color-info'
+  | '--color-info-bg'
+  | '--color-info-fg'
+  | '--color-info-border';
+  
 // ============================================
 // CONTEXT
 // ============================================
 const ThemeContext = createContext<{
   theme: ThemeType;
   setTheme: (theme: ThemeType) => void;
-  getColor: (className: TailwindClass) => string;
+  getVar: (name: ThemeVarName) => string;
 } | null>(null);
 
 // ============================================
@@ -257,16 +187,13 @@ export function useAppTheme() {
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<ThemeType>('theme-dark');
 
-  const getColor = (className: TailwindClass): string => {
-    const varName = classToVarMap[className];
-    return themeVariables[theme][varName as keyof typeof themeVariables['theme-dark']];
-  };
+  const getVar = (name: ThemeVarName) => themeVariables[theme][name];
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, getColor }}>
+    <ThemeContext.Provider value={{ theme, setTheme, getVar }}>
       <VariableContextProvider value={themeVariables[theme]}>
         {children}
       </VariableContextProvider>
     </ThemeContext.Provider>
   );
-} 
+}

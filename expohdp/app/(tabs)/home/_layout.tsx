@@ -1,23 +1,21 @@
 import { Stack } from 'expo-router';
 import { useAppTheme } from '@shared/context/ThemeProvider';
 
-export default function EmergencyLayout() {
-  const { getColor } = useAppTheme();
-  const bgColor = getColor('bg-card');
-  const fgColor = getColor('text-fg');
+export default function HomeLayout() {
+  const { getVar } = useAppTheme();
 
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: bgColor,
+          backgroundColor: getVar('--color-surface-1'),
         },
-        headerTintColor: fgColor,
+        headerTintColor: getVar('--color-content'),
         headerTitleStyle: {
           fontWeight: '600',
         },
         contentStyle: {
-          backgroundColor: getColor('bg-bg'),
+          backgroundColor: getVar('--color-surface-0'),
         },
       }}
     >

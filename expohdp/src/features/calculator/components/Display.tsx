@@ -18,9 +18,9 @@ export interface DisplayProps {
 
 export default function Display({ value }: DisplayProps) {
   return (
-    <View className="flex-1 justify-end items-end px-6 pb-4 bg-card">
+    <View className="flex-1 justify-end items-end px-6 pb-4 bg-surface-0">
       <Text 
-        className="text-fg text-7xl font-light" 
+        className="text-main-300 text-7xl" 
         numberOfLines={1} 
         adjustsFontSizeToFit
       >

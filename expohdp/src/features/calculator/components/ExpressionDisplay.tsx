@@ -19,9 +19,9 @@ export interface ExpressionDisplayProps {
 
 export default function ExpressionDisplay({ expression }: ExpressionDisplayProps) {
   return (
-    <View className="h-12 justify-end items-end px-6 bg-card">
+    <View className="h-25 justify-center items-end px-6 bg-surface-2">
       <Text 
-        className="text-fg-muted text-2xl font-normal" 
+        className="text-content-muted text-4xl font-normal" 
         numberOfLines={1}
         adjustsFontSizeToFit
       >

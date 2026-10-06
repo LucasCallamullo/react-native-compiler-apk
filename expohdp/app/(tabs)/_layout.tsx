@@ -1,95 +1,87 @@
-import { View, TouchableOpacity } from 'react-native';
-import { Redirect, Tabs, useRouter, useSegments } from 'expo-router';
-import { Home, Folder, PlusCircle, User, Rabbit, Calculator, Siren } from 'lucide-react-native';
+import { View } from 'react-native';
+import { Redirect, Tabs, useRouter, usePathname } from 'expo-router';
+import { Home, Folder, PlusCircle, Rabbit, Siren } from 'lucide-react-native';
 import { useAppTheme } from '@shared/context/ThemeProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DraggableLockButton } from '@shared/components/DraggableLockButton';
 
 import { useAuth } from '@features/auth/context/AuthContext';
 import { ActivityIndicator, Text } from 'react-native';
-import { useEffect } from 'react';
+
+const PROTECTED_ROUTES = ['audit', 'records', 'emergency', 'profile'] as const;
 
 export default function TabsLayout() {
   const router = useRouter();
-  const segments = useSegments();
-  const { getColor } = useAppTheme();
+  const pathname = usePathname();
+  const { getVar } = useAppTheme();
   const insets = useSafeAreaInsets();
   const { user, isLoading } = useAuth();
 
-  // Dynamic colors from theme
-  const cardColor = getColor('bg-card');
-  const fgColor = getColor('text-fg');
-  const borderColor = getColor('border-border');
-  const activeColor = getColor('text-primary');
-  const inactiveColor = getColor('text-fg-muted');
+  // Colores resueltos para props nativas (tab bar, header, íconos)
+  const surfaceColor = getVar('--color-surface-1');   // fondo de la tab bar
+  const contentColor = getVar('--color-content');     // texto activo
+  const mutedColor = getVar('--color-content-muted'); // texto inactivo
+  const borderColor = getVar('--color-border');
+  const activeColor = getVar('--color-main-500');     // tab activa
 
   // ============================================
-  // PROTECTED ROUTES: List of tabs that require authentication
+  // LAYER 2: Declarative guard
   // ============================================
-  const PROTECTED_ROUTES = ['audit', 'records', 'emergency', 'profile'];
+  const currentTab = pathname.split('/').filter(Boolean).pop() ?? '';
+  const isProtectedRoute = (PROTECTED_ROUTES as readonly string[]).includes(currentTab);
 
-  // Get current tab from segments
-  const currentTab = segments[segments.length - 1];
-
-  // Check if current tab requires authentication
-  const isProtectedRoute = PROTECTED_ROUTES.includes(currentTab);
-
-  // ============================================
-  // PROTECTION LOGIC: Redirect if needed
-  // ============================================
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-bg">
+      <View className="flex-1 items-center justify-center bg-surface-0">
         <ActivityIndicator size="large" color={activeColor} />
-        <Text className="text-fg mt-4">Cargando...</Text>
+        <Text className="text-content mt-4">Cargando...</Text>
       </View>
     );
   }
 
-  // If current tab is protected and user is not authenticated, redirect to login
-  if (isProtectedRoute && !user) {
+  if (!user && isProtectedRoute) {
     return <Redirect href="/login" />;
   }
 
-  /**
-   * Locks the app by replacing the current view with the calculator facade
-   */
+  // ============================================
+  // LAYER 1: Imperative tabPress interceptor
+  // ============================================
+  const requireAuth = () => ({
+    tabPress: (e: any) => {
+      if (!user) {
+        e.preventDefault();
+        router.replace('/login');
+      }
+    },
+  });
+
   const handleLockApp = (): void => {
     router.replace('/calculator');
   };
 
-  // Dynamic positioning for the floating button above the TabBar
   const tabBarHeight = 64 + insets.bottom;
   const floatingButtonBottom = tabBarHeight + 16;
 
   return (
-    <View className="flex-1 bg-bg">
+    <View className="flex-1 bg-surface-0">
       <Tabs
         screenOptions={{
           headerShown: false,
-          headerStyle: {
-            backgroundColor: cardColor,
-          },
-          headerTintColor: fgColor,
-          headerTitleStyle: {
-            fontWeight: '600',
-          },
+          headerStyle: { backgroundColor: surfaceColor },
+          headerTintColor: contentColor,
+          headerTitleStyle: { fontWeight: '600' },
           tabBarStyle: {
-            backgroundColor: cardColor,
+            backgroundColor: surfaceColor,
             borderTopColor: borderColor,
             height: tabBarHeight,
             paddingBottom: insets.bottom > 0 ? insets.bottom : 16,
             paddingTop: 8,
           },
           tabBarActiveTintColor: activeColor,
-          tabBarInactiveTintColor: inactiveColor,
-          tabBarLabelStyle: {
-            fontSize: 11,
-            fontWeight: '500',
-          },
+          tabBarInactiveTintColor: mutedColor,
+          tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
         }}
       >
-        {/* ✅ PUBLIC TAB - Always accessible */}
         <Tabs.Screen
           name="home"
           options={{
@@ -98,21 +90,22 @@ export default function TabsLayout() {
           }}
         />
 
-        {/* 🔒 PROTECTED TABS - Require authentication */}
         <Tabs.Screen
           name="audit"
           options={{
             title: 'Historial',
             tabBarIcon: ({ color, size }) => <Folder size={size} color={color} />,
           }}
+          listeners={requireAuth()}
         />
 
         <Tabs.Screen
           name="records"
           options={{
-            title: 'Record',
+            title: 'Registros',
             tabBarIcon: ({ color, size }) => <PlusCircle size={size} color={color} />,
           }}
+          listeners={requireAuth()}
         />
 
         <Tabs.Screen
@@ -121,6 +114,7 @@ export default function TabsLayout() {
             title: 'Emergencia',
             tabBarIcon: ({ color, size }) => <Siren size={size} color={color} />,
           }}
+          listeners={requireAuth()}
         />
 
         <Tabs.Screen
@@ -129,10 +123,10 @@ export default function TabsLayout() {
             title: 'Perfil',
             tabBarIcon: ({ color, size }) => <Rabbit size={size} color={color} />,
           }}
+          listeners={requireAuth()}
         />
       </Tabs>
 
-      {/* Floating Lock Button */}
       <DraggableLockButton
         onPress={handleLockApp}
         iconColor={activeColor}

@@ -70,7 +70,7 @@ export default function CalculatorScreen() {
 
   return (
     <View 
-      className="flex-1 justify-end bg-bg"
+      className="flex-1 justify-end bg-surface-0"
       style={{ 
         paddingTop: insets.top + 16, 
         paddingBottom: insets.bottom > 0 ? insets.bottom + 32 : 48,

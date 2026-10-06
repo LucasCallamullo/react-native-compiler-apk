@@ -6,9 +6,9 @@ import { ArrowLeft } from 'lucide-react-native';
 
 export default function ConfigScreen() {
   const router = useRouter();
-  const { getColor } = useAppTheme();
+  const { getVar } = useAppTheme();
 
-  const fgColor = getColor('text-fg');
+  const contentColor = getVar('--color-content');
 
   return (
     <ScreenCustom safeTop>
@@ -16,16 +16,16 @@ export default function ConfigScreen() {
         {/* Header with back button */}
         <View className="flex-row items-center gap-4 py-2 mb-4">
           <TouchableOpacity onPress={() => router.back()}>
-            <ArrowLeft color={fgColor} size={24} />
+            <ArrowLeft color={contentColor} size={24} />
           </TouchableOpacity>
-          <Text className="text-2xl font-bold" style={{ color: fgColor }}>
+          <Text className="text-2xl font-bold text-content">
             Configuración
           </Text>
         </View>
 
         {/* Content placeholder */}
         <View className="flex-1 items-center justify-center">
-          <Text className="text-fg-muted">Configuración - Próximamente</Text>
+          <Text className="text-content-muted">Configuración - Próximamente</Text>
         </View>
       </View>
     </ScreenCustom>

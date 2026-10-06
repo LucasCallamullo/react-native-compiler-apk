@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ScreenCustom } from '@shared/components/ScreenCustom';
-import { useAppTheme } from '@shared/context/ThemeProvider';
+import { useAppTheme, type ThemeVarName } from '@shared/context/ThemeProvider';
 import {
   Lock,
   Camera,
@@ -75,108 +75,79 @@ const AUDIT_EVENTS: AuditEvent[] = [
   },
 ];
 
-// Badge color mapping
-const badgeColorMap: Record<string, string> = {
-  OK: 'bg-success border-success text-success',
-  URGENTE: 'bg-error border-error text-error',
-  AUDIO: 'bg-warning border-warning text-warning',
-  '⏳ EN PROCESO': 'bg-warning border-warning text-warning',
+// Mapeo por nombre de ícono → variable CSS
+const iconVarMap: Record<string, ThemeVarName> = {
+  Lock: '--color-info',
+  Camera: '--color-main-500',
+  Share2: '--color-success',
+  Siren: '--color-error',
+  Mic: '--color-warning',
+  MapPin: '--color-warning',
 };
 
-// Icon color mapping
-const iconColorMap: Record<string, string> = {
-  Lock: 'text-info',
-  Camera: 'text-primary',
-  Share2: 'text-success',
-  Siren: 'text-error',
-  Mic: 'text-warning',
-  MapPin: 'text-warning',
+// Mapeo por badge → clases Tailwind
+const badgeClassMap: Record<string, string> = {
+  OK: 'bg-success-bg border-success-border text-success-fg',
+  URGENTE: 'bg-error-bg border-error-border text-error-fg',
+  AUDIO: 'bg-warning-bg border-warning-border text-warning-fg',
+  '⏳ EN PROCESO': 'bg-warning-bg border-warning-border text-warning-fg',
 };
 
 export default function AuditScreen() {
   const router = useRouter();
-  const { getColor } = useAppTheme();
+  const { getVar } = useAppTheme();
 
-  // Dynamic colors from theme
-  const fgColor = getColor('text-fg');
-  const fgMutedColor = getColor('text-fg-muted');
-  const cardBgColor = getColor('bg-card');
-  const borderColor = getColor('border-border');
-  const primaryColor = getColor('text-primary');
-  const primaryFgColor = getColor('text-primary-fg');
-
-  // Get icon color based on icon name
-  const getIconColor = (iconName: string): string => {
-    const colorKey = iconColorMap[iconName] || 'text-primary';
-    return getColor(colorKey as any);
-  };
-
-  // Get badge classes based on badge text
-  const getBadgeClasses = (badgeText: string): string => {
-    return badgeColorMap[badgeText] || 'bg-primary border-primary text-primary-fg';
-  };
+  // Colores para props nativas (íconos)
+  const contentColor = getVar('--color-content');
+  const primaryColor = getVar('--color-main-500');
 
   return (
     <ScreenCustom safeTop>
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
         <View className="flex-row items-center gap-2 mb-1">
           <ShieldCheck color={primaryColor} size={24} />
-          <Text className="text-xl font-bold" style={{ color: fgColor }}>
+          <Text className="text-xl font-bold text-content">
             Auditoría de Eventos
           </Text>
         </View>
-        <Text className="text-sm mb-4" style={{ color: fgMutedColor }}>
+        <Text className="text-sm mb-4 text-content-muted">
           Registro de todas las acciones realizadas en la app
         </Text>
 
         {/* Events List */}
-        <View
-          className="rounded-2xl border mb-5 overflow-hidden"
-          style={{
-            backgroundColor: cardBgColor,
-            borderColor: borderColor,
-          }}
-        >
+        <View className="rounded-2xl border mb-5 overflow-hidden bg-surface-1 border-border">
           {AUDIT_EVENTS.map((event, index) => {
             const IconComponent = event.icon;
-            const iconColor = getIconColor(event.icon.name);
-            const badgeClasses = getBadgeClasses(event.badgeText);
+            const iconVar = iconVarMap[event.icon.name] ?? '--color-main-500';
+            const iconColor = getVar(iconVar);
+            const badgeClasses =
+              badgeClassMap[event.badgeText] ??
+              'bg-main-500 border-main-500 text-surface-0';
 
             return (
               <View
                 key={event.id}
-                className={`flex-row gap-3 p-4 items-start ${
+                className={`flex-row gap-3 p-4 items-start bg-surface-1 ${
                   index !== AUDIT_EVENTS.length - 1 ? 'border-b border-border' : ''
                 }`}
-                style={{
-                  backgroundColor: cardBgColor,
-                }}
               >
-                <View
-                  className="p-2 rounded-xl border mt-0.5"
-                  style={{
-                    backgroundColor: cardBgColor,
-                    borderColor: borderColor,
-                  }}
-                >
+                <View className="p-2 rounded-xl border mt-0.5 bg-surface-1 border-border">
                   <IconComponent color={iconColor} size={20} />
                 </View>
 
                 <View className="flex-1">
-                  <Text className="text-sm font-medium" style={{ color: fgColor }}>
+                  <Text className="text-sm font-medium text-content">
                     {event.title}
                   </Text>
-                  <Text className="text-xs my-0.5" style={{ color: fgMutedColor }}>
+                  <Text className="text-xs my-0.5 text-content-muted">
                     {event.details}
                   </Text>
-                  <Text className="text-[11px]" style={{ color: fgMutedColor }}>
+                  <Text className="text-[11px] text-content-muted">
                     {event.timestamp}
                   </Text>
                 </View>
 
-                <View
-                  className={`px-2.5 py-1 rounded-full border ${badgeClasses}`}
-                >
+                <View className={`px-2.5 py-1 rounded-full border ${badgeClasses}`}>
                   <Text className="text-[10px] font-semibold">{event.badgeText}</Text>
                 </View>
               </View>
@@ -188,24 +159,15 @@ export default function AuditScreen() {
         <View className="flex-row gap-3 mb-6">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="flex-1 py-3 rounded-full flex-row items-center justify-center gap-2 border active:opacity-70"
-            style={{
-              backgroundColor: cardBgColor,
-              borderColor: borderColor,
-            }}
+            className="flex-1 py-3 rounded-full flex-row items-center justify-center gap-2 border active:opacity-70 bg-surface-1 border-border"
           >
-            <ArrowLeft color={fgColor} size={18} />
-            <Text className="font-semibold" style={{ color: fgColor }}>
-              Volver
-            </Text>
+            <ArrowLeft color={contentColor} size={18} />
+            <Text className="font-semibold text-content">Volver</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            className="flex-2 py-3 rounded-full flex-row items-center justify-center gap-2 active:opacity-80"
-            style={{ backgroundColor: primaryColor }}
-          >
-            <Download color={primaryFgColor} size={18} />
-            <Text className="text-primary-fg font-semibold">Exportar auditoría</Text>
+          <TouchableOpacity className="flex-2 py-3 rounded-full flex-row items-center justify-center gap-2 active:opacity-80 bg-main-500">
+            <Download color={contentColor} size={18} />
+            <Text className="text-surface-0 font-semibold">Exportar auditoría</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
