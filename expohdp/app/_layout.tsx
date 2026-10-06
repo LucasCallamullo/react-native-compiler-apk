@@ -75,15 +75,34 @@ function RootLayoutContent() {
   );
 }
 
+// app/_layout.tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60,      // 1 min: data se considera fresca
+      retry: 1,                  // 1 reintento en caso de error
+      refetchOnWindowFocus: false, // no refetch al volver del background
+    },
+  },
+});
+
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}> 
-        <ThemeProvider>
-          <AuthProvider> 
-            <RootLayoutContent />
-          </AuthProvider>
-        </ThemeProvider>
+
+        <QueryClientProvider client={queryClient}>
+
+          <ThemeProvider>
+            <AuthProvider> 
+              <RootLayoutContent />
+            </AuthProvider>
+          </ThemeProvider>
+
+        </QueryClientProvider>
+
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

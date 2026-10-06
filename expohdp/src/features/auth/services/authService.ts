@@ -1,9 +1,7 @@
 // ============================================
 // AUTH SERVICE
 // ============================================
-
-import apiClient, { API_BASE_URL } from '@shared/api/client';
-import axios from 'axios';
+import apiClient, { USE_MOCK } from '@shared/api/client';
 
 import { ApiResponse } from '@shared/types/commonTypes';
 import {
@@ -17,11 +15,6 @@ import {
   UserInfoApiResponse,
 } from '../types/authTypes';
 
-// ============================================
-// CONFIGURATION
-// ============================================
-
-const USE_MOCK = true;
 
 // ============================================
 // MOCK DATA
@@ -132,8 +125,8 @@ export const authService = {
     }
 
     const request: RefreshTokenRequest = { refreshToken };
-    const response = await axios.post<RefreshTokenApiResponse>(
-      `${API_BASE_URL}/v1/auth/refresh`,
+    const response = await apiClient.post<RefreshTokenApiResponse>(
+      '/v1/auth/refresh',
       request
     );
     // Unwraps the newly issued token payload from `ApiResponse`.

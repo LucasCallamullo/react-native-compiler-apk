@@ -19,6 +19,9 @@ import { RefreshTokenRequest, RefreshTokenApiResponse } from '@features/auth/typ
 export const API_BASE_URL = 'https://perm-reformist-unmoving.ngrok-free.dev/api';
 
 
+//! CONFIGURATION MOCK USE DATA  (set = true in development)
+export const USE_MOCK = false;
+
 /**
  * Extended request config with retry flag
  */
