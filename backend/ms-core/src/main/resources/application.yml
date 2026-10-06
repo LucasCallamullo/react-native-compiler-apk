@@ -66,17 +66,11 @@ spring:
     deserialization:
       fail-on-unknown-properties: false  # Ignora campos desconocidos del front
 
-  
-
-  
   servlet:
       multipart:
         max-file-size: 1024MB
         max-request-size: 2048MB 
 
-  h2:
-    console:
-      enabled: true 
 # ============================================
 # LOGGING CONFIGURATION
 # ============================================
