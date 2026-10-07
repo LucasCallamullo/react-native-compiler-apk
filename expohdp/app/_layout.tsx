@@ -16,6 +16,10 @@ import { AuthProvider } from '@features/auth/context/AuthContext';
 
 export { useAppTheme } from '@shared/context/ThemeProvider';
 
+
+
+
+
 function RootLayoutContent() {
   const { theme, getVar } = useAppTheme();
   const systemTheme = useColorScheme();
@@ -24,9 +28,11 @@ function RootLayoutContent() {
 
   useEffect(() => {
     initDevConfig().finally(() => setReady(true));
-  }, []);
+  }, []); 
 
-  if (!ready) return null;
+  // Note: dejar comentado porque por algun motivo rompe el flujo de screens sino al cambiar
+  //? otros datos en otra screen. #yoMeEntiendo
+  // if (!ready) return null;
   
 
   const isDarkTheme =

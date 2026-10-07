@@ -5,6 +5,8 @@ import { ScreenCustom } from '@shared/components/ScreenCustom';
 import { useAppTheme } from '@shared/context/ThemeProvider';
 import { useAuth } from '@features/auth/context/AuthContext';
 import { ArrowLeft, Lock, Mail } from 'lucide-react-native';
+import { QuickLoginButtons, TestUser } from '@features/auth/components/QuickLogin';
+import { DEV_MODE } from '@shared/config/devConfig';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -33,6 +35,12 @@ export default function LoginScreen() {
     return <Redirect href="/(tabs)/home" />;
   }
 
+  // ! this is only for development 
+  const handleQuickLogin = (user: TestUser) => {
+    setEmail(user.email);
+    setPassword(user.password);
+  };
+
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Por favor ingresa tu correo y contraseña');
@@ -52,7 +60,7 @@ export default function LoginScreen() {
   return (
     <ScreenCustom safeTop>
       <ScrollView
-        className="flex-1 px-6 pt-4"
+        className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
@@ -68,18 +76,18 @@ export default function LoginScreen() {
         <Text className="text-3xl font-bold text-content">
           Iniciar Sesión
         </Text>
-        <Text className="text-sm mt-1 mb-8 text-content-muted">
+        <Text className="text-base mt-2 mb-8 text-content-muted">
           Accede a tu historial y sincronización
         </Text>
 
         {/* Form */}
-        <View className="gap-4">
+        <View className="gap-6">
           {/* Email Field */}
           <View>
-            <Text className="text-xs font-semibold mb-2 text-content-muted">
+            <Text className="text-sm font-semibold mb-2 text-content-muted">
               CORREO ELECTRÓNICO
             </Text>
-            <View className="flex-row items-center border rounded-xl px-3 py-3 bg-surface-0 border-border">
+            <View className="flex-row text-sm items-center border rounded-xl px-3 py-3 bg-surface-0 border-border">
               <Mail color={contentMutedColor} size={18} />
               <TextInput
                 value={email}
@@ -95,10 +103,10 @@ export default function LoginScreen() {
 
           {/* Password Field */}
           <View>
-            <Text className="text-xs font-semibold mb-2 text-content-muted">
+            <Text className="text-sm font-semibold mb-2 text-content-muted">
               CONTRASEÑA
             </Text>
-            <View className="flex-row items-center border rounded-xl px-3 py-3 bg-surface-1 border-border">
+            <View className="flex-row text-sm items-center border rounded-xl px-3 py-3 bg-surface-1 border-border">
               <Lock color={contentMutedColor} size={18} />
               <TextInput
                 value={password}
@@ -120,22 +128,28 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator color={primaryFgColor} />
             ) : (
-              <Text className="text-surface-0 font-bold text-base">Ingresar</Text>
+              <Text className="text-white font-bold text-lg">Ingresar</Text>
             )}
           </TouchableOpacity>
         </View>
 
         {/* Register Link */}
         <View className="flex-row justify-center mt-8">
-          <Text className="text-sm text-content-muted">
+          <Text className="text-base text-content-muted">
             ¿No tienes una cuenta?{' '}
           </Text>
           <TouchableOpacity onPress={() => router.push('/register')}>
-            <Text className="font-bold text-sm text-main-500">
+            <Text className="font-bold text-base text-main-500">
               Regístrate
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* DEV TOOLS TO QUICK LOGIN */}
+        {DEV_MODE && (
+          <QuickLoginButtons onSelect={handleQuickLogin} />
+        )}
+
       </ScrollView>
     </ScreenCustom>
   );

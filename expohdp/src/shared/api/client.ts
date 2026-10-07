@@ -3,7 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 
 import { RefreshTokenRequest, RefreshTokenApiResponse } from '@features/auth/types/authTypes';
 
-import { getApiBaseUrl, getUseMock } from '@shared/config/devConfig';
+import { getApiBaseUrl } from '@shared/config/devConfig';
 
 
 // ============================================
@@ -19,7 +19,7 @@ import { getApiBaseUrl, getUseMock } from '@shared/config/devConfig';
  */
 // export const API_BASE_URL = 'http://192.168.100.124:8080/api';
 // export const API_BASE_URL = 'https://perm-reformist-unmoving.ngrok-free.dev/api';  // 'LUCAS'
-// export const API_BASE_URL = 'https://myself-lazy-simply.ngrok-free.dev/';    // 'TOMY'
+// export const API_BASE_URL = 'https://myself-lazy-simply.ngrok-free.dev/api';    // 'TOMY'
 
 /**
  * Extended request config with retry flag
@@ -36,7 +36,7 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
  * Custom Axios instance pre-configured for global API communication.
  */
 const apiClient: AxiosInstance = axios.create({
-  baseURL: getApiBaseUrl(),
+  // baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -53,7 +53,12 @@ const apiClient: AxiosInstance = axios.create({
  * into the Authorization header (`Bearer <token>`) for all outgoing requests.
  */
 apiClient.interceptors.request.use(
+
   async (config: ExtendedAxiosRequestConfig): Promise<ExtendedAxiosRequestConfig> => {
+
+    //! THIS IS ONLY FOR TESTING
+    config.baseURL = getApiBaseUrl();
+
     try {
       const accessToken = await SecureStore.getItemAsync('access_token');
       if (accessToken) {

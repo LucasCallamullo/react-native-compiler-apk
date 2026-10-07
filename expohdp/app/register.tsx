@@ -65,7 +65,7 @@ export default function RegisterScreen() {
   return (
     <ScreenCustom safeTop>
       <ScrollView
-        className="flex-1 px-6 pt-4"
+        className="flex-1"
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
@@ -81,19 +81,19 @@ export default function RegisterScreen() {
         <Text className="text-3xl font-bold text-content">
           Crear Cuenta
         </Text>
-        <Text className="text-sm mt-1 mb-6 text-content-muted">
+        <Text className="text-base mt-2 mb-7 text-content-muted">
           Regístrate para respaldar tu información
         </Text>
 
-        <View className="gap-4">
+        <View className="gap-5">
           {/* First Name & Last Name */}
           <View className="flex-row gap-3">
             <View className="flex-1">
-              <Text className="text-xs font-semibold mb-2 text-content-muted">
+              <Text className="text-sm font-semibold mb-2 text-content-muted">
                 NOMBRE
               </Text>
               <View className="flex-row items-center border rounded-xl px-3 py-3 bg-surface-1 border-border">
-                <User color={contentMutedColor} size={18} />
+                <User color={contentMutedColor} size={20} />
                 <TextInput
                   value={form.firstName}
                   onChangeText={(val) => handleChange('firstName', val)}
@@ -104,11 +104,11 @@ export default function RegisterScreen() {
               </View>
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-semibold mb-2 text-content-muted">
+              <Text className="text-sm font-semibold mb-2 text-content-muted">
                 APELLIDO
               </Text>
               <View className="flex-row items-center border rounded-xl px-3 py-3 bg-surface-1 border-border">
-                <User color={contentMutedColor} size={18} />
+                <User color={contentMutedColor} size={20} />
                 <TextInput
                   value={form.lastName}
                   onChangeText={(val) => handleChange('lastName', val)}
@@ -122,11 +122,11 @@ export default function RegisterScreen() {
 
           {/* Email */}
           <View>
-            <Text className="text-xs font-semibold mb-2 text-content-muted">
+            <Text className="text-sm font-semibold mb-2 text-content-muted">
               CORREO ELECTRÓNICO
             </Text>
             <View className="flex-row items-center border rounded-xl px-3 py-3 bg-surface-1 border-border">
-              <Mail color={contentMutedColor} size={18} />
+              <Mail color={contentMutedColor} size={20} />
               <TextInput
                 value={form.email}
                 onChangeText={(val) => handleChange('email', val)}
@@ -141,11 +141,11 @@ export default function RegisterScreen() {
 
           {/* Password */}
           <View>
-            <Text className="text-xs font-semibold mb-2 text-content-muted">
+            <Text className="text-sm font-semibold mb-2 text-content-muted">
               CONTRASEÑA
             </Text>
             <View className="flex-row items-center border rounded-xl px-3 py-3 bg-surface-1 border-border">
-              <Lock color={contentMutedColor} size={18} />
+              <Lock color={contentMutedColor} size={20} />
               <TextInput
                 value={form.password}
                 onChangeText={(val) => handleChange('password', val)}
@@ -160,11 +160,11 @@ export default function RegisterScreen() {
           {/* DNI & Phone */}
           <View className="flex-row gap-3">
             <View className="flex-1">
-              <Text className="text-xs font-semibold mb-2 text-content-muted">
+              <Text className="text-sm font-semibold mb-2 text-content-muted">
                 DNI
               </Text>
               <View className="flex-row items-center border rounded-xl px-3 py-3 bg-surface-1 border-border">
-                <CreditCard color={contentMutedColor} size={18} />
+                <CreditCard color={contentMutedColor} size={20} />
                 <TextInput
                   value={form.dni}
                   onChangeText={(val) => handleChange('dni', val)}
@@ -176,11 +176,11 @@ export default function RegisterScreen() {
               </View>
             </View>
             <View className="flex-1">
-              <Text className="text-xs font-semibold mb-2 text-content-muted">
+              <Text className="text-sm font-semibold mb-2 text-content-muted">
                 TELÉFONO
               </Text>
               <View className="flex-row items-center border rounded-xl px-3 py-3 bg-surface-1 border-border">
-                <Phone color={contentMutedColor} size={18} />
+                <Phone color={contentMutedColor} size={20} />
                 <TextInput
                   value={form.phone}
                   onChangeText={(val) => handleChange('phone', val)}
@@ -202,17 +202,17 @@ export default function RegisterScreen() {
             {loading ? (
               <ActivityIndicator color={mainFgColor} />
             ) : (
-              <Text className="text-surface-0 font-bold text-base">Registrarse</Text>
+              <Text className="text-white font-bold text-lg">Registrarse</Text>
             )}
           </TouchableOpacity>
 
           {/* Login Link */}
-          <View className="flex-row justify-center mt-4">
-            <Text className="text-sm text-content-muted">
+          <View className="flex-row justify-center mt-5">
+            <Text className="text-base text-content-muted">
               ¿Ya tienes cuenta?{' '}
             </Text>
             <TouchableOpacity onPress={() => router.push('/login')}>
-              <Text className="font-bold text-sm text-main-500">
+              <Text className="font-bold text-base text-main-500">
                 Inicia sesión
               </Text>
             </TouchableOpacity>

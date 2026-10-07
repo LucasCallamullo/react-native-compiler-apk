@@ -45,6 +45,7 @@ export default function HomeScreen() {
     const next = await toggleBackend();
     setBackendState(next);
     queryClient.clear();
+    queryClient.invalidateQueries();
   };
 
 

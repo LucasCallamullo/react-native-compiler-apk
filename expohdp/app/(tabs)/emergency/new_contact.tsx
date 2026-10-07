@@ -3,8 +3,11 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'reac
 import { useRouter } from 'expo-router';
 import { ScreenCustom } from '@shared/components/ScreenCustom';
 import { useAppTheme } from '@shared/context/ThemeProvider';
-import { ArrowLeft, UserPlus, User, Mail, Phone, Save } from 'lucide-react-native';
+import { ArrowLeft, UserPlus, User, Mail, Phone, Save, Dices } from 'lucide-react-native';
 import { useCreateContact } from '@features/contact/hooks/contactHooks';
+
+import { DEV_MODE } from '@shared/config/devConfig';
+import { randomContact } from '@shared/config/devRandom';
 
 interface FormState {
   name: string;
@@ -31,6 +34,11 @@ export default function ContactNewScreen() {
 
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
 
+  // ! ONLY FOR TESTING
+  const handleRandomize = () => {
+    setForm(randomContact());
+  };
+
   const handleChange = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -52,7 +60,7 @@ export default function ContactNewScreen() {
       router.back();
     } catch (error: any) {
       const msg = error.response?.data?.message || 'No se pudo guardar el contacto.';
-      Alert.alert('Error', msg);
+      Alert.alert('Error', msg); 
     }
   };
 
@@ -65,7 +73,7 @@ export default function ContactNewScreen() {
             onPress={() => router.back()}
             className="w-10 h-10 rounded-full items-center justify-center border bg-surface-1 border-border"
           >
-            <ArrowLeft color={contentColor} size={18} />
+            <ArrowLeft color={contentColor} size={20} />
           </TouchableOpacity>
 
           <View className="flex-1 flex-row gap-2 items-center ms-2">
@@ -146,6 +154,29 @@ export default function ContactNewScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+
+
+        {/* DEV TOOLS */}
+        {DEV_MODE && (
+          <View className="mt-4 rounded-2xl border border-dashed border-warning-border bg-warning-bg/30 p-3">
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-[10px] font-bold uppercase tracking-wider text-warning-fg">
+                Dev Tools
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={handleRandomize}
+              className="flex-row items-center justify-center gap-2 rounded-xl px-3 py-2.5 border border-warning-border bg-surface-1 active:opacity-70"
+            >
+              <Dices color={getVar('--color-warning')} size={18} />
+              <Text className="text-sm font-semibold text-content">
+                Rellenar aleatorio
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </ScreenCustom>
   );
