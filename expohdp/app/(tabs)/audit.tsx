@@ -156,7 +156,7 @@ export default function HistoryScreen() {
 
         {/* Audit Access */}
         <TouchableOpacity
-          onPress={() => router.push('/audit/history')}
+          onPress={() => router.push('/history/history')}
           className="py-3 rounded-full flex-row items-center justify-center gap-2 mb-6 border bg-main-700 border-main-500 active:opacity-80"
         >
           <ShieldCheck color={primaryColor} size={18} />

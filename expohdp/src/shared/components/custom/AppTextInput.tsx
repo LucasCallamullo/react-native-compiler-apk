@@ -35,24 +35,24 @@ export interface AppTextInputProps extends TextInputProps {
 }
 
 export function AppTextInput({ style, ...rest }: AppTextInputProps) {
-  const { getColor } = useAppTheme();
+  const { getVar } = useAppTheme();
 
   const defaults = StyleSheet.create({
     input: {
-      backgroundColor: getColor('bg-card'),
-      borderColor: getColor('border-border'),
+      backgroundColor: getVar('--color-surface-1'),
+      borderColor: getVar('--color-border'),
       borderWidth: 1,
       borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 10,
-      color: getColor('text-fg'),
+      color: getVar('--color-main-300'),
       fontSize: 14,
     },
   });
 
   return (
     <TextInput
-      placeholderTextColor={getColor('text-fg-muted')}
+      placeholderTextColor={getVar('--color-content-muted')}
       {...rest}
       style={[defaults.input, style]}
     />

@@ -10,8 +10,8 @@ import {
   Lock,
   Copy,
   MapPin,
-  Image,
-  KeyRound,
+  KeyRound, 
+  ImageIcon,
   Eye,
   Send,
   AlertTriangle,
@@ -96,7 +96,7 @@ export default function ShareScreen() {
           {/* Incluir fotos/videos */}
           <View className="flex-row items-center justify-between py-3 border-b border-border">
             <View className="flex-row items-center gap-2.5">
-              <Image color={mutedColor} size={18} />
+              <ImageIcon color={mutedColor} size={18} />
               <Text className="text-sm text-content">Incluir fotos/videos</Text>
             </View>
             <Switch

@@ -1,12 +1,11 @@
-import { View } from 'react-native';
+import { View, ActivityIndicator, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Redirect, Tabs, useRouter, usePathname } from 'expo-router';
 import { Home, Folder, PlusCircle, Rabbit, Siren } from 'lucide-react-native';
-import { useAppTheme } from '@shared/context/ThemeProvider';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DraggableLockButton } from '@shared/components/DraggableLockButton';
 
+// My imports
 import { useAuth } from '@features/auth/context/AuthContext';
-import { ActivityIndicator, Text } from 'react-native';
+import { useAppTheme } from '@shared/context/ThemeProvider';
 
 const PROTECTED_ROUTES = ['audit', 'records', 'emergency', 'profile'] as const;
 
@@ -18,11 +17,7 @@ export default function TabsLayout() {
   const { user, isLoading } = useAuth();
 
   // Colores resueltos para props nativas (tab bar, header, íconos)
-  const surfaceColor = getVar('--color-surface-1');   // fondo de la tab bar
-  const contentColor = getVar('--color-content');     // texto activo
-  const mutedColor = getVar('--color-content-muted'); // texto inactivo
-  const borderColor = getVar('--color-border');
-  const activeColor = getVar('--color-main-500');     // tab activa
+  const activeColor = getVar('--color-main-500');     // ACTIVE TAB
 
   // ============================================
   // LAYER 2: Declarative guard
@@ -55,30 +50,26 @@ export default function TabsLayout() {
     },
   });
 
-  const handleLockApp = (): void => {
-    router.replace('/calculator');
-  };
-
   const tabBarHeight = 64 + insets.bottom;
-  const floatingButtonBottom = tabBarHeight + 16;
 
+  // THIS FORM IS TO DO IT A PERSONAL NAVBAR
   return (
     <View className="flex-1 bg-surface-0">
+
       <Tabs
         screenOptions={{
           headerShown: false,
-          headerStyle: { backgroundColor: surfaceColor },
-          headerTintColor: contentColor,
-          headerTitleStyle: { fontWeight: '600' },
+          sceneStyle: { backgroundColor: getVar('--color-surface-0') },
+
           tabBarStyle: {
-            backgroundColor: surfaceColor,
-            borderTopColor: borderColor,
+            backgroundColor: getVar('--color-surface-1'),
+            borderTopColor: getVar('--color-border'),
             height: tabBarHeight,
             paddingBottom: insets.bottom > 0 ? insets.bottom : 16,
             paddingTop: 8,
           },
           tabBarActiveTintColor: activeColor,
-          tabBarInactiveTintColor: mutedColor,
+          tabBarInactiveTintColor: getVar('--color-content-muted'),
           tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
         }}
       >
@@ -96,6 +87,7 @@ export default function TabsLayout() {
             title: 'Historial',
             tabBarIcon: ({ color, size }) => <Folder size={size} color={color} />,
           }}
+
           listeners={requireAuth()}
         />
 
@@ -118,7 +110,7 @@ export default function TabsLayout() {
         />
 
         <Tabs.Screen
-          name="profile"
+          name="profile_tab"
           options={{
             title: 'Perfil',
             tabBarIcon: ({ color, size }) => <Rabbit size={size} color={color} />,
@@ -127,11 +119,6 @@ export default function TabsLayout() {
         />
       </Tabs>
 
-      <DraggableLockButton
-        onPress={handleLockApp}
-        iconColor={activeColor}
-        initialBottom={floatingButtonBottom}
-      />
     </View>
   );
 }

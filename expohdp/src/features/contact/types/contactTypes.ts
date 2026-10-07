@@ -21,9 +21,9 @@ export interface CreateContactRequest {
 }
 
 export interface UpdateContactRequest {
-  name?: string;
+  name: string;
   email?: string;
-  phone?: string;
+  phone: string;
 }
 
 // ============================================
