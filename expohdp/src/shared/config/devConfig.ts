@@ -6,7 +6,7 @@ import * as SecureStore from 'expo-secure-store';
 // ============================================
 export const BACKENDS = {
   lucas: 'https://perm-reformist-unmoving.ngrok-free.dev/api',
-  tomy: 'https://myself-lazy-simply.ngrok-free.dev/',
+  tomy: 'https://myself-lazy-simply.ngrok-free.dev/api',
 } as const;
 
 export type BackendKey = keyof typeof BACKENDS;
@@ -27,6 +27,7 @@ let _backend: BackendKey = 'tomy'; // default
 // INIT
 // ============================================
 export const initDevConfig = async () => {
+  // recupera valores storage
   const [storedMock, storedBackend] = await Promise.all([
     SecureStore.getItemAsync(KEY_USE_MOCK),
     SecureStore.getItemAsync(KEY_BACKEND),
@@ -68,3 +69,14 @@ export const toggleBackend = async () => {
   const next: BackendKey = _backend === 'tomy' ? 'lucas' : 'tomy';
   return setBackend(next);
 };
+
+
+// ============================================
+// DEV MODE FLAG
+// ============================================
+/**
+ * Hardcoded dev flag. Cambiar a false antes de release,
+ * o mejor: `__DEV__ && true` para que se apague solo en prod.
+ */
+export const DEV_MODE = true;
+// Alternativa recomendada: export const DEV_MODE = __DEV__;
