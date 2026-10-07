@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Presupuestos</title>
+<style>
+  * {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  body {
+    background: #f4f5f7;
+    margin: 0;
+    padding: 40px 16px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    padding: 32px;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  h1 {
+    font-size: 22px;
+    margin: 0 0 24px;
+    text-align: center;
+    color: #222;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 6px;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus {
+    border-color: #4a6cf7;
+  }
+
+  .results {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .result-box {
+    background: #f0f2f8;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .result-box span:first-child {
+    font-size: 14px;
+    color: #555;
+  }
+
+  .result-box span:last-child {
+    font-size: 20px;
+    font-weight: bold;
+    color: #222;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Calculadora de Presupuestos</h1>
+
+  <div class="field">
+    <label for="rate">Monto a cobrar por hora ($)</label>
+    <input type="number" id="rate" value="10" min="0" step="0.01">
+  </div>
+
+  <div class="field">
+    <label for="hoursDay">Cantidad de horas por día a trabajar</label>
+    <input type="number" id="hoursDay" value="8" min="0" step="0.5">
+  </div>
+
+  <div class="field">
+    <label for="daysWeek">Cantidad de días a trabajar en la semana</label>
+    <input type="number" id="daysWeek" value="5" min="0" max="7" step="1">
+  </div>
+
+  <div class="field">
+    <label for="daysMonth">Cantidad de días a trabajar al mes</label>
+    <input type="number" id="daysMonth" value="22" min="0" step="1">
+  </div>
+
+  <div class="results">
+    <div class="result-box">
+      <span>Costo por día</span>
+      <span id="outDay">$0.00</span>
+    </div>
+    <div class="result-box">
+      <span>Costo por semana</span>
+      <span id="outWeek">$0.00</span>
+    </div>
+    <div class="result-box">
+      <span>Costo por mes</span>
+      <span id="outMonth">$0.00</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  function formatCurrency(num) {
+    return '$' + num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function calcular() {
+    const rate = parseFloat(document.getElementById('rate').value) || 0;
+    const hoursDay = parseFloat(document.getElementById('hoursDay').value) || 0;
+    const daysWeek = parseFloat(document.getElementById('daysWeek').value) || 0;
+    const daysMonth = parseFloat(document.getElementById('daysMonth').value) || 0;
+
+    const costoDia = rate * hoursDay;
+    const costoSemana = costoDia * daysWeek;
+    const costoMes = costoDia * daysMonth;
+
+    document.getElementById('outDay').textContent = formatCurrency(costoDia);
+    document.getElementById('outWeek').textContent = formatCurrency(costoSemana);
+    document.getElementById('outMonth').textContent = formatCurrency(costoMes);
+  }
+
+  document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('input', calcular);
+  });
+
+  calcular();
+</script>
+
+</body>
+</html>
