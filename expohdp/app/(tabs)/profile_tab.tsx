@@ -145,7 +145,7 @@ export default function ProfileScreen() {
 
         {/* Share History Button */}
         <TouchableOpacity
-          onPress={() => router.push('/(tabs)/profile/share')}
+          onPress={() => router.push('/history/share')}
           className="w-full bg-main-500 py-3.5 px-4 rounded-2xl flex-row items-center justify-between mb-3"
           style={{
             shadowColor: primaryColor,
@@ -166,7 +166,7 @@ export default function ProfileScreen() {
 
         {/* Camouflage Button */}
         <TouchableOpacity
-          onPress={() => router.push('/(tabs)/profile/config')}
+          onPress={() => router.push('/profile/config')}
           className="w-full py-3.5 px-4 rounded-2xl flex-row items-center justify-between border mb-5 bg-surface-1 border-border"
         >
           <View className="flex-row items-center gap-3">
@@ -227,7 +227,8 @@ export default function ProfileScreen() {
               className="flex-row items-center justify-between p-3 rounded-xl border active:opacity-70 bg-surface-1 border-border"
             >
               <Text className="text-xs text-content">Línea 144</Text>
-              <Text className="text-[10px] px-2 py-0.5 rounded-full border font-semibold bg-success-bg text-success-fg border-success-border">
+              <Text className="text-[10px] px-2 py-0.5 rounded-full border font-semibold bg-success-bg 
+              text-success-fg border-success-border">
                 Nacional
               </Text>
             </TouchableOpacity>
@@ -237,7 +238,8 @@ export default function ProfileScreen() {
               className="flex-row items-center justify-between p-3 rounded-xl border active:opacity-70 bg-surface-1 border-border"
             >
               <Text className="text-xs text-content">Emergencias 911</Text>
-              <Text className="text-[10px] px-2 py-0.5 rounded-full border font-semibold bg-error-bg text-error-fg border-error-border">
+              <Text className="text-[10px] px-2 py-0.5 rounded-full border font-semibold bg-error-bg 
+              text-error-fg border-error-border">
                 Urgencia
               </Text>
             </TouchableOpacity>

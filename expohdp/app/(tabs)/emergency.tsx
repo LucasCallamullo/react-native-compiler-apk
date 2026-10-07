@@ -102,32 +102,40 @@ export default function EmergencyScreen() {
         </View>
 
         {/* Emergency Contacts */}
-        <Text className="text-lg font-bold mb-3 text-content">
+        <Text className="text-xl font-bold mb-3 text-content">
           Contactos de emergencia
         </Text>
 
-        <View className="gap-3 mb-5">
+        <View className="gap-3.5 mb-6">
           {contacts.map((contact) => (
-            
             <View
               key={contact.id}
               className="flex-row items-center rounded-2xl p-3 border bg-surface-1 border-border"
             >
-              <View className="w-10 h-10 rounded-full items-center justify-center mr-3 border bg-surface-1 border-border">
-                <Text className="font-bold text-main-500">
-                  {contact.initial}
-                </Text>
-              </View>
+              <TouchableOpacity
+                onPress={() =>
+                  router.push({
+                    pathname: '/contacts/[id]/edit',
+                    params: {
+                      id: contact.id,
+                      // 👇 pasamos el contacto serializado para no pegarle al server
+                      contact: JSON.stringify(contact),
+                    },
+                  })
+                }
+                className="w-10 h-10 rounded-full items-center justify-center mr-3 border bg-surface-1 border-border 
+                active:opacity-70"
+              >
+                <Text className="font-bold text-main-500">{contact.initial}</Text>
+              </TouchableOpacity>
+
               <View className="flex-1">
-                <Text className="font-medium text-content">
-                  {contact.name}
-                </Text>
-                <Text className="text-xs text-content-muted">
-                  {contact.phone}
-                </Text>
+                <Text className="font-medium text-content">{contact.name}</Text>
+                <Text className="text-xs text-content-muted">{contact.phone}</Text>
               </View>
-              <TouchableOpacity className="bg-main-500 border-main-300 px-3 py-2 rounded-full 
-                flex-row items-center gap-1.5 active:opacity-80">
+
+              <TouchableOpacity className="bg-main-500 border-main-300 px-3 py-2 rounded-full flex-row 
+              items-center gap-1.5 active:opacity-80">
                 <PhoneCall color={'#ffffff'} size={15} />
                 <Text className="text-white font-semibold text-sm">Llamar</Text>
               </TouchableOpacity>
@@ -137,7 +145,7 @@ export default function EmergencyScreen() {
 
         {/* Add Contact Button */}
         <TouchableOpacity
-          onPress={() => router.push('/emergency/new_contact')}
+          onPress={() => router.push('/contacts/new')}
           className="py-3 rounded-full flex-row items-center justify-center gap-2 mb-6 active:opacity-80 
             border bg-main-700 border-main-500"
         >
@@ -146,7 +154,7 @@ export default function EmergencyScreen() {
             Agregar contacto de emergencia
           </Text>
         </TouchableOpacity>
-
+ 
 
 
         {/* Quick theme switcher */}
