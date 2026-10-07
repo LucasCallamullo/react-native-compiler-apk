@@ -1,0 +1,22 @@
+services:
+  
+
+  api-facturas:
+    build: 
+      context: ./ms-core
+    container_name: mara-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    
+
+    
+
+  
+volumes:
+  maria_db_data:
+  
+networks:
+  fintech_nova_backend:
+    driver: bridge
+  
