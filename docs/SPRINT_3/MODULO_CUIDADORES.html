@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Módulo Caregiver — Documentación Técnica</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Mermaid CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <!-- dom-to-image (fork con scale funcional) -->
+  <script src="https://cdn.jsdelivr.net/npm/dom-to-image-chrome-fix-retina@2.6.0/dist/dom-to-image.min.js"></script>
+
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    #diagramContainer svg { max-width: 100%; height: auto; }
+    .step-line { border-left: 2px solid #cbd5e1; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    pre { tab-size: 2; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+  <div class="max-w-5xl mx-auto px-6 py-10">
+
+    <!-- Header -->
+    <header class="mb-10">
+      <p class="text-sm font-semibold text-indigo-600 uppercase tracking-wide">Módulo Backend</p>
+      <h1 class="text-4xl font-bold text-slate-900 mt-1">Caregiver Links</h1>
+      <p class="text-slate-600 mt-3 text-lg">
+        Sistema de vinculación entre un <strong>usuario protegido</strong> y un <strong>cuidador de confianza</strong>
+        mediante un código de invitación único.
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2 text-xs">
+        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-medium">Spring Boot</span>
+        <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">JPA / Hibernate</span>
+        <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium">UUID como código</span>
+        <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full font-medium">Soft delete (status)</span>
+      </div>
+    </header>
+
+    <!-- 1. Contexto -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+        Contexto y objetivo
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+        <p>
+          La app funciona como una <strong>bóveda digital</strong> que guarda capturas y archivos privados.
+          Para compartir contenido de forma segura, el usuario puede designar <strong>cuidadores de confianza</strong>:
+          otras personas registradas en la app que podrán recibir notificaciones y acceder a ciertos recursos.
+        </p>
+        <p>
+          Este módulo resuelve <strong>cómo se vincula un protegido con su cuidador</strong> sin exponer datos
+          sensibles y sin requerir que el protegido conozca de antemano el email o teléfono del cuidador.
+        </p>
+        <div class="bg-slate-50 border-l-4 border-indigo-500 p-4 rounded">
+          <p class="text-sm text-slate-700">
+            <strong>Idea central:</strong> el protegido genera un código (un UUID). Se lo pasa al cuidador por
+            cualquier canal externo (WhatsApp, mail, en persona). El cuidador lo ingresa en la app y queda vinculado.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. DER -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+        Modelo de datos (DER)
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <div class="flex justify-end mb-4">
+          <button id="downloadPng"
+            class="bg-indigo-600 hover:bg-indigo-500 transition text-white px-4 py-2 rounded-lg font-semibold shadow text-sm">
+            ⬇️ Descargar diagrama (PNG)
+          </button>
+        </div>
+        <div id="diagramContainer" class="mermaid">
+erDiagram
+    USER ||--o{ USER_ROLES : tiene
+    ROL  ||--o{ USER_ROLES : asignado
+    USER ||--o{ CAREGIVER_LINK : "genera (protegido)"
+    USER ||--o{ CAREGIVER_LINK : "acepta (cuidador)"
+
+    USER {
+        uuid id PK
+        string firstName
+        string lastName
+        string email UK
+        string password
+        string dni UK
+        string phone
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ROL {
+        long id PK
+        string name UK
+        string description
+        datetime createdAt
+    }
+
+    USER_ROLES {
+        uuid user_id PK, FK
+        long role_id PK, FK
+        datetime assignedAt
+    }
+
+    CAREGIVER_LINK {
+        uuid id PK "código de invitación"
+        uuid protected_id FK
+        uuid caregiver_id FK "nullable hasta aceptar"
+        string status "PENDING | ACCEPTED | REVOKED"
+        datetime createdAt
+        datetime acceptedAt
+        datetime revokedAt
+        uuid revoked_by FK
+    }
+        </div>
+        <p class="text-xs text-slate-500 mt-4">
+          Nota: <code>caregiver_id</code> es <strong>nullable</strong> porque al crear el link todavía no existe cuidador.
+          Se llena cuando alguien acepta el código.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. Entidad Java -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
+        Entidad <code class="text-xl">CaregiverLink</code>
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <pre class="bg-slate-900 text-slate-100 p-5 rounded-lg overflow-x-auto text-sm leading-relaxed"><code>@Entity
+@Table(name = "caregiver_links")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class CaregiverLink {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id; // este UUID ES el código de invitación
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "caregiver_id")
+    private User caregiver; // null hasta que alguien acepta
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "protected_id", nullable = false)
+    private User protectedUser; // siempre presente
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private CaregiverLinkStatus status; // PENDING, ACCEPTED, REVOKED
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "accepted_at")
+    private LocalDateTime acceptedAt;
+
+    @Column(name = "revoked_at")
+    private LocalDateTime revokedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "revoked_by")
+    private User revokedBy;
+}</code></pre>
+
+        <h3 class="font-bold text-slate-900 mt-6 mb-3">Explicación campo por campo</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-left">
+                <th class="p-3 border border-slate-200 font-semibold">Campo</th>
+                <th class="p-3 border border-slate-200 font-semibold">Por qué existe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="p-3 border border-slate-200 font-mono text-xs">id (UUID)</td>
+                <td class="p-3 border border-slate-200">Es a la vez PK y <strong>código de invitación</strong>. Un UUID es imposible de adivinar, no necesita hashing extra y no colisiona.</td>
+              </tr>
+              <tr class="bg-slate-50">
+                <td class="p-3 border border-slate-200 font-mono text-xs">protectedUser</td>
+                <td class="p-3 border border-slate-200">El usuario que <strong>genera</strong> el código. Siempre presente desde el momento de la creación.</td>
+              </tr>
+              <tr>
+                <td class="p-3 border border-slate-200 font-mono text-xs">caregiver</td>
+                <td class="p-3 border border-slate-200"><strong>Nullable</strong>. Se llena cuando otro usuario ingresa el código y acepta. Hasta entonces, el link está "esperando".</td>
+              </tr>
+              <tr class="bg-slate-50">
+                <td class="p-3 border border-slate-200 font-mono text-xs">status</td>
+                <td class="p-3 border border-slate-200">Máquina de estados: <code>PENDING</code> → <code>ACCEPTED</code> → <code>REVOKED</code>. <strong>Nunca se borra la fila.</strong></td>
+              </tr>
+              <tr>
+                <td class="p-3 border border-slate-200 font-mono text-xs">acceptedAt</td>
+                <td class="p-3 border border-slate-200">Auditoría: cuándo se vinculó el cuidador.</td>
+              </tr>
+              <tr class="bg-slate-50">
+                <td class="p-3 border border-slate-200 font-mono text-xs">revokedAt / revokedBy</td>
+                <td class="p-3 border border-slate-200">Auditoría de revocación. <code>revokedBy</code> permite saber si revocó el protegido o el sistema.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Flujo -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">4</span>
+        Flujo paso a paso
+      </h2>
+
+      <div class="space-y-4">
+
+        <!-- Paso 1 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 step-line pl-6 ml-4">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded">PASO 1</span>
+            <h3 class="font-bold text-slate-900">El protegido genera el código</h3>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">El usuario autenticado crea una invitación. El sistema devuelve el UUID que deberá compartir.</p>
+          <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg text-xs overflow-x-auto"><code>POST /api/caregiver-links
+
+→ Crea CaregiverLink {
+    id: UUID generado,
+    protectedUser: usuario autenticado,
+    caregiver: null,
+    status: PENDING,
+    createdAt: now()
+  }
+→ Devuelve: { "code": "a3f8-..." }</code></pre>
+        </div>
+
+        <!-- Paso 2 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 step-line pl-6 ml-4">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="bg-sky-100 text-sky-700 text-xs font-bold px-2 py-1 rounded">PASO 2</span>
+            <h3 class="font-bold text-slate-900">El cuidador acepta el código</h3>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">Otro usuario (con cuenta propia) ingresa el código en la app. El sistema valida y vincula.</p>
+          <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg text-xs overflow-x-auto"><code>POST /api/caregiver-links/{code}/accept
+
+→ Busca link por id = code y status = PENDING
+→ Si no existe o no está PENDING → 404 / 409
+→ Asigna caregiver = usuario autenticado
+→ Asigna rol CAREGIVER al usuario (si no lo tiene)
+→ status = ACCEPTED, acceptedAt = now()</code></pre>
+        </div>
+
+        <!-- Paso 3 -->
+        <div class="bg-white rounded-xl border border-slate-200 p-6 step-line pl-6 ml-4">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="bg-rose-100 text-rose-700 text-xs font-bold px-2 py-1 rounded">PASO 3</span>
+            <h3 class="font-bold text-slate-900">El protegido revoca (opcional)</h3>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">En cualquier momento, el protegido puede desvincular al cuidador. No se borra, se marca como revocado.</p>
+          <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg text-xs overflow-x-auto"><code>PATCH /api/caregiver-links/{id}/revoke
+
+→ Verifica que el solicitante sea el protectedUser
+→ status = REVOKED, revokedAt = now(), revokedBy = solicitante
+→ (Opcional) Quitar rol CAREGIVER si ya no cuida a nadie más</code></pre>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 5. Endpoints -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">5</span>
+        Endpoints del módulo
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-left">
+            <tr>
+              <th class="p-3 font-semibold">Método</th>
+              <th class="p-3 font-semibold">Endpoint</th>
+              <th class="p-3 font-semibold">Acción</th>
+              <th class="p-3 font-semibold">Quién</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-slate-200">
+              <td class="p-3"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-bold">POST</span></td>
+              <td class="p-3 font-mono text-xs">/api/caregiver-links</td>
+              <td class="p-3">Generar código</td>
+              <td class="p-3">Protegido</td>
+            </tr>
+            <tr class="border-t border-slate-200 bg-slate-50">
+              <td class="p-3"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-bold">POST</span></td>
+              <td class="p-3 font-mono text-xs">/api/caregiver-links/{code}/accept</td>
+              <td class="p-3">Aceptar invitación</td>
+              <td class="p-3">Cuidador</td>
+            </tr>
+            <tr class="border-t border-slate-200">
+              <td class="p-3"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold">PATCH</span></td>
+              <td class="p-3 font-mono text-xs">/api/caregiver-links/{id}/revoke</td>
+              <td class="p-3">Revocar vínculo</td>
+              <td class="p-3">Protegido</td>
+            </tr>
+            <tr class="border-t border-slate-200 bg-slate-50">
+              <td class="p-3"><span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded text-xs font-bold">GET</span></td>
+              <td class="p-3 font-mono text-xs">/api/caregiver-links</td>
+              <td class="p-3">Listar mis cuidadores</td>
+              <td class="p-3">Protegido</td>
+            </tr>
+            <tr class="border-t border-slate-200">
+              <td class="p-3"><span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded text-xs font-bold">GET</span></td>
+              <td class="p-3 font-mono text-xs">/api/caregiver-links/caring</td>
+              <td class="p-3">Listar a quiénes cuido</td>
+              <td class="p-3">Cuidador</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">
+        <strong>Nota sobre POST vs PUT:</strong> <code>accept</code> y <code>revoke</code> son <em>acciones</em>, no reemplazos de recurso.
+        Por eso van como <code>POST</code> o <code>PATCH</code>, nunca <code>PUT</code>.
+      </p>
+    </section>
+
+    <!-- 6. Decisiones -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">6</span>
+        Decisiones de diseño
+      </h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <h3 class="font-bold text-slate-900 mb-2">🔑 El UUID es el código</h3>
+          <p class="text-sm text-slate-600">No hace falta un campo extra. Un UUID v4 tiene 122 bits de entropía, es imposible de adivinar y no colisiona. El <code>id</code> cumple doble función: PK e invitación.</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <h3 class="font-bold text-slate-900 mb-2">🗑️ Nunca borrar, solo cambiar estado</h3>
+          <p class="text-sm text-slate-600">La fila se conserva con <code>status = REVOKED</code>. Tenés historial completo de quién cuidó a quién y cuándo. Es auditoría gratis.</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <h3 class="font-bold text-slate-900 mb-2">👤 <code>caregiver</code> nullable</h3>
+          <p class="text-sm text-slate-600">Al crear el link todavía no hay cuidador. Solo el protegido. El campo se llena en el paso 2. Esto permite tener códigos "flotando" sin usar.</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <h3 class="font-bold text-slate-900 mb-2">🎭 Rol + tabla, no uno solo</h3>
+          <p class="text-sm text-slate-600">La tabla dice <em>a quién</em> cuida. El rol <code>CAREGIVER</code> dice <em>qué puede hacer</em>. Son cosas distintas. A futuro vas a querer <code>@PreAuthorize("hasRole('CAREGIVER')")</code>.</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <h3 class="font-bold text-slate-900 mb-2">📜 <code>revokedBy</code> para auditoría</h3>
+          <p class="text-sm text-slate-600">Permite saber si revocó el protegido o el sistema (por ejemplo, si se eliminó la cuenta del cuidador). Sin esto, perdés trazabilidad.</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <h3 class="font-bold text-slate-900 mb-2">🚫 No mezclar con <code>Contact</code></h3>
+          <p class="text-sm text-slate-600"><code>Contact</code> es una libreta externa (gente sin app). <code>CaregiverLink</code> es entre usuarios registrados. Son conceptos distintos y no se cruzan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Pendientes -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <span class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">7</span>
+        Pendientes y próximos pasos
+      </h2>
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-6">
+        <ul class="space-y-2 text-sm text-slate-700">
+          <li class="flex gap-2"><span class="text-amber-600 font-bold">•</span> Definir <code>CaregiverLinkStatus</code> como enum en Java.</li>
+          <li class="flex gap-2"><span class="text-amber-600 font-bold">•</span> Decidir si al aceptar se asigna rol <code>CAREGIVER</code> automáticamente o requiere aprobación admin.</li>
+          <li class="flex gap-2"><span class="text-amber-600 font-bold">•</span> Definir qué pasa si el cuidador ya tiene el rol (no duplicar).</li>
+          <li class="flex gap-2"><span class="text-amber-600 font-bold">•</span> Endpoint de <strong>notificaciones</strong> al protegido cuando el cuidador acepta.</li>
+          <li class="flex gap-2"><span class="text-amber-600 font-bold">•</span> Integración con el módulo de <strong>ShareLink</strong> (usar <code>CaregiverLink</code> para validar <code>onlyCaregivers</code>).</li>
+          <li class="flex gap-2"><span class="text-amber-600 font-bold">•</span> Tests de integración para los 3 flujos (crear, aceptar, revocar).</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="text-center text-xs text-slate-400 pt-8 border-t border-slate-200">
+      Documento generado para el equipo de backend · Módulo Caregiver
+    </footer>
+
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#eef2ff',
+        primaryTextColor: '#1e293b',
+        primaryBorderColor: '#6366f1',
+        lineColor: '#94a3b8',
+        fontSize: '14px'
+      },
+      er: {
+        diagramPadding: 20,
+        layoutDirection: 'TB',
+        minEntityWidth: 120,
+        entityPadding: 16
+      }
+    });
+
+    document.getElementById('downloadPng').addEventListener('click', () => {
+      const node = document.querySelector('#diagramContainer');
+      if (!node || !node.querySelector('svg')) {
+        return alert('El diagrama aún no está listo.');
+      }
+      domtoimage.toPng(node, {
+        bgcolor: '#ffffff',
+        width: node.offsetWidth * 2,
+        height: node.offsetHeight * 2,
+        style: {
+          transform: 'scale(2)',
+          'transform-origin': 'top left'
+        }
+      })
+      .then((dataUrl) => {
+        const link = document.createElement('a');
+        link.download = 'DER-Caregiver.png';
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch((err) => console.error('Error al exportar:', err));
+    });
+  </script>
+</body>
+</html>

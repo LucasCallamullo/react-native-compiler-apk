@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Propuesta: Enum TypeFile en StoredFile</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Mermaid CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- dom-to-image (fork con scale funcional) -->
+  <script src="https://cdn.jsdelivr.net/npm/dom-to-image-chrome-fix-retina@2.6.0/dist/dom-to-image.min.js"></script>
+
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    #diagramContainer svg { max-width: 100%; height: auto; }
+    pre { tab-size: 2; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+  <div class="max-w-5xl mx-auto px-6 py-10">
+
+    <!-- Header -->
+    <header class="mb-10">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Propuesta de cambio</span>
+        <span class="bg-slate-200 text-slate-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Módulo Files</span>
+      </div>
+      <h1 class="text-4xl font-bold text-slate-900 mt-2">Agregar enum <code class="text-3xl">TypeFile</code> a <code class="text-3xl">StoredFile</code></h1>
+      <p class="text-slate-600 mt-3 text-lg">
+        Separar el tipo lógico del archivo (audio, imagen, video, texto) del MIME técnico
+        para habilitar filtrados, validaciones y consumo desde otros módulos.
+      </p>
+    </header>
+
+    <!-- 1. Situación actual -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-6 h-6 text-amber-500"></i>
+        Situación actual
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+        <p>Hoy <code>StoredFile</code> solo guarda el <strong>MIME técnico</strong> (<code>contentType</code>):</p>
+        <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg text-sm overflow-x-auto"><code>@Column(nullable = false)
+private String contentType; // "image/png", "audio/mpeg", "application/pdf"</code></pre>
+        <div class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded">
+          <p class="text-sm text-slate-700">
+            <strong>Problema:</strong> el MIME es un string libre. Cada vez que un módulo quiere saber
+            "¿esto es una imagen?" tiene que parsear el string, hacer <code>startsWith("image/")</code>,
+            o mantener una lista de MIMEs permitidos. Eso es frágil y se repite en varios lugares.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Propuesta -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="lightbulb" class="w-6 h-6 text-emerald-500"></i>
+        Propuesta
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+        <p>Agregar un campo <code>typeFile</code> tipado como <strong>enum</strong>, que clasifique el archivo a alto nivel:</p>
+        <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg text-sm overflow-x-auto"><code>public enum TypeFile {
+    AUDIO,
+    IMAGE,
+    VIDEO,
+    TEXT,
+    DOCUMENT,   // pdf, docx, xlsx
+    OTHER       // fallback para tipos no clasificados
+}</code></pre>
+        <p class="text-sm text-slate-600">
+          El MIME (<code>contentType</code>) se sigue guardando para precisión técnica.
+          El enum <code>typeFile</code> se agrega como <strong>capa de clasificación lógica</strong>.
+        </p>
+        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded">
+          <p class="text-sm text-slate-700">
+            <strong>Ventaja:</strong> los módulos consumidores ya no parsean strings. Preguntan
+            <code>file.getTypeFile() == TypeFile.IMAGE</code> y listo.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Entidad actualizada -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="code" class="w-6 h-6 text-indigo-500"></i>
+        Entidad actualizada
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <pre class="bg-slate-900 text-slate-100 p-5 rounded-lg overflow-x-auto text-sm leading-relaxed"><code>@Entity
+@Table(name = "stored_files")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class StoredFile {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String originalName;
+
+    @Column(nullable = false, unique = true)
+    private String storedName;
+
+    @Column(nullable = false)
+    private String contentType;    // MIME técnico
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private TypeFile typeFile;     // NUEVO — clasificación lógica
+
+    @Column(nullable = false)
+    private long size;
+
+    @Column(nullable = false)
+    private String relativePath;
+
+    @Column(nullable = false)
+    private Instant uploadedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+}</code></pre>
+        <p class="text-xs text-slate-500 mt-4">
+          Nota: <code>@Enumerated(EnumType.STRING)</code> guarda el nombre del enum como texto
+          (<code>"IMAGE"</code>), no como ordinal. Esto es más legible en la DB y resiste reordenamientos del enum.
+        </p>
+      </div>
+    </section>
+
+    <!-- 4. DER -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="database" class="w-6 h-6 text-sky-500"></i>
+        Impacto en el DER
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <div class="flex justify-end mb-4">
+          <button id="downloadPng"
+            class="bg-indigo-600 hover:bg-indigo-500 transition text-white px-4 py-2 rounded-lg font-semibold shadow text-sm flex items-center gap-2">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            Descargar diagrama
+          </button>
+        </div>
+        <div id="diagramContainer" class="mermaid">
+erDiagram
+    USER ||--o{ STORED_FILES : sube
+
+    USER {
+        uuid id PK
+        string email UK
+    }
+
+    STORED_FILES {
+        long id PK
+        string originalName
+        string storedName UK
+        string contentType "MIME técnico"
+        enum typeFile "NUEVO - AUDIO|IMAGE|VIDEO|TEXT|DOCUMENT|OTHER"
+        long size
+        string relativePath
+        datetime uploadedAt
+        uuid user_id FK
+    }
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Utilidad por módulo -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="puzzle" class="w-6 h-6 text-purple-500"></i>
+        Utilidad por módulo
+      </h2>
+      <div class="grid md:grid-cols-2 gap-4">
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="search" class="w-5 h-5 text-indigo-500"></i>
+            <h3 class="font-bold text-slate-900">Filtrado de archivos</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            <code>findByUserAndTypeFile(user, IMAGE)</code> en vez de <code>findByContentTypeStartingWith("image/")</code>.
+            Una query, un índice, cero parseo.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="share-2" class="w-5 h-5 text-emerald-500"></i>
+            <h3 class="font-bold text-slate-900">Módulo ShareLink</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            El campo <code>fileTypes</code> del link de compartir puede referenciar directamente
+            <code>TypeFile</code>. Sin esto, tendrías que guardar MIMEs sueltos y mapearlos a mano.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="shield-check" class="w-5 h-5 text-amber-500"></i>
+            <h3 class="font-bold text-slate-900">Validaciones</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            Reglas de negocio como "solo se pueden compartir AUDIO e IMAGE" se expresan
+            contra el enum, no contra el MIME.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="smartphone" class="w-5 h-5 text-rose-500"></i>
+            <h3 class="font-bold text-slate-900">Mobile / UI</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            El front recibe <code>"IMAGE"</code> y decide icono, color y agrupación.
+            No tiene que inferir nada desde un MIME.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="bar-chart-3" class="w-5 h-5 text-sky-500"></i>
+            <h3 class="font-bold text-slate-900">Estadísticas / reportes</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            "¿Cuántas imágenes subió este usuario?" se resuelve con un <code>COUNT</code> sobre
+            <code>typeFile</code>. Sin parseo ni <code>LIKE</code>.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="hard-drive" class="w-5 h-5 text-slate-500"></i>
+            <h3 class="font-bold text-slate-900">Migración / purga</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            Políticas como "borrar videos después de 90 días" se aplican por tipo, no por MIME.
+            El enum es la unidad de negocio.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 6. Comparación -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="git-compare" class="w-6 h-6 text-slate-500"></i>
+        Antes vs. Después
+      </h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-rose-50 rounded-xl border border-rose-200 p-5">
+          <h3 class="font-bold text-rose-700 mb-3 flex items-center gap-2">
+            <i data-lucide="x-circle" class="w-5 h-5"></i>
+            Sin enum
+          </h3>
+          <ul class="space-y-2 text-sm text-slate-700">
+            <li class="flex gap-2"><span class="text-rose-500">•</span> Parsear <code>contentType</code> en cada módulo.</li>
+            <li class="flex gap-2"><span class="text-rose-500">•</span> Listas de MIMEs permitidos duplicadas.</li>
+            <li class="flex gap-2"><span class="text-rose-500">•</span> Queries con <code>LIKE 'image/%'</code>.</li>
+            <li class="flex gap-2"><span class="text-rose-500">•</span> Front adivina iconos desde strings.</li>
+            <li class="flex gap-2"><span class="text-rose-500">•</span> Nuevos formatos (ej. <code>.webp</code>) rompen lógica.</li>
+          </ul>
+        </div>
+        <div class="bg-emerald-50 rounded-xl border border-emerald-200 p-5">
+          <h3 class="font-bold text-emerald-700 mb-3 flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+            Con enum
+          </h3>
+          <ul class="space-y-2 text-sm text-slate-700">
+            <li class="flex gap-2"><span class="text-emerald-500">•</span> <code>file.getTypeFile() == IMAGE</code> directo.</li>
+            <li class="flex gap-2"><span class="text-emerald-500">•</span> Enum único como fuente de verdad.</li>
+            <li class="flex gap-2"><span class="text-emerald-500">•</span> Query por columna indexable.</li>
+            <li class="flex gap-2"><span class="text-emerald-500">•</span> Front recibe categoría explícita.</li>
+            <li class="flex gap-2"><span class="text-emerald-500">•</span> Nuevos formatos se mapean al enum en un solo lugar.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Cómo poblar el campo -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="settings-2" class="w-6 h-6 text-indigo-500"></i>
+        Cómo se puebla el campo
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+        <p class="text-sm text-slate-600">
+          Al momento de subir un archivo, el servicio que persiste el <code>StoredFile</code> debe
+          resolver el enum a partir del MIME. Ejemplo:
+        </p>
+        <pre class="bg-slate-900 text-slate-100 p-5 rounded-lg overflow-x-auto text-sm leading-relaxed"><code>public static TypeFile fromMimeType(String mime) {
+    if (mime == null) return TypeFile.OTHER;
+    if (mime.startsWith("image/"))    return TypeFile.IMAGE;
+    if (mime.startsWith("audio/"))    return TypeFile.AUDIO;
+    if (mime.startsWith("video/"))    return TypeFile.VIDEO;
+    if (mime.startsWith("text/"))     return TypeFile.TEXT;
+    if (mime.equals("application/pdf")
+        || mime.contains("word")
+        || mime.contains("excel")
+        || mime.contains("spreadsheet")) return TypeFile.DOCUMENT;
+    return TypeFile.OTHER;
+}</code></pre>
+        <p class="text-sm text-slate-600">
+          Este mapeo vive <strong>en un solo lugar</strong> (el enum o un servicio utilitario).
+          Si mañana se agrega un tipo nuevo, se toca una vez y todos los módulos lo ven.
+        </p>
+      </div>
+    </section>
+
+    <!-- 8. Checklist -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="list-checks" class="w-6 h-6 text-emerald-500"></i>
+        Checklist de implementación
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <ul class="space-y-3 text-sm text-slate-700">
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Crear enum <code>TypeFile</code> en <code>com.vg.auth.model.utils</code> (o donde vivan los enums).</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Agregar campo <code>typeFile</code> a <code>StoredFile</code> con <code>@Enumerated(EnumType.STRING)</code>.</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Implementar el mapeo MIME → <code>TypeFile</code> (método estático o servicio).</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Migración SQL: agregar columna <code>type_file VARCHAR(20) NOT NULL</code> y poblarla para filas existentes.</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Actualizar el servicio de subida para setear <code>typeFile</code> al persistir.</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Agregar método de repositorio <code>findByUserAndTypeFile</code> si hace falta.</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Exponer <code>typeFile</code> en el DTO de respuesta de archivos.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="text-center text-xs text-slate-400 pt-8 border-t border-slate-200">
+      Propuesta para el equipo de backend · Módulo Files
+    </footer>
+
+  </div>
+
+  <script>
+    // Inicializar iconos Lucide
+    lucide.createIcons();
+
+    // Inicializar Mermaid
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#eef2ff',
+        primaryTextColor: '#1e293b',
+        primaryBorderColor: '#6366f1',
+        lineColor: '#94a3b8',
+        fontSize: '14px'
+      },
+      er: {
+        diagramPadding: 20,
+        layoutDirection: 'TB',
+        minEntityWidth: 120,
+        entityPadding: 16
+      }
+    });
+
+    // Descarga PNG con escala
+    document.getElementById('downloadPng').addEventListener('click', () => {
+      const node = document.querySelector('#diagramContainer');
+      if (!node || !node.querySelector('svg')) {
+        return alert('El diagrama aún no está listo.');
+      }
+      domtoimage.toPng(node, {
+        bgcolor: '#ffffff',
+        width: node.offsetWidth * 2,
+        height: node.offsetHeight * 2,
+        style: {
+          transform: 'scale(2)',
+          'transform-origin': 'top left'
+        }
+      })
+      .then((dataUrl) => {
+        const link = document.createElement('a');
+        link.download = 'DER-StoredFile-TypeFile.png';
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch((err) => console.error('Error al exportar:', err));
+    });
+  </script>
+</body>
+</html>

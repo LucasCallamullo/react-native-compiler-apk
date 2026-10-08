@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DER - Mermaid</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Mermaid CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/dist/dom-to-image.min.js"></script>
+
+  <style>
+    #diagramContainer svg {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-6">
+
+  <div class="max-w-7xl mx-auto">
+    <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">DER - Aplicación Mobile (Backend Spring Boot)</h1>
+        <p class="text-slate-400 text-sm">Generado con Mermaid · ER Diagram</p>
+      </div>
+      <div class="flex gap-2">
+        <button id="downloadPng"
+          class="bg-emerald-600 hover:bg-emerald-500 transition px-4 py-2 rounded-lg font-semibold shadow">
+          ⬇️ Descargar PNG
+        </button>
+        <button id="downloadSvg"
+          class="bg-sky-600 hover:bg-sky-500 transition px-4 py-2 rounded-lg font-semibold shadow">
+          ⬇️ Descargar SVG
+        </button>
+      </div>
+    </header>
+
+    <div class="bg-slate-800 rounded-2xl p-7 shadow-lg overflow-auto">
+      <div id="diagramContainer" class="mermaid">
+erDiagram
+    USER ||--o{ USER_ROLES : tiene
+    ROL  ||--o{ USER_ROLES : asignado
+    USER ||--o{ CONTACT : posee
+    USER ||--o{ STORED_FILES : sube
+    USER ||--o{ SHARE_LINK : crea
+    USER ||--o{ CAREGIVER_LINK : "es caregiver"
+    USER ||--o{ CAREGIVER_LINK : "es protegido"
+
+    USER {
+        uuid id PK
+        string firstName
+        string lastName
+        string email UK
+        string password
+        string dni UK
+        string phone
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    ROL {
+        long id PK
+        string name UK
+        string description
+        datetime createdAt
+    }
+
+    USER_ROLES {
+        uuid user_id PK, FK
+        long role_id PK, FK
+        datetime assignedAt
+    }
+
+    CONTACT {
+        long id PK
+        string name
+        string email
+        string phone
+        uuid user_id FK
+        datetime created_at
+        datetime updated_at
+    }
+
+    STORED_FILES {
+        long id PK
+        string originalName
+        string storedName UK
+        string contentType
+        long size
+        string relativePath
+        datetime uploadedAt
+        uuid user_id FK
+    }
+
+    CAREGIVER_LINK {
+        long id PK
+        uuid caregiver_id FK
+        uuid protected_id FK
+        string inviteCode UK
+        string status
+        datetime createdAt
+        datetime acceptedAt
+    }
+
+    SHARE_LINK {
+        uuid id PK
+        uuid owner_id FK
+        datetime createdAt
+        datetime expiresAt
+        boolean onlyCaregivers
+    }
+      </div>
+    </div>
+
+    <p class="text-slate-500 text-xs mt-4">
+      Nota: <code>type_file</code> en <code>FILES</code> y los valores dentro de <code>extraParams</code> referencian el enum <code>TypeFile</code> (no es una tabla).
+    </p>
+  </div>
+
+  <script>
+    // Inicializar Mermaid
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      er: {
+        diagramPadding: 20,
+        layoutDirection: 'TB',
+        minEntityWidth: 100,
+        minEntityHeight: 75,
+        entityPadding: 16,
+        stroke: '#94a3b8',
+        fill: '#1e293b',
+        fontSize: 16
+      }
+    });
+
+    // Descargar SVG
+    document.getElementById('downloadSvg').addEventListener('click', () => {
+      const svg = document.querySelector('#diagramContainer svg');
+      if (!svg) return alert('El diagrama aún no está listo.');
+
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svg);
+
+      if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+      const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'DER.svg';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Descargar PNG
+    
+    document.getElementById('downloadPng').addEventListener('click', () => {
+      const node = document.querySelector('#diagramContainer');
+      
+      domtoimage.toPng(node, {
+        bgcolor: '#0f172a',
+        width: node.offsetWidth * 3,
+        height: node.offsetHeight * 3,
+        style: {
+          transform: 'scale(3)',
+          'transform-origin': 'top left',
+          'font-smooth': 'always',
+          '-webkit-font-smoothing': 'antialiased'
+        }
+      })
+
+      /* domtoimage.toPng(node, {
+        bgcolor: '#0f172a', // fondo oscuro para que combine
+        scale: 3           // esto es CLAVE para la resolución
+      }) */
+      .then((dataUrl) => {
+        const link = document.createElement('a');
+        link.download = 'DER.png';
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch((error) => console.error('Error:', error));
+    });
+
+  </script>
+</body>
+</html>
