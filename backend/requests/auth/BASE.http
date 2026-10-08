@@ -1,8 +1,11 @@
-@baseUrl = http://localhost:8080
-@apiAuth = {{baseUrl}}/api/v1/auth
+# @baseUrl = http://localhost:8080/api
+
+@baseUrl = https://perm-reformist-unmoving.ngrok-free.dev/api
+
+@apiAuth = {{baseUrl}}/v1/auth
 
 ### ! AJUSTA SEGUN CORRESPONDA 
-@yourEndpoint = {{baseUrl}}/api/v1
+@yourEndpoint = {{baseUrl}}/v1
 
 
 # =====================================================================

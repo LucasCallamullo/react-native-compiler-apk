@@ -2,11 +2,19 @@ package com.vg.auth.controller;
 
 import com.vg.auth.dto.request.UserRequestDTO;
 import com.vg.auth.dto.response.UserResponseDTO;
+
+import com.vg.auth.security.UserPrincipal;
+import com.vg.shared.security.Roles;
+
 import com.vg.auth.service.UserService;
 import com.vg.shared.exception.AppException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,9 +37,17 @@ public class UserController {
      * @throws AppException if email or DNI already in use by another user (HTTP 409 Conflict)
      */
     @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public UserResponseDTO updateUser(
-            @PathVariable UUID id,
-            @Valid @RequestBody UserRequestDTO dto) {
+        @AuthenticationPrincipal UserPrincipal principal,
+        @PathVariable UUID id,
+        @Valid @RequestBody UserRequestDTO dto) {
+
+        List<String> roles = principal.getRoles();
+        
+        if (!id.equals(principal.getUserId()) && !Roles.isAdmin(roles)) {
+            throw new AppException("You can only update your own profile", HttpStatus.FORBIDDEN);
+        }
         return userService.updateUser(id, dto);
     }
 
@@ -43,7 +59,17 @@ public class UserController {
      * @throws AppException if user not found (HTTP 404 Not Found)
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteUser(
+        @AuthenticationPrincipal UserPrincipal principal, 
+        @PathVariable UUID id) {
+
+        List<String> roles = principal.getRoles();
+        
+        if (!id.equals(principal.getUserId()) && !Roles.isAdmin(roles)) {
+            throw new AppException("You can only delete your own profile", HttpStatus.FORBIDDEN);
+        }
+
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
@@ -60,7 +86,17 @@ public class UserController {
      * @throws AppException if user not found (HTTP 404 Not Found)
      */
     @GetMapping("/{id}")
-    public UserResponseDTO getUserById(@PathVariable UUID id) {
+    @PreAuthorize("isAuthenticated()")
+    public UserResponseDTO getUserById(
+        @AuthenticationPrincipal UserPrincipal principal, 
+        @PathVariable UUID id) {
+
+        List<String> roles = principal.getRoles();
+        
+        if (!id.equals(principal.getUserId()) && !Roles.isAdmin(roles)) {
+            throw new AppException("You can only get your own profile", HttpStatus.FORBIDDEN);
+        }
+
         return userService.getUserById(id);
     }
 
@@ -70,6 +106,7 @@ public class UserController {
      * @return a list of all users with HTTP 200 OK status
      */
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponseDTO> getAllUsers() {
         return userService.getAllUsers();
     }
