@@ -25,10 +25,10 @@ public record ErrorResponse(
      * Creates an ErrorResponse with the current timestamp.
      *
      * @param status the HTTP status code
-     * @param message the error message
+     * @param detail the error message
      * @param path the request URI
      */
-    public ErrorResponse(int status, String message, String path) {
-        this(LocalDateTime.now(), status, message, path, false);
+    public ErrorResponse(int status, String detail, String path) {
+        this(LocalDateTime.now(), status, detail, path, false);
     }
 }

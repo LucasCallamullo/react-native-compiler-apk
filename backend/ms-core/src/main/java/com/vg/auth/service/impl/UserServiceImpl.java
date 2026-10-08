@@ -10,7 +10,7 @@ import com.vg.shared.exception.AppException;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
+// import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     // Injected from config/PasswordEncoderConfig.java for password hashing
-    private final PasswordEncoder passwordEncoder;
+    // private final PasswordEncoder passwordEncoder;
 
     // ============================================
     // VALIDATION METHODS (Reusable across the service)
@@ -133,10 +133,10 @@ public class UserServiceImpl implements UserService {
         // Step 4: Map DTO to existing entity (updates firstName, lastName, etc.)
         userMapper.updateEntity(dto, user);
         
-        // Step 5: If password is provided, encrypt it (BCrypt)
+        /* / Step 5: If password is provided, encrypt it (BCrypt)
         if (dto.password() != null && !dto.password().isEmpty()) {
             user.setPassword(passwordEncoder.encode(dto.password()));
-        }
+        } */
         
         // Step 6: Save to database
         User updatedUser = userRepository.save(user);

@@ -21,10 +21,6 @@ public record UserRequestDTO(
     @Size(max = 100, message = "Email must be less than 100 characters")
     String email,
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, max = 20, message = "Password must be between 6 and 20 characters")
-    String password,
-
     @NotBlank(message = "DNI is required")
     @Pattern(regexp = "^[0-9]{8,12}$", message = "DNI must contain only numbers and be between 8 and 12 digits")
     String dni,

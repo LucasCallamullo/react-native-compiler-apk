@@ -53,6 +53,16 @@ Content-Type: application/json
     "phone": "1123456789"
 }
 
+PUT {{yourEndpoint}}/{id}
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+    "name": "Juan Pérez",
+    "email": "juan.perez@example.com",
+    "phone": "1123456789"
+}
+
 
 ### 
 GET {{yourEndpoint}}
