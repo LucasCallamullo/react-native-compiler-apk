@@ -57,43 +57,54 @@ export default function ProfileScreen() {
 
   return (
     <ScreenCustom safeTop>
-      <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Profile Header Card */}
-        <View className="rounded-3xl p-5 border flex-row items-center gap-4 mb-4 bg-surface-1 border-border">
-          <View className="w-16 h-16 rounded-full bg-main-500 items-center justify-center">
+        <View className="rounded-3xl p-3.5 border flex-row items-center gap-8 mb-4 bg-surface-1 border-border">
+          <View className="w-16 h-16 rounded-full bg-main-500 items-center justify-center ms-2">
             <Text className="text-main-fg font-bold text-2xl">
               {(mockUser?.firstName?.[0] || mockUser?.email?.[0] || 'U').toUpperCase()}
             </Text>
           </View>
           <View className="flex-1">
-            <View className="flex-row items-center gap-1.5">
+            <View className="flex-row items-center gap-2">
               <Text className="text-xl font-bold text-content">
                 {mockUser?.firstName
                   ? `${mockUser.firstName} ${mockUser.lastName || ''}`
                   : 'Usuario'}
               </Text>
-              <CheckCircle2 color={infoColor} size={18} />
+              <CheckCircle2 color={infoColor} size={20} />
             </View>
-            <Text className="text-xs mt-0.5 text-content-muted">Usuario verificado</Text>
-            <View className="self-start mt-2 px-2.5 py-0.5 rounded-full border bg-success-bg border-success-border">
-              <Text className="text-[10px] font-semibold text-success-fg">Activo</Text>
+            <Text className="text-sm mt-1 text-content-muted">Usuario verificado</Text>
+
+            <View className='self-end flex-1 flex-row gap-3 mt-3'>
+              {/* Camouflage Button */}
+              <TouchableOpacity
+                onPress={() => router.push('/profile/edit')}
+                className="px-3 py-1.5 rounded-full border bg-info-bg border-info-border"
+              >
+                <Text className="text-base font-bold text-white">Editar</Text>
+              </TouchableOpacity>
+            
+              <View className="px-3 py-1.5 rounded-full border bg-success-bg border-success-border">
+                <Text className="text-base font-bold text-success-fg">Activo</Text>
+              </View>
             </View>
           </View>
         </View>
 
         {/* Personal Data Section */}
         <View className="rounded-2xl p-4 border mb-4 bg-surface-1 border-border">
-          <View className="flex-row items-center gap-2 mb-3 pb-2 border-b border-border">
-            <IdCard color={mutedColor} size={18} />
-            <Text className="text-xs font-semibold uppercase tracking-wider text-content-muted">
+          <View className="flex-row items-center gap-3 mb-3 pb-2 border-b border-border">
+            <IdCard color={mutedColor} size={21} />
+            <Text className="text-base font-semibold uppercase tracking-wider text-content-muted">
               Datos personales
             </Text>
           </View>
 
-          <View className="space-y-3">
+          <View className="space-y-4">
             <View className="flex-row justify-between items-center py-1.5 border-b border-border">
               <View className="flex-row items-center gap-2">
-                <User color={mutedColor} size={16} />
+                <User color={mutedColor} size={18} />
                 <Text className="text-sm text-content-muted">Nombre</Text>
               </View>
               <Text className="text-sm font-medium text-content">
@@ -103,7 +114,7 @@ export default function ProfileScreen() {
 
             <View className="flex-row justify-between items-center py-1.5 border-b border-border">
               <View className="flex-row items-center gap-2">
-                <User color={mutedColor} size={16} />
+                <User color={mutedColor} size={18} />
                 <Text className="text-sm text-content-muted">Apellido</Text>
               </View>
               <Text className="text-sm font-medium text-content">
@@ -113,7 +124,7 @@ export default function ProfileScreen() {
 
             <View className="flex-row justify-between items-center py-1.5 border-b border-border">
               <View className="flex-row items-center gap-2">
-                <IdCard color={mutedColor} size={16} />
+                <IdCard color={mutedColor} size={18} />
                 <Text className="text-sm text-content-muted">DNI</Text>
               </View>
               <Text className="text-sm font-medium text-content">
@@ -123,7 +134,7 @@ export default function ProfileScreen() {
 
             <View className="flex-row justify-between items-center py-1.5 border-b border-border">
               <View className="flex-row items-center gap-2">
-                <Phone color={mutedColor} size={16} />
+                <Phone color={mutedColor} size={18} />
                 <Text className="text-sm text-content-muted">Teléfono</Text>
               </View>
               <Text className="text-sm font-medium text-content">
@@ -133,7 +144,7 @@ export default function ProfileScreen() {
 
             <View className="flex-row justify-between items-center py-1.5">
               <View className="flex-row items-center gap-2">
-                <Mail color={mutedColor} size={16} />
+                <Mail color={mutedColor} size={18} />
                 <Text className="text-sm text-content-muted">Email</Text>
               </View>
               <Text className="text-sm font-medium text-content">

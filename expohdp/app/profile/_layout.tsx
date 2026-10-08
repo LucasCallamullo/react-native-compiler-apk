@@ -16,6 +16,7 @@ export default function ProfileLayout() {
       }}
     >
       <Stack.Screen name="config" />
+      <Stack.Screen name="edit" />
       {/* Ejemplo futuro: una lista con header nativo */}
       {/* <Stack.Screen name="index" options={{ headerShown: true, title: 'Contactos' }} /> */}
     </Stack>
