@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Módulo ShareLink — Documentación Técnica</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Mermaid CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- dom-to-image (fork con scale funcional) -->
+  <script src="https://cdn.jsdelivr.net/npm/dom-to-image-chrome-fix-retina@2.6.0/dist/dom-to-image.min.js"></script>
+
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    #diagramContainer svg { max-width: 100%; height: auto; }
+    pre { tab-size: 2; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+  <div class="max-w-5xl mx-auto px-6 py-10">
+
+    <!-- Header -->
+    <header class="mb-10">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Módulo Backend</span>
+        <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Nuevo</span>
+      </div>
+      <h1 class="text-4xl font-bold text-slate-900 mt-2">Share Links</h1>
+      <p class="text-slate-600 mt-3 text-lg">
+        Generación de links temporales para compartir archivos de la bóveda, con control de visibilidad
+        y filtrado por tipo de archivo.
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2 text-xs">
+        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full font-medium">Spring Boot</span>
+        <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">JPA / Hibernate</span>
+        <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full font-medium">UUID como link</span>
+        <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full font-medium">Soft delete</span>
+        <span class="bg-sky-100 text-sky-700 px-3 py-1 rounded-full font-medium">Integra con CaregiverLink</span>
+      </div>
+    </header>
+
+    <!-- 1. Contexto -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="target" class="w-6 h-6 text-indigo-500"></i>
+        Contexto y objetivo
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+        <p>
+          El usuario guarda archivos en su bóveda digital (capturas, audios, videos, textos).
+          Este módulo permite <strong>generar un link temporal</strong> para compartir esos archivos
+          sin necesidad de que el receptor tenga la app, o restringido a sus cuidadores de confianza.
+        </p>
+        <div class="bg-slate-50 border-l-4 border-indigo-500 p-4 rounded">
+          <p class="text-sm text-slate-700">
+            <strong>Idea central:</strong> el owner crea un link, elige qué tipos de archivo incluir
+            y por cuánto tiempo. El sistema devuelve un UUID que el owner comparte por fuera.
+            Quien abra el link accede a los archivos <strong>solo si cumple la política de visibilidad</strong>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Modelo de decisión -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="git-branch" class="w-6 h-6 text-emerald-500"></i>
+        Decisiones de diseño clave
+      </h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="lock" class="w-5 h-5 text-emerald-500"></i>
+            <h3 class="font-bold text-slate-900">Link "congelado" (Modelo A)</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            El link guarda en la DB qué tipos de archivo incluye. <strong>No hay query params</strong>
+            para modificar el filtro desde afuera. El link es inmutable.
+          </p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="eye" class="w-5 h-5 text-sky-500"></i>
+            <h3 class="font-bold text-slate-900">Visibilidad como enum</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            <code>PUBLIC</code>, <code>AUTHENTICATED</code> o <code>CAREGIVERS_ONLY</code>.
+            Mucho más expresivo que un booleano y extensible a futuro.
+          </p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="shield-check" class="w-5 h-5 text-amber-500"></i>
+            <h3 class="font-bold text-slate-900">Validación en vivo</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            Si el link es <code>CAREGIVERS_ONLY</code>, se consulta <code>CaregiverLink</code>
+            en cada request. Si el cuidador fue revocado, <strong>pierde acceso al instante</strong>.
+          </p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <i data-lucide="archive" class="w-5 h-5 text-rose-500"></i>
+            <h3 class="font-bold text-slate-900">Soft delete</h3>
+          </div>
+          <p class="text-sm text-slate-600">
+            Los links no se borran, se marcan como <code>REVOKED</code>. Tenés historial
+            de qué se compartió, cuándo y con quién.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. DER -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="database" class="w-6 h-6 text-sky-500"></i>
+        Modelo de datos (DER)
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <div class="flex justify-end mb-4">
+          <button id="downloadPng"
+            class="bg-indigo-600 hover:bg-indigo-500 transition text-white px-4 py-2 rounded-lg font-semibold shadow text-sm flex items-center gap-2">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            Descargar diagrama
+          </button>
+        </div>
+        <div id="diagramContainer" class="mermaid">
+erDiagram
+    USER ||--o{ SHARE_LINK : crea
+    USER ||--o{ CAREGIVER_LINK : "es protegido"
+    USER ||--o{ CAREGIVER_LINK : "es cuidador"
+
+    USER {
+        uuid id PK
+        string email UK
+    }
+
+    CAREGIVER_LINK {
+        uuid id PK
+        uuid protected_id FK
+        uuid caregiver_id FK
+        string status
+    }
+
+    SHARE_LINK {
+        uuid id PK "el uuid del link"
+        uuid owner_id FK
+        string visibility "PUBLIC | AUTHENTICATED | CAREGIVERS_ONLY"
+        string file_types "CSV: AUDIO,IMAGE,VIDEO. Vacío = todos"
+        datetime created_at
+        datetime expires_at
+        string status "ACTIVE | REVOKED | EXPIRED"
+        datetime revoked_at
+        uuid revoked_by FK
+    }
+        </div>
+        <p class="text-xs text-slate-500 mt-4">
+          <strong>Nota:</strong> <code>file_types</code> es un CSV de valores del enum <code>TypeFile</code>.
+          Se valida contra el enum al crear. Vacío o null = todos los tipos.
+        </p>
+      </div>
+    </section>
+
+    <!-- 4. Entidad Java -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="code" class="w-6 h-6 text-indigo-500"></i>
+        Entidad <code class="text-xl">ShareLink</code>
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <pre class="bg-slate-900 text-slate-100 p-5 rounded-lg overflow-x-auto text-sm leading-relaxed"><code>@Entity
+@Table(name = "share_links")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class ShareLink {
+
+    @Id
+    private UUID id; // el uuid del link
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "visibility", nullable = false, length = 20)
+    private ShareVisibility visibility;
+
+    // CSV: "AUDIO,IMAGE,VIDEO". Null o vacío = todos los tipos.
+    @Column(name = "file_types", length = 255)
+    private String fileTypes;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private ShareLinkStatus status; // ACTIVE, REVOKED, EXPIRED
+
+    @Column(name = "revoked_at")
+    private LocalDateTime revokedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "revoked_by")
+    private User revokedBy;
+
+    @PrePersist
+    public void ensureId() {
+        if (id == null) id = UUID.randomUUID();
+        if (status == null) status = ShareLinkStatus.ACTIVE;
+    }
+}</code></pre>
+
+        <h3 class="font-bold text-slate-900 mt-6 mb-3">Enums asociados</h3>
+        <pre class="bg-slate-900 text-slate-100 p-5 rounded-lg overflow-x-auto text-sm leading-relaxed"><code>public enum ShareVisibility {
+    PUBLIC,           // cualquiera con el link, sin login
+    AUTHENTICATED,    // cualquier usuario logueado
+    CAREGIVERS_ONLY   // solo cuidadores aceptados del owner, verificados en vivo
+}
+
+public enum ShareLinkStatus {
+    ACTIVE,
+    REVOKED,
+    EXPIRED
+}</code></pre>
+
+        <h3 class="font-bold text-slate-900 mt-6 mb-3">Explicación campo por campo</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-left">
+                <th class="p-3 border border-slate-200 font-semibold">Campo</th>
+                <th class="p-3 border border-slate-200 font-semibold">Por qué existe</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="p-3 border border-slate-200 font-mono text-xs">id (UUID)</td>
+                <td class="p-3 border border-slate-200">Es el link en sí. UUID v4, imposible de adivinar. No necesita hashing extra.</td>
+              </tr>
+              <tr class="bg-slate-50">
+                <td class="p-3 border border-slate-200 font-mono text-xs">owner</td>
+                <td class="p-3 border border-slate-200">Quién creó el link y dueño de los archivos que se comparten.</td>
+              </tr>
+              <tr>
+                <td class="p-3 border border-slate-200 font-mono text-xs">expiresAt</td>
+                <td class="p-3 border border-slate-200">El owner elige los minutos. Si <code>now() &gt; expiresAt</code>, el link se considera <code>EXPIRED</code> sin tocar la DB.</td>
+              </tr>
+              <tr class="bg-slate-50">
+                <td class="p-3 border border-slate-200 font-mono text-xs">visibility</td>
+                <td class="p-3 border border-slate-200">Define la política de acceso. <code>CAREGIVERS_ONLY</code> se valida en vivo contra <code>CaregiverLink</code>.</td>
+              </tr>
+              <tr>
+                <td class="p-3 border border-slate-200 font-mono text-xs">fileTypes (CSV)</td>
+                <td class="p-3 border border-slate-200">Filtro de tipos. <code>"AUDIO,IMAGE"</code> o <code>null</code> = todos. Se valida contra <code>TypeFile</code> al crear.</td>
+              </tr>
+              <tr class="bg-slate-50">
+                <td class="p-3 border border-slate-200 font-mono text-xs">status</td>
+                <td class="p-3 border border-slate-200">Soft delete. <code>ACTIVE</code> → <code>REVOKED</code> (manual) o <code>EXPIRED</code> (calculado). Nunca se borra.</td>
+              </tr>
+              <tr>
+                <td class="p-3 border border-slate-200 font-mono text-xs">revokedAt / revokedBy</td>
+                <td class="p-3 border border-slate-200">Auditoría de revocación. Consistente con <code>CaregiverLink</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Flujo -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="workflow" class="w-6 h-6 text-purple-500"></i>
+        Flujo paso a paso
+      </h2>
+      <div class="space-y-4">
+
+        <div class="bg-white rounded-xl border border-slate-200 p-6 border-l-4 border-l-emerald-500">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded">PASO 1</span>
+            <h3 class="font-bold text-slate-900">El owner crea el link</h3>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">
+            Elige visibilidad, tipos de archivo y minutos de expiración. El sistema valida todo
+            y devuelve la URL lista para copiar.
+          </p>
+          <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg text-xs overflow-x-auto"><code>POST /api/share-links
+
+Body: {
+  "visibility": "CAREGIVERS_ONLY",
+  "fileTypes": ["IMAGE", "VIDEO"],   // o null/vacío = todos
+  "expiresInMinutes": 60
+}
+
+→ Valida que cada tipo esté en el enum TypeFile
+→ Valida que expiresInMinutes esté en rango (ej: 5..10080)
+→ Crea ShareLink {
+    id: UUID,
+    owner: usuario autenticado,
+    visibility: CAREGIVERS_ONLY,
+    fileTypes: "IMAGE,VIDEO",
+    expiresAt: now() + 60min,
+    status: ACTIVE
+  }
+→ Devuelve: {
+    "url": "https://app.com/share/a3f8-...",
+    "expiresAt": "2026-10-07T15:30:00"
+  }</code></pre>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-6 border-l-4 border-l-sky-500">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="bg-sky-100 text-sky-700 text-xs font-bold px-2 py-1 rounded">PASO 2</span>
+            <h3 class="font-bold text-slate-900">Alguien abre el link</h3>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">
+            El sistema valida expiración, estado y visibilidad. Si pasa, devuelve la metadata
+            del link y los archivos filtrados.
+          </p>
+          <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg text-xs overflow-x-auto"><code>GET /api/share-links/{uuid}
+
+→ Busca link por id
+→ Si no existe → 404
+→ Si status == REVOKED → 410 Gone
+→ Si now() > expiresAt → 410 Gone (y marca EXPIRED)
+
+→ Validación de visibilidad:
+   - PUBLIC:          pasa siempre
+   - AUTHENTICATED:   requiere usuario logueado
+   - CAREGIVERS_ONLY: requiere usuario logueado Y
+                      existe CaregiverLink {
+                        protectedUser = link.owner,
+                        caregiver = currentUser,
+                        status = ACCEPTED
+                      }
+                      Si no → 403 Forbidden
+
+→ Devuelve metadata del link + archivos filtrados por fileTypes</code></pre>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-6 border-l-4 border-l-rose-500">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="bg-rose-100 text-rose-700 text-xs font-bold px-2 py-1 rounded">PASO 3</span>
+            <h3 class="font-bold text-slate-900">El owner revoca (opcional)</h3>
+          </div>
+          <p class="text-sm text-slate-600 mb-3">
+            En cualquier momento el owner puede cortar el acceso. No se borra, se marca como revocado.
+          </p>
+          <pre class="bg-slate-900 text-slate-100 p-4 rounded-lg text-xs overflow-x-auto"><code>PATCH /api/share-links/{uuid}/revoke
+
+→ Verifica que el solicitante sea el owner
+→ status = REVOKED, revokedAt = now(), revokedBy = owner
+→ A partir de este momento, cualquier GET devuelve 410 Gone</code></pre>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 6. Endpoints -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="route" class="w-6 h-6 text-indigo-500"></i>
+        Endpoints del módulo
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-100 text-left">
+            <tr>
+              <th class="p-3 font-semibold">Método</th>
+              <th class="p-3 font-semibold">Endpoint</th>
+              <th class="p-3 font-semibold">Acción</th>
+              <th class="p-3 font-semibold">Quién</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-t border-slate-200">
+              <td class="p-3"><span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs font-bold">POST</span></td>
+              <td class="p-3 font-mono text-xs">/api/share-links</td>
+              <td class="p-3">Crear link</td>
+              <td class="p-3">Owner autenticado</td>
+            </tr>
+            <tr class="border-t border-slate-200 bg-slate-50">
+              <td class="p-3"><span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded text-xs font-bold">GET</span></td>
+              <td class="p-3 font-mono text-xs">/api/share-links/{uuid}</td>
+              <td class="p-3">Ver metadata + archivos del link</td>
+              <td class="p-3">Según visibility</td>
+            </tr>
+            <tr class="border-t border-slate-200">
+              <td class="p-3"><span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded text-xs font-bold">GET</span></td>
+              <td class="p-3 font-mono text-xs">/api/share-links</td>
+              <td class="p-3">Listar mis links</td>
+              <td class="p-3">Owner</td>
+            </tr>
+            <tr class="border-t border-slate-200 bg-slate-50">
+              <td class="p-3"><span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold">PATCH</span></td>
+              <td class="p-3 font-mono text-xs">/api/share-links/{uuid}/revoke</td>
+              <td class="p-3">Revocar link</td>
+              <td class="p-3">Owner</td>
+            </tr>
+            <tr class="border-t border-slate-200">
+              <td class="p-3"><span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded text-xs font-bold">GET</span></td>
+              <td class="p-3 font-mono text-xs">/api/admin/share-links</td>
+              <td class="p-3">Listar todos (admin)</td>
+              <td class="p-3">Admin</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">
+        <strong>Nota:</strong> no hay query params en el GET del link. El filtro de tipos está
+        guardado en la DB (Modelo A). El link es inmutable.
+      </p>
+    </section>
+
+    <!-- 7. Validación CAREGIVERS_ONLY -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="shield-check" class="w-6 h-6 text-emerald-500"></i>
+        Validación <code class="text-xl">CAREGIVERS_ONLY</code>
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+        <p class="text-sm text-slate-600">
+          Esta es la parte que conecta <strong>ShareLink</strong> con <strong>CaregiverLink</strong>.
+          La validación se hace <strong>en vivo en cada request</strong>, no se cachea ni se congela.
+        </p>
+        <pre class="bg-slate-900 text-slate-100 p-5 rounded-lg overflow-x-auto text-sm leading-relaxed"><code>private void validateAccess(ShareLink link, User currentUser) {
+    switch (link.getVisibility()) {
+        case PUBLIC -> { /* sin restricción */ }
+
+        case AUTHENTICATED -> {
+            if (currentUser == null) throw new UnauthorizedException();
+        }
+
+        case CAREGIVERS_ONLY -> {
+            if (currentUser == null) throw new UnauthorizedException();
+
+            boolean isCaregiver = caregiverLinkRepository
+                .existsByProtectedUserAndCaregiverAndStatus(
+                    link.getOwner(),
+                    currentUser,
+                    CaregiverLinkStatus.ACCEPTED);
+
+            if (!isCaregiver) throw new ForbiddenException();
+        }
+    }
+}</code></pre>
+        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded">
+          <p class="text-sm text-slate-700">
+            <strong>Por qué esto importa:</strong> si el owner revoca a un cuidador en el módulo
+            Caregiver, ese cuidador <strong>pierde acceso inmediato</strong> a todos los ShareLinks
+            con visibilidad <code>CAREGIVERS_ONLY</code>. No hay listas congeladas que puedan quedar obsoletas.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Filtrado por tipo -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="filter" class="w-6 h-6 text-amber-500"></i>
+        Filtrado por tipo de archivo
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+        <p class="text-sm text-slate-600">
+          El campo <code>fileTypes</code> guarda un CSV de valores del enum <code>TypeFile</code>.
+          Al leer el link, se parsea y se filtra la query de archivos del owner.
+        </p>
+        <pre class="bg-slate-900 text-slate-100 p-5 rounded-lg overflow-x-auto text-sm leading-relaxed"><code>// Parseo seguro del CSV (valida contra el enum)
+Set&lt;TypeFile&gt; types = parseFileTypes(link.getFileTypes());
+// null o vacío → todos los tipos
+
+// Query de archivos del owner
+List&lt;StoredFile&gt; files = (types.isEmpty())
+    ? storedFileRepository.findByUser(link.getOwner())
+    : storedFileRepository.findByUserAndTypeFileIn(link.getOwner(), types);
+
+// Se devuelven al cliente agrupados por tipo (opcional)
+Map&lt;TypeFile, List&lt;StoredFile&gt;&gt; grouped = files.stream()
+    .collect(Collectors.groupingBy(StoredFile::getTypeFile));</code></pre>
+        <p class="text-xs text-slate-500">
+          El parseo ignora valores desconocidos y loguea warning. Nunca lanza excepción por un CSV viejo.
+        </p>
+      </div>
+    </section>
+
+    <!-- 9. Checklist -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="list-checks" class="w-6 h-6 text-emerald-500"></i>
+        Checklist de implementación
+      </h2>
+      <div class="bg-white rounded-xl border border-slate-200 p-6">
+        <ul class="space-y-3 text-sm text-slate-700">
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Crear enums <code>ShareVisibility</code> y <code>ShareLinkStatus</code>.</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Crear entidad <code>ShareLink</code> con <code>@PrePersist</code> para UUID y status default.</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Implementar parser CSV ↔ <code>Set&lt;TypeFile&gt;</code> con validación contra el enum.</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Implementar <code>validateAccess</code> con los 3 casos de visibilidad.</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Método de repositorio <code>findByUserAndTypeFileIn</code> en <code>StoredFileRepository</code>.</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Job programado (<code>@Scheduled</code>) para marcar links vencidos como <code>EXPIRED</code> (opcional pero recomendado).</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>DTO de request con validación <code>@Min</code> / <code>@Max</code> para <code>expiresInMinutes</code>.</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <i data-lucide="square" class="w-5 h-5 text-slate-400 mt-0.5 shrink-0"></i>
+            <span>Tests de integración: PUBLIC, AUTHENTICATED, CAREGIVERS_ONLY, revocado, expirado.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 10. Integración con otros módulos -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <i data-lucide="plug" class="w-6 h-6 text-purple-500"></i>
+        Integración con otros módulos
+      </h2>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <h3 class="font-bold text-slate-900 mb-2 text-sm">CaregiverLink</h3>
+          <p class="text-xs text-slate-600">
+            Validación en vivo de <code>CAREGIVERS_ONLY</code>. Si se revoca un cuidador, pierde acceso al instante.
+          </p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <h3 class="font-bold text-slate-900 mb-2 text-sm">StoredFile + TypeFile</h3>
+          <p class="text-xs text-slate-600">
+            El filtro <code>fileTypes</code> usa el enum <code>TypeFile</code>. Consistencia total entre módulos.
+          </p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5">
+          <h3 class="font-bold text-slate-900 mb-2 text-sm">User</h3>
+          <p class="text-xs text-slate-600">
+            El owner es un <code>User</code>. La revocación guarda <code>revokedBy</code> para auditoría.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="text-center text-xs text-slate-400 pt-8 border-t border-slate-200">
+      Documento generado para el equipo de backend · Módulo ShareLink
+    </footer>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#eef2ff',
+        primaryTextColor: '#1e293b',
+        primaryBorderColor: '#6366f1',
+        lineColor: '#94a3b8',
+        fontSize: '14px'
+      },
+      er: {
+        diagramPadding: 20,
+        layoutDirection: 'TB',
+        minEntityWidth: 120,
+        entityPadding: 16
+      }
+    });
+
+    document.getElementById('downloadPng').addEventListener('click', () => {
+      const node = document.querySelector('#diagramContainer');
+      if (!node || !node.querySelector('svg')) {
+        return alert('El diagrama aún no está listo.');
+      }
+      domtoimage.toPng(node, {
+        bgcolor: '#ffffff',
+        width: node.offsetWidth * 2,
+        height: node.offsetHeight * 2,
+        style: {
+          transform: 'scale(2)',
+          'transform-origin': 'top left'
+        }
+      })
+      .then((dataUrl) => {
+        const link = document.createElement('a');
+        link.download = 'DER-ShareLink.png';
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch((err) => console.error('Error al exportar:', err));
+    });
+  </script>
+</body>
+</html>
