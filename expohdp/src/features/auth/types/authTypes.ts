@@ -1,15 +1,5 @@
 import { ApiResponse } from '@shared/types/commonTypes';
-
-/**
- * User information
- */
-export interface UserInfo {
-  id: number;
-  email: string;
-  role: string;
-  firstName: string;
-  lastName: string;
-}
+import { UserResponse } from '@features/auth/types/userTypes';
 
 // AUTH 
 
@@ -41,7 +31,7 @@ export interface LoginResponse {
   refreshToken: string;
   tokenType: string;
   expiresIn: number;
-  user: UserInfo;
+  user: UserResponse;
   message: string;
 }
 
@@ -60,7 +50,7 @@ export interface RefreshTokenResponse {
   refreshToken: string;
   tokenType: string;
   expiresIn: number;
-  user: UserInfo;
+  user: UserResponse;
   message: string;
 }
 
@@ -81,4 +71,4 @@ export type RefreshTokenApiResponse = ApiResponse<RefreshTokenResponse>;
 /**
  * Wrapped User Info Response
  */
-export type UserInfoApiResponse = ApiResponse<UserInfo>;
+export type UserInfoApiResponse = ApiResponse<UserResponse>;

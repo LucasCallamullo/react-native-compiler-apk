@@ -5,8 +5,8 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { authService } from '../services/authService';
-import { UserInfo, LoginResponse } from '../types/authTypes';
-import { RegisterDTO } from '../types/authTypes';
+import { RegisterDTO, LoginResponse } from '../types/authTypes';
+import { UserResponse } from '../types/userTypes';
 
 // ============================================
 // TYPES
@@ -16,13 +16,13 @@ import { RegisterDTO } from '../types/authTypes';
  * Auth Context Type
  */
 interface AuthContextType {
-  user: UserInfo | null;
+  user: UserResponse | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<LoginResponse>;
   register: (registerDTO: RegisterDTO) => Promise<LoginResponse>;
   logout: () => Promise<void>;
-  updateUser: (user: UserInfo) => void;
+  updateUser: (user: UserResponse) => void;
 }
 
 // ============================================
@@ -45,7 +45,7 @@ interface AuthProviderProps {
  * and exposes authentication methods (login, register, logout) to the app.
  */
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<UserInfo | null>(null);
+  const [user, setUser] = useState<UserResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // On initial mount, attempt to restore persistent session from SecureStore
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (accessToken && storedUser) {
         try {
-          const parsedUser = JSON.parse(storedUser) as UserInfo;
+          const parsedUser = JSON.parse(storedUser) as UserResponse;
           setUser(parsedUser);
         } catch (parseError) {
           console.error('Error parsing stored user info:', parseError);
@@ -145,7 +145,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   /**
    * Updates the current user state (e.g., after profile update)
    */
-  const updateUser = (updatedUser: UserInfo): void => {
+  const updateUser = (updatedUser: UserResponse): void => {
     setUser(updatedUser);
     // Optionally update stored user info
     SecureStore.setItemAsync('user_info', JSON.stringify(updatedUser)).catch((error) => {

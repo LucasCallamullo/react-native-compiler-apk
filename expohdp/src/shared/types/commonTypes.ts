@@ -1,51 +1,63 @@
-
+// src/shared/types/commonTypes.ts
 
 // ============================================
 // GENERIC API TYPES
 // ============================================
 
 /**
- * API Response wrapper from Spring Boot backend
+ * Success response wrapper from Spring Boot backend.
+ * Mirrors ApiResponse<T> on the server.
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   timestamp: string;
   status: number;
-  detail?: string | null;
-  message?: string | null;
-  path?: string | null;
+  detail: string;
   data: T;
   success: boolean;
 }
 
 /**
- * Paginated API Response
+ * Error response wrapper from Spring Boot backend.
+ * Mirrors ErrorResponse on the server.
+ *
+ * Note: no `data` field — that's the structural difference
+ * with ApiResponse. Errors carry no payload.
  */
-export interface PaginatedApiResponse<T = any> {
+export interface ErrorResponse {
   timestamp: string;
   status: number;
-  detail?: string | null;
-  message?: string | null;
-  path?: string | null;
+  detail: string;
+  path: string;
+  success: false;
+}
+
+/**
+ * Type guard: is this a success response with a payload?
+ */
+export function isApiSuccess<T>(
+  response: ApiResponse<T>
+): response is ApiResponse<T> & { data: T } {
+  return response.success && response.data !== null;
+}
+
+/**
+ * Paginated success response wrapper.
+ * (Ajustá si tu backend envuelve los paginados distinto.)
+ */
+export interface PaginatedApiResponse<T = unknown> {
+  timestamp: string;
+  status: number;
+  detail: string;
   data: {
     content: T[];
     totalPages: number;
     totalElements: number;
     size: number;
     number: number;
-  } | null;  
+  } | null;
   success: boolean;
 }
 
-/**
- * Type guard to check if API response is successful
- */
-export function isApiSuccess<T>(response: ApiResponse<T>): response is ApiResponse<T> & { data: T } {
-  return response.success && response.data !== null;
-}
-
-/**
- * Type guard to check if API response is paginated
- */
 export function isPaginatedApiSuccess<T>(
   response: PaginatedApiResponse<T>
 ): response is PaginatedApiResponse<T> & { data: NonNullable<PaginatedApiResponse<T>['data']> } {

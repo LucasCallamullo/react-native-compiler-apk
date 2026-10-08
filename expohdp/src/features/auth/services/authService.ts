@@ -12,19 +12,21 @@ import {
   RefreshTokenRequest,
   RefreshTokenResponse,
   RefreshTokenApiResponse,
-  UserInfo,
   UserInfoApiResponse,
 } from '../types/authTypes';
+
+import type { UserResponse } from '../types/userTypes';
 
 
 // ============================================
 // MOCK DATA
 // ============================================
 
-const MOCK_USER: UserInfo = {
-  id: 1,
+const MOCK_USER: UserResponse = {
+  id: "000000000000000000000000000000000-1",
   email: 'test@mail.com',
-  role: 'USER',
+  dni: '123456789',
+  roles: ['USER'],
   firstName: 'Test',
   lastName: 'User',
 };
@@ -139,7 +141,7 @@ export const authService = {
    *
    * @returns Resolves to user details extracted from the validated token.
    */
-  validateToken: async (): Promise<UserInfo> => {
+  validateToken: async (): Promise<UserResponse> => {
     if (getUseMock()) return MOCK_USER;
 
     const response = await apiClient.get<UserInfoApiResponse>('/v1/auth/validate');
