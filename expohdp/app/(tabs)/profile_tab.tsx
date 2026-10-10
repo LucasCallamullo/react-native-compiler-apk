@@ -31,7 +31,7 @@ const mockUser = {
 export default function ProfileScreen() {
   const router = useRouter();
   const { logout } = useAuth();
-  const { getVar } = useAppTheme();
+  const { theme, setTheme, getVar } = useAppTheme();
 
   // Colores para props nativas (íconos)
   const primaryColor = getVar('--color-main-500');
@@ -60,7 +60,7 @@ export default function ProfileScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Profile Header Card */}
         <View className="rounded-3xl p-3.5 border flex-row items-center gap-8 mb-4 bg-surface-1 border-border">
-          <View className="w-16 h-16 rounded-full bg-main-500 items-center justify-center ms-2">
+          <View className="w-16 h-16 rounded-full bg-main-500 items-center justify-center ms-2 border-main-700">
             <Text className="text-main-fg font-bold text-2xl">
               {(mockUser?.firstName?.[0] || mockUser?.email?.[0] || 'U').toUpperCase()}
             </Text>
@@ -72,9 +72,9 @@ export default function ProfileScreen() {
                   ? `${mockUser.firstName} ${mockUser.lastName || ''}`
                   : 'Usuario'}
               </Text>
-              <CheckCircle2 color={infoColor} size={20} />
+              <CheckCircle2 color={infoColor} size={22} />
             </View>
-            <Text className="text-sm mt-1 text-content-muted">Usuario verificado</Text>
+            <Text className="text-base mt-1 text-content-muted">Usuario verificado</Text>
 
             <View className='self-end flex-1 flex-row gap-3 mt-3'>
               {/* Camouflage Button */}
@@ -82,7 +82,7 @@ export default function ProfileScreen() {
                 onPress={() => router.push('/profile/edit')}
                 className="px-3 py-1.5 rounded-full border bg-info-bg border-info-border"
               >
-                <Text className="text-base font-bold text-white">Editar</Text>
+                <Text className="text-base font-bold text-info-fg">Editar</Text>
               </TouchableOpacity>
             
               <View className="px-3 py-1.5 rounded-full border bg-success-bg border-success-border">
@@ -95,7 +95,7 @@ export default function ProfileScreen() {
         {/* Personal Data Section */}
         <View className="rounded-2xl p-4 border mb-4 bg-surface-1 border-border">
           <View className="flex-row items-center gap-3 mb-3 pb-2 border-b border-border">
-            <IdCard color={mutedColor} size={21} />
+            <IdCard color={mutedColor} size={24} />
             <Text className="text-base font-semibold uppercase tracking-wider text-content-muted">
               Datos personales
             </Text>
@@ -157,7 +157,8 @@ export default function ProfileScreen() {
         {/* Share History Button */}
         <TouchableOpacity
           onPress={() => router.push('/history/share')}
-          className="w-full bg-main-500 py-3.5 px-4 rounded-2xl flex-row items-center justify-between mb-3"
+          className="w-full bg-main-500 py-3.5 px-4 rounded-2xl flex-row items-center 
+            justify-between mb-3 mt-1 border-main-700"
           style={{
             shadowColor: primaryColor,
             shadowOffset: { width: 0, height: 4 },
@@ -178,12 +179,13 @@ export default function ProfileScreen() {
         {/* Camouflage Button */}
         <TouchableOpacity
           onPress={() => router.push('/profile/config')}
-          className="w-full py-3.5 px-4 rounded-2xl flex-row items-center justify-between border mb-5 bg-surface-1 border-border"
+          className="w-full mt-1 py-3.5 px-4 rounded-2xl flex-row items-center 
+            justify-between border mb-5 bg-surface-1 border-border"
         >
           <View className="flex-row items-center gap-3">
             <EyeOff color={primaryColor} size={20} />
             <Text className="font-semibold text-base text-content">
-              Camuflaje y Apariencia
+              Configuraciónes
             </Text>
           </View>
           <ChevronRight color={mutedColor} size={18} />
@@ -227,7 +229,7 @@ export default function ProfileScreen() {
         <View className="rounded-2xl p-4 border mb-4 bg-surface-1 border-border">
           <View className="flex-row items-center gap-2 mb-3">
             <Phone color={successColor} size={18} />
-            <Text className="font-bold text-sm text-content">
+            <Text className="font-bold text-lg text-content">
               Líneas de ayuda (Argentina)
             </Text>
           </View>
@@ -237,8 +239,8 @@ export default function ProfileScreen() {
               onPress={() => handlePhoneCall('144')}
               className="flex-row items-center justify-between p-3 rounded-xl border active:opacity-70 bg-surface-1 border-border"
             >
-              <Text className="text-xs text-content">Línea 144</Text>
-              <Text className="text-[10px] px-2 py-0.5 rounded-full border font-semibold bg-success-bg 
+              <Text className="text-sm text-content">Línea 144</Text>
+              <Text className="text-xs px-2 py-0.5 rounded-full border font-semibold bg-success-bg 
               text-success-fg border-success-border">
                 Nacional
               </Text>
@@ -248,8 +250,8 @@ export default function ProfileScreen() {
               onPress={() => handlePhoneCall('911')}
               className="flex-row items-center justify-between p-3 rounded-xl border active:opacity-70 bg-surface-1 border-border"
             >
-              <Text className="text-xs text-content">Emergencias 911</Text>
-              <Text className="text-[10px] px-2 py-0.5 rounded-full border font-semibold bg-error-bg 
+              <Text className="text-sm text-content">Emergencias 911</Text>
+              <Text className="text-xs px-2 py-0.5 rounded-full border font-semibold bg-error-bg 
               text-error-fg border-error-border">
                 Urgencia
               </Text>
@@ -259,10 +261,10 @@ export default function ProfileScreen() {
               onPress={handleWhatsapp}
               className="flex-row items-center justify-between p-3 rounded-xl border active:opacity-70 bg-surface-1 border-border"
             >
-              <Text className="text-xs text-content">
+              <Text className="text-sm text-content">
                 WhatsApp +54 9 11 1234-5678
               </Text>
-              <Text className="text-[10px] px-2 py-0.5 rounded-full border font-semibold bg-info-bg text-info-fg border-info-border">
+              <Text className="text-xs px-2 py-0.5 rounded-full border font-semibold bg-info-bg text-info-fg border-info-border">
                 Chat
               </Text>
             </TouchableOpacity>
@@ -270,7 +272,7 @@ export default function ProfileScreen() {
 
           <View className="mt-3 p-3 rounded-xl border flex-row items-start gap-2 bg-surface-1 border-border">
             <Lightbulb color={warningColor} size={16} />
-            <Text className="text-[11px] flex-1 leading-normal text-content-muted">
+            <Text className="text-xs flex-1 leading-normal text-content-muted">
               Estas líneas son gratuitas, confidenciales y están disponibles las
               24 horas, los 365 días del año.
             </Text>
@@ -279,21 +281,21 @@ export default function ProfileScreen() {
 
         {/* Procedure Guide */}
         <View className="rounded-2xl p-4 border mb-4 bg-surface-1 border-border">
-          <Text className="font-bold text-xs mb-2 text-main-500">
+          <Text className="font-bold text-base mb-2 text-main-500">
             ¿Cómo proseguir con una denuncia?
           </Text>
 
           <View className="space-y-1.5">
-            <Text className="p-2 rounded-lg text-xs border bg-surface-1 text-content border-border">
+            <Text className="p-2 rounded-lg text-sm border bg-surface-1 text-content border-border">
               1. Comunicate al <Text className="font-bold text-main-500">144</Text> o al{' '}
               <Text className="font-bold text-main-500">911</Text>.
             </Text>
-            <Text className="p-2 rounded-lg text-xs border bg-surface-1 text-content border-border">
+            <Text className="p-2 rounded-lg text-sm border bg-surface-1 text-content border-border">
               2. Acercate a una{' '}
               <Text className="font-bold text-main-500">Comisaría de la Mujer</Text> más
               cercana.
             </Text>
-            <Text className="p-2 rounded-lg text-xs border bg-surface-1 text-content border-border">
+            <Text className="p-2 rounded-lg text-sm border bg-surface-1 text-content border-border">
               3. Podés solicitar{' '}
               <Text className="font-bold text-main-500">asesoramiento legal</Text>{' '}
               gratuito en el Ministerio de Justicia.
@@ -302,7 +304,7 @@ export default function ProfileScreen() {
 
           <View className="mt-3 border-l-2 p-2.5 rounded-r-lg flex-row items-center gap-2 bg-surface-1 border-warning">
             <ShieldAlert color={warningColor} size={16} />
-            <Text className="text-[11px] flex-1 text-content-muted">
+            <Text className="text-xs flex-1 text-content-muted">
               Recordá: tu seguridad es lo más importante. No dudes en pedir ayuda.
             </Text>
           </View>
@@ -311,11 +313,35 @@ export default function ProfileScreen() {
         {/* Logout Button */}
         <TouchableOpacity
           onPress={handleLogout}
-          className="w-full border py-3 rounded-2xl flex-row items-center justify-center gap-2 mb-8 bg-surface-1 border-border"
+          className="w-full border py-3 rounded-2xl flex-row items-center 
+            justify-center gap-2 mb-8 bg-surface-1 border-border"
         >
           <LogOut color={errorColor} size={18} />
-          <Text className="font-medium text-sm text-error-fg">Cerrar Sesión</Text>
+          <Text className="font-medium text-base text-error-fg">Cerrar Sesión</Text>
         </TouchableOpacity>
+
+
+        {/* Quick theme switcher  
+        <TouchableOpacity
+          onPress={() =>
+            setTheme(
+              theme === 'theme-dark'
+                ? 'theme-light'
+                : theme === 'theme-light'
+                ? 'theme-pink'
+                : theme === 'theme-pink'
+                ? 'theme-blue'
+                : 'theme-dark'
+            )
+          }
+          className="rounded-xl p-2.5 my-2 flex-row justify-between items-center border bg-surface-1 border-border"
+        >
+          <Text className="text-xs font-semibold text-content-muted">
+            Tema actual: <Text className="font-bold text-main-500">{theme}</Text>
+          </Text>
+          <Text className="text-xs font-bold text-main-500">Cambiar Tema</Text>
+        </TouchableOpacity> */}
+
       </ScrollView>
     </ScreenCustom>
   );
