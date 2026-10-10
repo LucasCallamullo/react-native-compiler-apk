@@ -21,7 +21,6 @@ export default function EmergencyScreen() {
   // Colores para props nativas (íconos)
   const errorColor = getVar('--color-error');
   const successColor = getVar('--color-success');
-  const mainFgColor = getVar('--color-surface-0'); // texto sobre fondos main
 
   const triggerEmergency = () => {
     Alert.alert(
@@ -63,7 +62,7 @@ export default function EmergencyScreen() {
           <Text className="text-3xl font-bold text-content">Emergencias</Text>
         </View>
 
-        <Text className="text-base mb-5 text-content-muted">
+        <Text className="text-lg mb-5 text-content-muted">
           Contactos de emergencia y ubicación en tiempo real
         </Text>
 
@@ -74,35 +73,35 @@ export default function EmergencyScreen() {
             active:opacity-80 bg-error-bg border-error-border"
         >
           <Siren color={errorColor} size={24} />
-          <Text className="text-error-fg font-bold text-base">
+          <Text className="text-error-fg font-bold text-lg">
             ¡EMERGENCIA! (Llamar a todos)
           </Text>
         </TouchableOpacity>
 
         {/* GPS Card */}
         <View className="rounded-2xl p-4 flex-row items-center justify-between mb-5 border bg-success-bg border-success-border">
-          <View className="flex-1 pr-2">
-            <View className="flex-row items-center gap-1.5 mb-1">
-              <MapPin color={successColor} size={16} />
-              <Text className="font-semibold text-base text-success">
+          <View className="flex-1 pr-2 gap-1">
+            <View className="flex-row items-center gap-2 mb-1">
+              <MapPin color={successColor} size={18} />
+              <Text className="font-semibold text-lg text-success">
                 Ubicación en tiempo real
               </Text>
             </View>
-            <Text className="text-sm text-content">
+            <Text className="text-base text-content">
               -34.6037, -58.3816 · CABA
             </Text>
-            <Text className="text-xs mt-1 text-success">
+            <Text className="text-sm mt-1 text-success">
               Actualizando cada 5 segundos
             </Text>
           </View>
-          <TouchableOpacity className="px-3 py-2 rounded-full flex-row items-center gap-1 active:opacity-80 bg-success-border">
-            <Share2 color={'#ffffff'} size={14} />
-            <Text className="text-white text-sm font-semibold">Compartir</Text>
+          <TouchableOpacity className="px-3 py-2 rounded-full flex-row items-center gap-2 active:opacity-80 bg-success-border">
+            <Share2 color={'#ffffff'} size={16} />
+            <Text className="text-white text-base font-semibold">Compartir</Text>
           </TouchableOpacity>
         </View>
 
         {/* Emergency Contacts */}
-        <Text className="text-xl font-bold mb-3 text-content">
+        <Text className="text-2xl font-bold mb-3 mt-1 text-content">
           Contactos de emergencia
         </Text>
 
@@ -123,21 +122,21 @@ export default function EmergencyScreen() {
                     },
                   })
                 }
-                className="w-10 h-10 rounded-full items-center justify-center mr-3 border bg-surface-1 border-border 
-                active:opacity-70"
+                className="w-11 h-11 rounded-full items-center justify-center mr-3 border 
+                bg-surface-1 border-border active:opacity-70"
               >
-                <Text className="font-bold text-main-500">{contact.initial}</Text>
+                <Text className="font-bold text-main-500 text-lg">{contact.initial}</Text>
               </TouchableOpacity>
 
-              <View className="flex-1">
+              <View className="flex-1 gap-1">
                 <Text className="font-medium text-content">{contact.name}</Text>
-                <Text className="text-xs text-content-muted">{contact.phone}</Text>
+                <Text className="text-sm text-content-muted">{contact.phone}</Text>
               </View>
 
-              <TouchableOpacity className="bg-main-500 border-main-300 px-3 py-2 rounded-full flex-row 
-              items-center gap-1.5 active:opacity-80">
-                <PhoneCall color={'#ffffff'} size={15} />
-                <Text className="text-white font-semibold text-sm">Llamar</Text>
+              <TouchableOpacity className="bg-main-500 border-main-300 px-3 
+                py-2 rounded-full flex-row items-center gap-2 active:opacity-80">
+                <PhoneCall color={'#ffffff'} size={16} />
+                <Text className="text-white font-semibold text-base">Llamar</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -146,19 +145,18 @@ export default function EmergencyScreen() {
         {/* Add Contact Button */}
         <TouchableOpacity
           onPress={() => router.push('/contacts/new')}
-          className="py-3 rounded-full flex-row items-center justify-center gap-2 mb-6 active:opacity-80 
-            border bg-main-700 border-main-500"
+          className="py-3 rounded-full flex-row items-center justify-center gap-2.5 mb-6 mt-2 
+            active:opacity-80 border bg-main-700 border-main-500"
         >
-          <UserPlus color={'#fccee8'} size={18} />
-          <Text className="font-semibold text-pink-200">
+          <UserPlus color={'#fccee8'} size={20} />
+          <Text className="font-semibold text-pink-200 text-lg">
             Agregar contacto de emergencia
           </Text>
         </TouchableOpacity>
  
 
 
-        {/* Quick theme switcher */}
-        
+        {/* Quick theme switcher 
         <TouchableOpacity
           onPress={() =>
             setTheme(
@@ -177,7 +175,7 @@ export default function EmergencyScreen() {
             Tema actual: <Text className="font-bold text-main-500">{theme}</Text>
           </Text>
           <Text className="text-xs font-bold text-main-500">Cambiar Tema</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
       </ScrollView>
     </ScreenCustom>

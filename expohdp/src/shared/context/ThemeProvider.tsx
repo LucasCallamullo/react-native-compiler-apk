@@ -1,10 +1,11 @@
 import { VariableContextProvider } from 'nativewind';
 import { ReactNode, useState, createContext, useContext } from 'react';
+import Storage from 'expo-sqlite/kv-store';
 
 // ============================================
 // TYPES
 // ============================================
-type ThemeType = 'theme-dark' | 'theme-light' | 'theme-pink' | 'theme-blue';
+export type ThemeType = 'theme-dark' | 'theme-light' | 'theme-pink' | 'theme-blue';
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -169,6 +170,8 @@ export type ThemeVarName =
 // ============================================
 // CONTEXT
 // ============================================
+const THEME_STORAGE_KEY = 'app.theme';
+
 const ThemeContext = createContext<{
   theme: ThemeType;
   setTheme: (theme: ThemeType) => void;
@@ -190,8 +193,29 @@ export function useAppTheme() {
 // THEME PROVIDER
 // ============================================
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<ThemeType>('theme-dark');
+  // Inicialización síncrona: lee el tema guardado antes del primer render.
+  // Si no hay nada guardado, cae al default 'theme-dark'.
+  const [theme, setThemeState] = useState<ThemeType>(() => {
+    try {
+      const stored = Storage.getItemSync(THEME_STORAGE_KEY);
+      return (stored as ThemeType) ?? 'theme-dark';
+    } catch {
+      return 'theme-dark';
+    }
+  });
 
+  // Wrapper de setTheme que persiste en Storage.
+  // Mantiene la misma firma que tenías, así el resto del código no cambia.
+  const setTheme = (next: ThemeType) => {
+    setThemeState(next);
+    try {
+      Storage.setItemSync(THEME_STORAGE_KEY, next);
+    } catch (e) {
+      console.warn('[theme] failed to persist', e);
+    }
+  };
+
+  // const [theme, setTheme] = useState<ThemeType>('theme-dark');
   const getVar = (name: ThemeVarName) => themeVariables[theme][name];
 
   return (

@@ -1,4 +1,5 @@
-import React from 'react';
+// src/shared/components/DraggableLockButton.tsx
+import React, { useCallback } from 'react';
 import { Dimensions, Pressable } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -6,10 +7,16 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
+// Importá scheduleOnRN según tu versión:
+// - react-native-reanimated >= 3.16: import { scheduleOnRN } from 'react-native-reanimated';
+// - react-native-worklets (nuevo): import { scheduleOnRN } from 'react-native-worklets';
+import { scheduleOnRN } from 'react-native-worklets';
 import { Calculator } from 'lucide-react-native';
+import Storage from 'expo-sqlite/kv-store';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BUTTON_SIZE = 64; // w-16 h-16 equivalente
+const BUTTON_SIZE = 64;
+const STORAGE_KEY = 'ui.lock-button.position';
 
 interface DraggableLockButtonProps {
   onPress: () => void;
@@ -19,25 +26,55 @@ interface DraggableLockButtonProps {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+function readStoredPosition(initialBottom: number) {
+  try {
+    const raw = Storage.getItemSync(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (
+        typeof parsed.x === 'number' &&
+        typeof parsed.y === 'number' &&
+        Number.isFinite(parsed.x) &&
+        Number.isFinite(parsed.y)
+      ) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('[lock-button] failed to read position', e);
+  }
+  return {
+    x: SCREEN_WIDTH - BUTTON_SIZE - 24,
+    y: SCREEN_HEIGHT - initialBottom - BUTTON_SIZE,
+  };
+}
+
 export function DraggableLockButton({
   onPress,
   iconColor,
   initialBottom,
 }: DraggableLockButtonProps) {
-  // Posición inicial en X (Alineado a la derecha con margen de 24px)
-  const translateX = useSharedValue(SCREEN_WIDTH - BUTTON_SIZE - 24);
-  // Posición inicial en Y respecto al top
-  const translateY = useSharedValue(SCREEN_HEIGHT - initialBottom - BUTTON_SIZE);
+  const initial = readStoredPosition(initialBottom);
 
+  const translateX = useSharedValue(initial.x);
+  const translateY = useSharedValue(initial.y);
   const context = useSharedValue({ x: 0, y: 0 });
+
+  // Esta función vive en el thread de JS.
+  // La llamaremos DESDE el worklet vía scheduleOnRN.
+  const persist = useCallback((x: number, y: number) => {
+    try {
+      Storage.setItemSync(STORAGE_KEY, JSON.stringify({ x, y }));
+    } catch (e) {
+      console.warn('[lock-button] failed to persist position', e);
+    }
+  }, []);
 
   const panGesture = Gesture.Pan()
     .onStart(() => {
-      // Guarda la posición previa antes de iniciar el arrastre
       context.value = { x: translateX.value, y: translateY.value };
     })
     .onUpdate((event) => {
-      // Limita el movimiento dentro de los márgenes visibles de la pantalla
       const nextX = context.value.x + event.translationX;
       const nextY = context.value.y + event.translationY;
 
@@ -45,13 +82,16 @@ export function DraggableLockButton({
       translateY.value = Math.min(Math.max(48, nextY), SCREEN_HEIGHT - BUTTON_SIZE - 48);
     })
     .onEnd(() => {
-      // Opcional: Snap automático al borde más cercano (Izquierda o Derecha)
       const middle = SCREEN_WIDTH / 2;
-      if (translateX.value + BUTTON_SIZE / 2 < middle) {
-        translateX.value = withSpring(16); // Snap a la izquierda
-      } else {
-        translateX.value = withSpring(SCREEN_WIDTH - BUTTON_SIZE - 16); // Snap a la derecha
-      }
+      const snappedX =
+        translateX.value + BUTTON_SIZE / 2 < middle
+          ? 16
+          : SCREEN_WIDTH - BUTTON_SIZE - 16;
+
+      translateX.value = withSpring(snappedX);
+
+      // Ejecutamos `persist` en el thread de JS con los valores finales
+      scheduleOnRN(persist, snappedX, translateY.value);
     });
 
   const animatedStyle = useAnimatedStyle(() => ({
