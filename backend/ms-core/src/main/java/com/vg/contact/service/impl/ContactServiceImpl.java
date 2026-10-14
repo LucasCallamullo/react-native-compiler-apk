@@ -20,13 +20,15 @@ import java.util.UUID;
 
 /**
  * Implementation of ContactService.
- * Reuses UserService to validate the existence of the owner user.
  *
  * Security note:
  * Every "read single / update / delete" operation requires BOTH
  * the contact id (Long) AND the owner user id (UUID) to match.
  * This prevents a user from accessing contacts of another user
- * just by guessing the contact id.
+ * by guessing the contact id.
+ *
+ * The userId is always taken from the authenticated JWT (via the controller),
+ * never from user-provided input (URL, body, query params).
  */
 @Service
 @RequiredArgsConstructor
@@ -36,7 +38,11 @@ public class ContactServiceImpl implements ContactService {
     private final ContactMapper contactMapper;
     private final UserService userService;
 
+    // ============================================
+    // LIST
+    // ============================================
 
+    @Override
     @Transactional(readOnly = true)
     public List<ContactResponseDTO> getAll() {
         return contactRepository.findAll().stream()
@@ -44,13 +50,18 @@ public class ContactServiceImpl implements ContactService {
             .toList();
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<ContactResponseDTO> getByUserId(UUID userId) {
+        userService.validateUserExists(userId);
         return contactRepository.findByUserId(userId).stream()
             .map(contactMapper::toResponseDTO)
             .toList();
     }
 
+    // ============================================
+    // CREATE
+    // ============================================
 
     @Override
     @Transactional
@@ -71,6 +82,10 @@ public class ContactServiceImpl implements ContactService {
         return contactMapper.toResponseDTO(savedContact);
     }
 
+    // ============================================
+    // GET ONE
+    // ============================================
+
     @Override
     @Transactional(readOnly = true)
     public ContactResponseDTO getContactByIdAndUserId(Long id, UUID userId) {
@@ -78,29 +93,24 @@ public class ContactServiceImpl implements ContactService {
         return contactMapper.toResponseDTO(contact);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ContactResponseDTO> getContactsByUserId(UUID userId) {
-        userService.validateUserExists(userId);
-        return contactMapper.toResponseDTOList(contactRepository.findByUserId(userId));
-    }
+    // ============================================
+    // UPDATE
+    // ============================================
 
     @Override
     @Transactional
     public ContactResponseDTO updateContact(Long id, UUID userId, ContactRequestDTO dto) {
         Contact contact = findContactByIdAndUserIdOrThrow(id, userId);
 
-        // Si cambia el dueño del contacto, validar y actualizar
-        if (!contact.getUser().getId().equals(userId)) {
-            User newUser = userService.validateUserExists(userId);
-            contact.setUser(newUser);
-        }
-
         contactMapper.updateEntity(dto, contact);
 
         Contact updatedContact = contactRepository.save(contact);
         return contactMapper.toResponseDTO(updatedContact);
     }
+
+    // ============================================
+    // DELETE
+    // ============================================
 
     @Override
     @Transactional

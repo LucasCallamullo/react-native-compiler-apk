@@ -21,8 +21,12 @@ import java.util.UUID;
  * REST controller for managing contact operations.
  * All endpoints are prefixed with /api/v1/contacts.
  *
- * Security: read single / update / delete require BOTH id (Long) and userId (UUID)
- * as a double-factor safety mechanism.
+ * Security:
+ * - The userId is NEVER received in the URL. It is always extracted from the
+ *   authenticated JWT via @AuthenticationPrincipal UserPrincipal.
+ * - GET / returns all contacts for ADMIN, or only the authenticated user's contacts otherwise.
+ * - GET /{id}, PUT /{id}, DELETE /{id} verify that the contact belongs to the
+ *   authenticated user (double-factor check: id + userId from JWT).
  *
  * Note: Responses are automatically wrapped by ApiResponseAdvice.
  */
@@ -33,10 +37,12 @@ public class ContactController {
 
     private final ContactService contactService;
 
-    // GET ALL CONTACTS BY ROLES
-    @GetMapping()
-    public List<ContactResponseDTO> getAllByUserOrRol(
-        @AuthenticationPrincipal UserPrincipal principal){
+    // ============================================
+    // LIST — ADMIN sees all, USER sees own
+    // ============================================
+    @GetMapping
+    public List<ContactResponseDTO> getAllByUserOrRole(
+            @AuthenticationPrincipal UserPrincipal principal) {
 
         UUID userId = principal.getUserId();
         List<String> roles = principal.getRoles();
@@ -48,62 +54,54 @@ public class ContactController {
         return contactService.getByUserId(userId);
     }
 
-    /**
-     * Creates a new contact for a specific user.
-     */
+    // ============================================
+    // CREATE — userId taken from JWT
+    // ============================================
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ContactResponseDTO createContact(
-        @AuthenticationPrincipal UserPrincipal principal,
-        @Valid @RequestBody ContactRequestDTO dto) {
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody ContactRequestDTO dto) {
 
         UUID userId = principal.getUserId();
         return contactService.createContact(dto, userId);
     }
 
-    /**
-     * Retrieves a contact by its id AND the owner user id (double-factor check).
-     *
-     * Example: GET /api/v1/contacts/1/user/550e8400-e29b-41d4-a716-446655440000
-     */
-    @GetMapping("/{id}/user/{userId}")
-    public ContactResponseDTO getContactByIdAndUserId(
-            @PathVariable Long id,
-            @PathVariable UUID userId) {
+    // ============================================
+    // GET ONE — id only in URL, userId from JWT
+    // ============================================
+    @GetMapping("/{id}")
+    public ContactResponseDTO getContactById(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id) {
+
+        UUID userId = principal.getUserId();
         return contactService.getContactByIdAndUserId(id, userId);
     }
 
-    /**
-     * Retrieves all contacts belonging to a specific user.
-     */
-    @GetMapping("/user/{userId}")
-    public List<ContactResponseDTO> getContactsByUserId(@PathVariable UUID userId) {
-        return contactService.getContactsByUserId(userId);
-    }
-
-    /**
-     * Updates a contact identified by id AND owner user id.
-     *
-     * Example: PUT /api/v1/contacts/1/user/550e8400-e29b-41d4-a716-446655440000
-     */
-    @PutMapping("/{id}/user/{userId}")
+    // ============================================
+    // UPDATE — id only in URL, userId from JWT
+    // ============================================
+    @PutMapping("/{id}")
     public ContactResponseDTO updateContact(
+            @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Long id,
-            @PathVariable UUID userId,
             @Valid @RequestBody ContactRequestDTO dto) {
+
+        UUID userId = principal.getUserId();
         return contactService.updateContact(id, userId, dto);
     }
 
-    /**
-     * Deletes a contact identified by id AND owner user id.
-     *
-     * Example: DELETE /api/v1/contacts/1/user/550e8400-e29b-41d4-a716-446655440000
-     */
-    @DeleteMapping("/{id}/user/{userId}")
+    // ============================================
+    // DELETE — id only in URL, userId from JWT
+    // ============================================
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteContact(
-            @PathVariable Long id,
-            @PathVariable UUID userId) {
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long id) {
+
+        UUID userId = principal.getUserId();
         contactService.deleteContact(id, userId);
     }
 }
