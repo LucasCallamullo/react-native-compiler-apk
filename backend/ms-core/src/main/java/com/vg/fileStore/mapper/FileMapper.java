@@ -18,9 +18,8 @@ public interface FileMapper {
      * @param entity entidad StoredFile a convertir
      * @return DTO FileResponse con los datos expuestos al cliente
      */
-    @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "downloadUrl",
-             expression = "java(\"/api/files/\" + entity.getId())")
+             expression = "java(\"/api/v1/files/\" + entity.getStoredNameSimple())")
     FileResponse toResponse(StoredFile entity);
 
     /**

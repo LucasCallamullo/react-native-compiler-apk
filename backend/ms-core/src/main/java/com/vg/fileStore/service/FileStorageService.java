@@ -26,15 +26,15 @@ public interface FileStorageService {
      * @param id id del archivo almacenado
      * @return recurso listo para descarga
      */
-    Resource loadAsResource(Long id);
+    Resource loadAsResource(String uuidName);
 
     /**
      * Obtiene los metadatos de un archivo.
      *
-     * @param id id del archivo
+     * @param uuidName uuid nombre del archivo
      * @return entidad StoredFile
      */
-    StoredFile getMeta(Long id);
+    StoredFile getMeta(String uuidName);
 
     /**
      * Lista todos los archivos de un usuario.
@@ -49,5 +49,5 @@ public interface FileStorageService {
      *
      * @param id id del archivo
      */
-    void delete(Long id);
+    void delete(String uuidName);
 }

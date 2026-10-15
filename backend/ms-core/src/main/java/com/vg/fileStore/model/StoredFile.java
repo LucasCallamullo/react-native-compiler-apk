@@ -1,11 +1,23 @@
 package com.vg.fileStore.model;
 
-import jakarta.persistence.*;
-import lombok.*;
 import java.time.Instant;
 
-
 import com.vg.auth.model.User;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Entidad JPA que representa un archivo almacenado en disco.
@@ -32,11 +44,18 @@ public class StoredFile {
     private String originalName;
 
     /**
-     * nombre físico del archivo en disco (uuid + extensión).
+     * nombre físico del archivo en disco.
      * Obligatorio y único.
      */
     @Column(nullable = false, unique = true)
-    private String storedName;      // nombre físico en disco (uuid + ext)
+    private String storedNameSimple;
+
+
+    /**
+     * extenson del archivo en disco.
+     */
+    @Column
+    private String extension;
 
     /**
      * tipo MIME del archivo (ej "image/png", "application/pdf").

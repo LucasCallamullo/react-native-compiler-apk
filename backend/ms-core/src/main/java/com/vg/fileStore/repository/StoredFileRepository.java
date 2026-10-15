@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import com.vg.fileStore.model.StoredFile;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -16,9 +17,11 @@ import java.util.UUID;
  */
 public interface StoredFileRepository extends JpaRepository<StoredFile, Long> {
 
+
     /**
      * Busca todos los archivos de un usuario ordenados por fecha de subida descendente.
      * Derivación: findBy + User_Id (el campo se llama "user", su id es "id").
+     *
      *
      * @param userId id del usuario propietario
      * @return lista de archivos del usuario, del más reciente al más antiguo
@@ -55,4 +58,6 @@ public interface StoredFileRepository extends JpaRepository<StoredFile, Long> {
     // Traer archivos con el user ya cargado (evita LazyInitializationException)
     @Query("SELECT f FROM StoredFile f JOIN FETCH f.user WHERE f.user.id = :userId")
     List<StoredFile> findByUserIdWithUser(@Param("userId") UUID userId);
+
+    Optional<StoredFile> findByStoredNameSimple(String uuidName);
 }

@@ -4,9 +4,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.vg.auth.security.UserPrincipal;
 import com.vg.fileStore.dto.response.FileResponse;
 import com.vg.fileStore.model.StoredFile;
 import com.vg.fileStore.service.impl.FileStorageServiceImpl;
@@ -35,28 +38,31 @@ public class FileController {
      * Consume multipart/form-data.
      *
      * @param file   archivo subido (parte "file" del formulario)
-     * @param userId id del usuario propietario (parámetro "userId")
-     * @return metadatos del archivo guardado
+     * @autencationPrincipal para buscar userId id del usuario propietario 
      * @throws IOException si ocurre un error de E/S durante el almacenamiento
      */
     // Subir archivo (multipart/form-data)
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FileResponse> upload(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("userId") UUID userId
+            @AuthenticationPrincipal UserPrincipal principal
     ) throws IOException {
+        UUID userId = principal.getUserId();
         return ResponseEntity.ok(service.store(file, userId));
     }
 
     /**
      * Lista todos los archivos pertenecientes a un usuario.
      *
-     * @param userId id del usuario propietario (query param "userId")
+     * @autencationPrincipal para buscar userId id del usuario propietario 
      * @return lista de metadatos de los archivos del usuario
      */
     // Listar archivos del owner
     @GetMapping
-    public List<FileResponse> list(@RequestParam("userId") UUID userId) {
+    @PreAuthorize("isAuthenticated()")
+    public List<FileResponse> list(@AuthenticationPrincipal UserPrincipal principal) {
+        UUID userId = principal.getUserId();
         return service.listByUserId(userId);
     }
 
@@ -69,10 +75,11 @@ public class FileController {
      * @throws IOException si ocurre un error de E/S al cargar el recurso
      */
     // Descargar / visualizar
-    @GetMapping("/{id}")
-    public ResponseEntity<Resource> download(@PathVariable Long id) throws IOException {
-        StoredFile meta = service.getMeta(id);
-        Resource resource = service.loadAsResource(id);
+    @GetMapping("/{uuidName}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Resource> download(@PathVariable String uuidName) throws IOException {
+        StoredFile meta = service.getMeta(uuidName);
+        Resource resource = service.loadAsResource(uuidName);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(meta.getContentType()))
@@ -89,9 +96,10 @@ public class FileController {
      * @throws IOException si ocurre un error de E/S durante el borrado
      */
     // Borrar
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) throws IOException {
-        service.delete(id);
+    @DeleteMapping("/{uuidName}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> delete(@PathVariable String uuidName) throws IOException {
+        service.delete(uuidName);
         return ResponseEntity.noContent().build();
     }
 }

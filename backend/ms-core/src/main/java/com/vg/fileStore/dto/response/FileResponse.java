@@ -10,12 +10,6 @@ import java.util.UUID;
  * userId va plano (UUID) para no disparar el lazy load de User.
  */
 public record FileResponse(
-
-        /**
-         * id del archivo almacenado.
-         */
-        Long id,
-
         /**
          * nombre original del archivo tal como lo subió el usuario.
          */
@@ -36,10 +30,7 @@ public record FileResponse(
          */
         Instant uploadedAt,
 
-        /**
-         * id del usuario propietario del archivo (UUID plano).
-         */
-        UUID userId,
+       
 
         /**
          * URL desde la cual el cliente puede descargar el archivo.
