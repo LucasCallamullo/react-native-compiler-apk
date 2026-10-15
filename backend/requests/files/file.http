@@ -1,18 +1,18 @@
 ### Variables de entorno
 @baseUrl = http://localhost:8080/api/v1/files
-@userId = 00000000-0000-0000-0000-000000000001
-# Reemplazar con el ID devuelto en la respuesta del upload:
-@fileId = 6
+# Reemplazar con el token obtenido en tu endpoint de /auth/login
+@authToken= eyJhbGciOiJIUzI1NiJ9.eyJmaXJzdE5hbWUiOiJUZXN0IiwibGFzdE5hbWUiOiJVc2VyIiwicm9sZXMiOlsiVVNFUiJdLCJ0eXBlIjoiYWNjZXNzIiwidXNlcklkIjoiZDhjYzlhMDQtODY1Yi00NDFiLWJmM2UtMTU4NGFlNjMyYjI0IiwiZW1haWwiOiJ0ZXN0QG1haWwuY29tIiwiaXNzdWVyIjoibXMtY29yZSIsInN1YiI6ImQ4Y2M5YTA0LTg2NWItNDQxYi1iZjNlLTE1ODRhZTYzMmIyNCIsImlhdCI6MTc5MjAzNjI2NiwiZXhwIjoxNzkyMTIyNjY2fQ.QvzjykyTbilrAWfWBP7TwaB-BeIqyGCvkOshtvPoA48
 
-### 1. Subir un archivo (multipart/form-data)
-# Nota: Creá un archivo de prueba (ej: test.txt) en la misma carpeta que este .http
+@authToken2= eyJhbGciOiJIUzI1NiJ9.eyJmaXJzdE5hbWUiOiJUZXN0MSIsImxhc3ROYW1lIjoiVXNlciIsInJvbGVzIjpbIlVTRVIiXSwidHlwZSI6ImFjY2VzcyIsInVzZXJJZCI6ImU1MzcxZjQxLWE3ZGEtNDhhMS05YzAwLTljOWM2NzMyNGVlMiIsImVtYWlsIjoidGVzdDFAbWFpbC5jb20iLCJpc3N1ZXIiOiJtcy1jb3JlIiwic3ViIjoiZTUzNzFmNDEtYTdkYS00OGExLTljMDAtOWM5YzY3MzI0ZWUyIiwiaWF0IjoxNzkyMDMyMDQ3LCJleHAiOjE3OTIxMTg0NDd9.CpjYqJQZIcUEvr-digZOu8nMLr4_9Gf_o4RUEexFNDc
+# Reemplazar con el ID devuelto en la respuesta del upload:
+@uuidName = 9a1000f8-97ee-4ad7-8046-ef47c1383514
+
+
+### 1. Subir archivo de texto (test.txt)
 POST {{baseUrl}}/upload
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
---WebAppBoundary
-Content-Disposition: form-data; name="userId"
-
-{{userId}}
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="test.txt"
 Content-Type: text/plain
@@ -20,14 +20,12 @@ Content-Type: text/plain
 < ./test.txt
 --WebAppBoundary--
 
-### Subir imagen PNG (multipart/form-data)
+
+### Subir imagen PNG (despliegue.png)
 POST {{baseUrl}}/upload
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
---WebAppBoundary
-Content-Disposition: form-data; name="userId"
-
-{{userId}}
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="despliegue.png"
 Content-Type: image/png
@@ -35,14 +33,12 @@ Content-Type: image/png
 < ./despliegue.png
 --WebAppBoundary--
 
-### Subir archivo PDF Mantenimiento
+
+### Subir archivo PDF (Mantenimiento.pdf)
 POST {{baseUrl}}/upload
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
---WebAppBoundary
-Content-Disposition: form-data; name="userId"
-
-{{userId}}
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="Mantenimiento.pdf"
 Content-Type: application/pdf
@@ -50,14 +46,12 @@ Content-Type: application/pdf
 < ./Mantenimiento.pdf
 --WebAppBoundary--
 
-###  Subir HTML (presupuesto.html)
+
+### Subir HTML (presupuesto.html)
 POST {{baseUrl}}/upload
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
---WebAppBoundary
-Content-Disposition: form-data; name="userId"
-
-{{userId}}
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="presupuesto.html"
 Content-Type: text/html
@@ -65,14 +59,12 @@ Content-Type: text/html
 < ./presupuesto.html
 --WebAppBoundary--
 
+
 ### Subir Imagen JPEG (imagen.jpeg)
 POST {{baseUrl}}/upload
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
---WebAppBoundary
-Content-Disposition: form-data; name="userId"
-
-{{userId}}
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="imagen.jpeg"
 Content-Type: image/jpeg
@@ -80,14 +72,12 @@ Content-Type: image/jpeg
 < ./imagen.jpeg
 --WebAppBoundary--
 
+
 ### Subir Planilla Excel (planilla.xlsx)
 POST {{baseUrl}}/upload
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
---WebAppBoundary
-Content-Disposition: form-data; name="userId"
-
-{{userId}}
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="planilla.xlsx"
 Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
@@ -95,14 +85,12 @@ Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 < ./planilla.xlsx
 --WebAppBoundary--
 
-###  Subir Video MP4 (video.mp4)
+
+### Subir Video MP4 (video.mp4)
 POST {{baseUrl}}/upload
+Authorization: Bearer {{authToken}}
 Content-Type: multipart/form-data; boundary=WebAppBoundary
 
---WebAppBoundary
-Content-Disposition: form-data; name="userId"
-
-{{userId}}
 --WebAppBoundary
 Content-Disposition: form-data; name="file"; filename="video.mp4"
 Content-Type: video/mp4
@@ -111,12 +99,17 @@ Content-Type: video/mp4
 --WebAppBoundary--
 
 
-### 2. Listar todos los archivos del usuario
-GET {{baseUrl}}?userId={{userId}}
+### 2. Listar todos los archivos del usuario autenticado
+GET {{baseUrl}}
+Authorization: Bearer {{authToken}}
 Accept: application/json
 
+
 ### 3. Descargar / Visualizar archivo por ID
-GET {{baseUrl}}/{{fileId}}
+GET {{baseUrl}}/{{uuidName}}
+Authorization: Bearer {{authToken}}
+
 
 ### 4. Eliminar archivo por ID
-DELETE {{baseUrl}}/{{fileId}}
+DELETE {{baseUrl}}/{{uuidName}}
+Authorization: Bearer {{authToken}}

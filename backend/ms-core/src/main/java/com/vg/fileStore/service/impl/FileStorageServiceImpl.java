@@ -103,7 +103,12 @@ public class FileStorageServiceImpl implements FileStorageService {
 
         String original = sanitize(file.getOriginalFilename());
         String ext = getExtension(original);
-        String storedName = UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
+
+        //Nuevo campo agregado
+        UUID uuidName = UUID.randomUUID();
+        String uuidNameString = uuidName.toString(); 
+
+        String storedName = uuidNameString + (ext.isEmpty() ? "" : "." + ext);
 
         // Organizar por año/mes para no saturar una sola carpeta
         Instant now = Instant.now();
@@ -133,7 +138,8 @@ public class FileStorageServiceImpl implements FileStorageService {
 
         StoredFile meta = StoredFile.builder()
                 .originalName(original)
-                .storedName(storedName)
+                .storedNameSimple(uuidNameString)
+                .extension(ext)
                 .contentType(file.getContentType() == null
                         ? "application/octet-stream"
                         : file.getContentType())
@@ -158,9 +164,9 @@ public class FileStorageServiceImpl implements FileStorageService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Resource loadAsResource(Long id) {
-        StoredFile meta = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No existe archivo con id: " + id));
+    public Resource loadAsResource(String uuidName) {
+        StoredFile meta = repository.findByStoredNameSimple(uuidName)
+                .orElseThrow(() -> new RuntimeException("No existe archivo con id: " + uuidName));
 
         Path path = root.resolve(meta.getRelativePath()).normalize();
 
@@ -173,13 +179,13 @@ public class FileStorageServiceImpl implements FileStorageService {
             Resource resource = new UrlResource(path.toUri());
             if (!resource.exists() || !resource.isReadable()) {
                 throw new AppException(
-                        "Archivo no accesible: " + id,
+                        "Archivo no accesible: " + uuidName,
                         HttpStatus.NOT_FOUND);
             }
             return resource;
         } catch (IOException e) {
             throw new AppException(
-                    "Error al leer el archivo con id: " + id,
+                    "Error al leer el archivo con id: " + uuidName,
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -192,11 +198,13 @@ public class FileStorageServiceImpl implements FileStorageService {
      */
     @Override
     @Transactional(readOnly = true)
-    public StoredFile getMeta(Long id) {
-        return repository.findById(id)
+    public StoredFile getMeta(String uuidName) {
+        return repository.findByStoredNameSimple(uuidName)
                 .orElseThrow(() -> new AppException(
-                        "No existe archivo con id: " + id,
+                        "No existe archivo con id: " + uuidName,
                         HttpStatus.NOT_FOUND));
+
+                
     }
 
     /**
@@ -221,8 +229,8 @@ public class FileStorageServiceImpl implements FileStorageService {
      */
     @Override
     @Transactional
-    public void delete(Long id) {
-        StoredFile meta = getMeta(id);
+    public void delete(String uuidName) {
+        StoredFile meta = getMeta(uuidName);
         Path path = root.resolve(meta.getRelativePath()).normalize();
 
         if (!path.startsWith(root)) {
@@ -233,7 +241,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             Files.deleteIfExists(path);
         } catch (IOException e) {
             throw new AppException(
-                    "Error al eliminar el archivo físico con id: " + id,
+                    "Error al eliminar el archivo físico con id: " + uuidName,
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
