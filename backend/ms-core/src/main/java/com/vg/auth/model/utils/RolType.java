@@ -11,6 +11,7 @@ public enum RolType {
 
     USER("Standard user with basic access to the application"),
     ADMIN("Administrator with full system access and elevated permissions"),
+    CAREGIVER("Caregiver with some utils access and elevated permissions"),
     OTHER("Placeholder role reserved for future expansion");
 
     private final String description;
