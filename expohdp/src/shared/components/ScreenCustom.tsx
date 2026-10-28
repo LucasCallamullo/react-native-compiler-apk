@@ -1,4 +1,4 @@
-import { View, ViewProps } from 'react-native';
+import { ScrollView, View, ViewProps } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ScreenProps extends ViewProps {
@@ -36,7 +36,9 @@ export function ScreenCustom({
       style={paddingStyle}
       {...props}
     >
-      {children}
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {children}
+      </ScrollView>
     </View>
   );
 }

@@ -19,19 +19,28 @@ import {
   RotateCcw,
   Save,
   Check,
-  UserCog
+  UserCog,
+  MessageSquare
 } from 'lucide-react-native';
+
+import Storage from 'expo-sqlite/kv-store';
+
 
 import { useLockCode } from '@features/auth/hooks/useLockCode';
 import { DEFAULT_LOCK } from '@features/auth/config/lockConfig';
 
-// Ajustá este array si tenés más temas
+// THEMES ARRAY TO USE
 const THEMES: { id: ThemeType; label: string; swatch: string }[] = [
   { id: 'theme-dark',  label: 'Dark',  swatch: '#000000' },
   { id: 'theme-light', label: 'Light', swatch: '#ffffff' },
   { id: 'theme-pink',  label: 'Pink',  swatch: '#ec4899' },
   { id: 'theme-blue',  label: 'Blue',  swatch: '#3b82f6' },
 ];
+
+// This is for message deafult to emergencies
+const EMERGENCY_MESSAGE_KEY = 'emergency_default_message';
+const DEFAULT_EMERGENCY_MESSAGE = '¡Emergencia! Necesito ayuda. Esta es mi ubicación actual:';
+
 
 export default function ConfigScreen() {
   const router = useRouter();
@@ -50,6 +59,66 @@ export default function ConfigScreen() {
   const inputValue = draftCode ?? code;
   const isDirty = draftCode !== null && draftCode.trim() !== code;
   const isValidDraft = isValid(inputValue.trim());
+
+
+  const [savedMessage, setSavedMessage] = useState<string>(() => {
+    try {
+      return Storage.getItemSync(EMERGENCY_MESSAGE_KEY) ?? DEFAULT_EMERGENCY_MESSAGE;
+    } catch {
+      return DEFAULT_EMERGENCY_MESSAGE;
+    }
+  });
+
+  const [draftMessage, setDraftMessage] = useState<string>(savedMessage);
+  const [isSavingMessage, setIsSavingMessage] = useState(false);
+
+  // Derivados (no necesitan estado, se recalculan en cada render)
+  const trimmedDraft = draftMessage.trim();
+  const isDirtyMsg = trimmedDraft !== savedMessage;
+  const isEmpty = trimmedDraft.length === 0;
+  const isDefaultSaved = savedMessage === DEFAULT_EMERGENCY_MESSAGE;
+
+  const canSave = isDirtyMsg && !isEmpty && !isSavingMessage;
+  const canReset = !isDefaultSaved && !isSavingMessage;
+
+  const handleSaveEmergencyMessage = async () => {
+    if (!canSave) return;
+    setIsSavingMessage(true);
+    try {
+      await Storage.setItem(EMERGENCY_MESSAGE_KEY, trimmedDraft);
+      setSavedMessage(trimmedDraft);   // sincroniza la fuente de verdad
+      setDraftMessage(trimmedDraft);   // limpia espacios sobrantes del input
+      Alert.alert('Listo', 'Mensaje de emergencia actualizado.');
+    } catch {
+      Alert.alert('Error', 'No se pudo guardar el mensaje.');
+    } finally {
+      setIsSavingMessage(false);
+    }
+  };
+
+  const handleResetEmergencyMessage = () => {
+    if (!canReset) return;
+    Alert.alert(
+      'Restaurar mensaje',
+      '¿Volver al mensaje de emergencia predeterminado?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Restaurar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await Storage.setItem(EMERGENCY_MESSAGE_KEY, DEFAULT_EMERGENCY_MESSAGE);
+              setSavedMessage(DEFAULT_EMERGENCY_MESSAGE);
+              setDraftMessage(DEFAULT_EMERGENCY_MESSAGE);
+            } catch {
+              Alert.alert('Error', 'No se pudo restaurar el mensaje.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const handleSaveCode = async () => {
     const trimmed = inputValue.trim();
@@ -87,6 +156,8 @@ export default function ConfigScreen() {
       ]
     );
   };
+
+
 
   return (
     <ScreenCustom safeTop>
@@ -207,6 +278,73 @@ export default function ConfigScreen() {
             </View>
           </View>
         </View>
+
+
+        {/* ============================================
+            SECCIÓN: MENSAJE DE EMERGENCIA PREDETERMINADO
+            ============================================ */}
+        <View className="mb-6">
+          <View className="flex-row items-center gap-2 mb-3 mt-2">
+            <MessageSquare color={primaryColor} size={21} />
+            <Text className="text-xl font-semibold tracking-wider text-content-muted">
+              Mensaje de emergencia predeterminado
+            </Text>
+          </View>
+
+          <View className="rounded-2xl p-4 border bg-surface-1 border-border">
+            <Text className="text-base mb-3 text-content-muted">
+              Este es el texto que se incluirá automáticamente al compartir la ubicación por WhatsApp.
+            </Text>
+
+            <View className="flex-row items-center border rounded-xl px-3 py-3 bg-surface-0 border-border">
+              <AppTextInput
+                value={draftMessage}                 // 👈 draft, no saved
+                onChangeText={setDraftMessage}
+                placeholder={DEFAULT_EMERGENCY_MESSAGE}
+                multiline
+                numberOfLines={3}
+                style={{ flex: 1, fontSize: 16, minHeight: 80, textAlignVertical: 'top' }}
+              />
+            </View>
+
+            {/* Feedback opcional cuando está vacío */}
+            {isEmpty && (
+              <Text className="text-sm mt-2 text-error-fg">
+                El mensaje no puede estar vacío.
+              </Text>
+            )}
+
+            <View className="flex-row gap-2 mt-4">
+              <TouchableOpacity
+                onPress={handleSaveEmergencyMessage}
+                disabled={!canSave}
+                className={`flex-1 py-3 rounded-xl border border-main-300
+                  flex-row items-center justify-center gap-2 bg-main-700 active:opacity-80
+                  ${!canSave ? 'opacity-40' : ''}`}
+              >
+                <Save color="#ffffff" size={18} />
+                <Text className="text-white font-semibold text-base">
+                  {isSavingMessage ? 'Guardando...' : 'Guardar'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleResetEmergencyMessage}
+                disabled={!canReset}
+                className={`px-4 py-3 rounded-xl border border-border
+                  flex-row items-center justify-center gap-2 bg-surface-2 active:opacity-80
+                  ${!canReset ? 'opacity-40' : ''}`}
+              >
+                <RotateCcw color={mutedColor} size={18} />
+                <Text className="text-content font-semibold text-base">Reset</Text>
+              </TouchableOpacity>
+            </View>
+
+
+          </View>
+        </View>
+
+
       </ScrollView>
     </ScreenCustom>
   );
