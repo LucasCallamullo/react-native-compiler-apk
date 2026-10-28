@@ -3,7 +3,7 @@ package com.vg.shared.config;
 import com.vg.auth.config.UserSeeder;
 import lombok.RequiredArgsConstructor;
 
-import java.util.UUID;
+// import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +32,7 @@ public class DaddySeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
+        /* 
         // step 0: 
         // if u need this stupid uuid u can use after seeders rol n user
         UUID userId = UserSeeder.TEST_USER_ID;    // 00000000-0000-0000-0000-000000000001
@@ -39,6 +40,10 @@ public class DaddySeeder implements CommandLineRunner {
         
         UUID adminId = UserSeeder.ADMIN_USER_ID;    // 00000000-0000-0000-0000-000000000002
         String userAdmin = UserSeeder.ADMIN_USER_EMAIL;    // admin@gmail.com
+
+        UUID caregiverId = UserSeeder.CAREGIVER_USER_ID;    // 00000000-0000-0000-0000-000000000003
+        String userCaregiver = UserSeeder.CAREGIVER_USER_EMAIL;    // caregiver@gmail.com
+        */
 
 
         log.info("=== Starting seed process ===");

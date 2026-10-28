@@ -39,6 +39,9 @@ public class UserSeeder {
     public static final UUID ADMIN_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     public static final String ADMIN_USER_EMAIL  = "admin@gmail.com";
 
+    public static final UUID CAREGIVER_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000003");
+    public static final String CAREGIVER_USER_EMAIL  = "caregiver@gmail.com";
+
     private final RolRepository rolRepository;
     private final UserRepository userRepository;
     private final UserRolesRepository userRolesRepository;
