@@ -1,11 +1,41 @@
 ### Variables de entorno
 @baseUrl = http://localhost:8080/api/v1/files
-# Reemplazar con el token obtenido en tu endpoint de /auth/login
-@authToken= eyJhbGciOiJIUzI1NiJ9.eyJmaXJzdE5hbWUiOiJUZXN0IiwibGFzdE5hbWUiOiJVc2VyIiwicm9sZXMiOlsiVVNFUiJdLCJ0eXBlIjoiYWNjZXNzIiwidXNlcklkIjoiZDhjYzlhMDQtODY1Yi00NDFiLWJmM2UtMTU4NGFlNjMyYjI0IiwiZW1haWwiOiJ0ZXN0QG1haWwuY29tIiwiaXNzdWVyIjoibXMtY29yZSIsInN1YiI6ImQ4Y2M5YTA0LTg2NWItNDQxYi1iZjNlLTE1ODRhZTYzMmIyNCIsImlhdCI6MTc5MjAzNjI2NiwiZXhwIjoxNzkyMTIyNjY2fQ.QvzjykyTbilrAWfWBP7TwaB-BeIqyGCvkOshtvPoA48
 
-@authToken2= eyJhbGciOiJIUzI1NiJ9.eyJmaXJzdE5hbWUiOiJUZXN0MSIsImxhc3ROYW1lIjoiVXNlciIsInJvbGVzIjpbIlVTRVIiXSwidHlwZSI6ImFjY2VzcyIsInVzZXJJZCI6ImU1MzcxZjQxLWE3ZGEtNDhhMS05YzAwLTljOWM2NzMyNGVlMiIsImVtYWlsIjoidGVzdDFAbWFpbC5jb20iLCJpc3N1ZXIiOiJtcy1jb3JlIiwic3ViIjoiZTUzNzFmNDEtYTdkYS00OGExLTljMDAtOWM5YzY3MzI0ZWUyIiwiaWF0IjoxNzkyMDMyMDQ3LCJleHAiOjE3OTIxMTg0NDd9.CpjYqJQZIcUEvr-digZOu8nMLr4_9Gf_o4RUEexFNDc
+@apiAuth = http://localhost:8080/api/v1/auth
+
+### 1. Login as USER (test@gmail.com)
+# @name loginUser
+POST {{apiAuth}}/login
+Content-Type: application/json
+
+{
+    "email": "test@gmail.com",
+    "password": "123456"
+}
+
+### set token user
+@authToken = {{loginUser.response.body.data.accessToken}}
+
+### 1b. Login as ADMIN (admin@gmail.com)
+# @name loginAdmin
+POST {{apiAuth}}/login
+Content-Type: application/json
+
+{
+    "email": "admin@gmail.com",
+    "password": "123456"
+}
+
+### set token admin
+@adminToken = {{loginAdmin.response.body.data.accessToken}}
+
+
+### ===========================================================
+#        ENDPOIINTS FILES STORED
+### ===========================================================
+
 # Reemplazar con el ID devuelto en la respuesta del upload:
-@uuidName = 9a1000f8-97ee-4ad7-8046-ef47c1383514
+@uuidName = a62b0bbf-65a4-41cb-8859-4399f7b8e050
 
 
 ### 1. Subir archivo de texto (test.txt)
