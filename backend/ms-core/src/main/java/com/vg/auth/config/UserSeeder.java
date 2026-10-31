@@ -22,7 +22,7 @@ import java.util.UUID;
 /**
  * Seeder for the auth module.
  * Exposes methods to be called by DaddySeeder in a controlled order.
- * 
+ *
  * NOT annotated with @Component because it should NOT auto-run.
  * DaddySeeder orchestrates when these methods are called.
  */
@@ -100,24 +100,41 @@ public class UserSeeder {
             "123456"
         );
 
-        // Save users and flush so they exist in DB before inserting user_roles
-        userRepository.saveAll(List.of(testUser, adminUser));
-        userRepository.flush();  // ← FIX
+        User caregiverUser = buildUser(
+            CAREGIVER_USER_ID,
+            "Mara",
+            "Caregiver",
+            CAREGIVER_USER_EMAIL,
+            "11223344",
+            "0112233445",
+            "123456"
+        );
 
-        log.info("[Users] Seeded test user (id={}) and admin user (id={}).", TEST_USER_ID, ADMIN_USER_ID);
+        // Save users and flush so they exist in DB before inserting user_roles
+        userRepository.saveAll(List.of(testUser, adminUser, caregiverUser));
+        userRepository.flush();
+
+        log.info(
+            "[Users] Seeded test user (id={}), admin user (id={}) and caregiver user (id={}).",
+            TEST_USER_ID, ADMIN_USER_ID, CAREGIVER_USER_ID
+        );
     }
 
     @Transactional
     public void seedUsersRoles() {
         User testUser = userRepository.findById(TEST_USER_ID)
-            .orElseThrow(() -> new IllegalStateException(TEST_USER_ID + "USER not seeded"));
+            .orElseThrow(() -> new IllegalStateException(TEST_USER_ID + " USER not seeded"));
         User adminUser = userRepository.findById(ADMIN_USER_ID)
-            .orElseThrow(() -> new IllegalStateException(ADMIN_USER_ID + "USER ADMIN not seeded"));
+            .orElseThrow(() -> new IllegalStateException(ADMIN_USER_ID + " USER ADMIN not seeded"));
+        User caregiverUser = userRepository.findById(CAREGIVER_USER_ID)
+            .orElseThrow(() -> new IllegalStateException(CAREGIVER_USER_ID + " USER CAREGIVER not seeded"));
 
         Rol userRol = rolRepository.findByName(RolType.USER.name())
             .orElseThrow(() -> new IllegalStateException("USER role not seeded"));
         Rol adminRol = rolRepository.findByName(RolType.ADMIN.name())
             .orElseThrow(() -> new IllegalStateException("ADMIN role not seeded"));
+        Rol caregiverRol = rolRepository.findByName(RolType.CAREGIVER.name())
+            .orElseThrow(() -> new IllegalStateException("CAREGIVER role not seeded"));
 
         // Assign roles
         UserRoles testUserRole = UserRoles.builder()
@@ -138,7 +155,25 @@ public class UserSeeder {
             .role(userRol)
             .build();
 
-        userRolesRepository.saveAll(List.of(testUserRole, adminUserRole, adminUserRole2));
+        UserRoles caregiverUserRole = UserRoles.builder()
+            .id(new UserRolesId(caregiverUser.getId(), caregiverRol.getId()))
+            .user(caregiverUser)
+            .role(caregiverRol)
+            .build();
+
+        UserRoles caregiverUserRole2 = UserRoles.builder()
+            .id(new UserRolesId(caregiverUser.getId(), userRol.getId()))
+            .user(caregiverUser)
+            .role(userRol)
+            .build();
+
+        userRolesRepository.saveAll(List.of(
+            testUserRole,
+            adminUserRole,
+            adminUserRole2,
+            caregiverUserRole,
+            caregiverUserRole2
+        ));
     }
 
     // ------------------------------------------------------------

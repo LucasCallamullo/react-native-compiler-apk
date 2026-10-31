@@ -1,6 +1,6 @@
 # Contract - Módulo Contact
 
-**Versión:** 3.0
+**Versión:** 4.0
 **Base URL:** `http://localhost:8080`
 **Prefijo:** `/api/v1/contacts`
 **Content-Type:** `application/json`
@@ -11,9 +11,9 @@
 ## Convenciones generales
 
 - Todas las respuestas (éxito y error) vienen envueltas en un objeto JSON estándar.
-- El **`id`** del contacto es un **Long** autogenerado (número entero).
-- El **`userId`** es un **UUID** con guiones: `f9e8d7c6-b5a4-3210-fedc-ba9876543210`.
-- Las **fechas** se devuelven en formato ISO-8601: `2026-10-14T10:50:00`.
+- El **`id`** del contacto es un **Long** autogenerado.
+- El **`userId`** es un **UUID** con guiones: `00000000-0000-0000-0000-000000000001`.
+- Las **fechas** se devuelven en formato ISO-8601: `2026-10-31T12:50:00`.
 - **El `userId` NUNCA se envía por URL ni por body.** Se extrae del JWT.
 - **Todos los endpoints requieren autenticación.** Enviar el token en el header:
   ```
@@ -28,14 +28,13 @@
 - **El `userId` se extrae del token** (claim `sub` → `UUID.fromString(subject)`).
 - **Doble factor:** en operaciones sobre un contacto puntual (GET/PUT/DELETE), se valida que el `id` del contacto **pertenezca** al `userId` del token.
 - **Sin acceso cruzado:** un usuario no puede ver/modificar/borrar contactos de otro usuario.
+- **ADMIN ve todos:** si el user es ADMIN, `GET /contacts` devuelve los de todos los usuarios.
 
 ---
 
 ## Endpoints
 
 ### 1. GET - Listar contactos
-
-Devuelve los contactos del usuario autenticado. Si el usuario es ADMIN, devuelve los de todos.
 
 **URL:** `GET /api/v1/contacts`
 
@@ -44,11 +43,15 @@ Devuelve los contactos del usuario autenticado. Si el usuario es ADMIN, devuelve
 Authorization: Bearer <accessToken>
 ```
 
+**Comportamiento:**
+- **USER:** devuelve solo sus propios contactos.
+- **ADMIN:** devuelve los contactos de **todos** los usuarios.
+
 **Response 200 OK (usuario normal):**
 
 ```json
 {
-  "timestamp": "2026-10-14T10:54:00",
+  "timestamp": "2026-10-31T12:50:00",
   "status": 200,
   "detail": "Success",
   "data": [
@@ -57,8 +60,8 @@ Authorization: Bearer <accessToken>
       "name": "Maria Lopez",
       "email": "maria@example.com",
       "phone": "1123456789",
-      "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "createdAt": "2026-10-14T10:52:00"
+      "userId": "00000000-0000-0000-0000-000000000001",
+      "createdAt": "2026-10-31T12:45:00"
     }
   ],
   "success": true
@@ -72,13 +75,10 @@ Authorization: Bearer <accessToken>
 | Status | Causa |
 |---|---|
 | 401 | Sin token o token inválido |
-| 403 | (no aplica) |
 
 ---
 
 ### 2. POST - Crear contacto
-
-Crea un contacto para el usuario autenticado. **No se envía `userId` en el body.**
 
 **URL:** `POST /api/v1/contacts`
 
@@ -97,6 +97,8 @@ Authorization: Bearer <accessToken>
 }
 ```
 
+> ⚠️ **Importante:** el `userId` **NO** va en el body. Se extrae del JWT.
+
 **Validaciones:**
 
 | Campo | Tipo | Requerido | Reglas |
@@ -109,7 +111,7 @@ Authorization: Bearer <accessToken>
 
 ```json
 {
-  "timestamp": "2026-10-14T10:52:00",
+  "timestamp": "2026-10-31T12:52:00",
   "status": 201,
   "detail": "Success",
   "data": {
@@ -117,8 +119,8 @@ Authorization: Bearer <accessToken>
     "name": "Maria Lopez",
     "email": "maria@example.com",
     "phone": "1123456789",
-    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "createdAt": "2026-10-14T10:52:00"
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "createdAt": "2026-10-31T12:52:00"
   },
   "success": true
 }
@@ -139,6 +141,11 @@ Authorization: Bearer <accessToken>
 
 **URL:** `GET /api/v1/contacts/{id}`
 
+**Headers:**
+```
+Authorization: Bearer <accessToken>
+```
+
 **Path param:**
 
 | Param | Tipo | Descripción |
@@ -147,16 +154,11 @@ Authorization: Bearer <accessToken>
 
 **Ejemplo:** `GET /api/v1/contacts/1`
 
-**Headers:**
-```
-Authorization: Bearer <accessToken>
-```
-
 **Response 200 OK:**
 
 ```json
 {
-  "timestamp": "2026-10-14T10:53:00",
+  "timestamp": "2026-10-31T12:53:00",
   "status": 200,
   "detail": "Success",
   "data": {
@@ -164,8 +166,8 @@ Authorization: Bearer <accessToken>
     "name": "Maria Lopez",
     "email": "maria@example.com",
     "phone": "1123456789",
-    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "createdAt": "2026-10-14T10:52:00"
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "createdAt": "2026-10-31T12:52:00"
   },
   "success": true
 }
@@ -187,6 +189,11 @@ Authorization: Bearer <accessToken>
 
 **URL:** `PUT /api/v1/contacts/{id}`
 
+**Headers:**
+```
+Authorization: Bearer <accessToken>
+```
+
 **Path param:**
 
 | Param | Tipo | Descripción |
@@ -194,11 +201,6 @@ Authorization: Bearer <accessToken>
 | id | Long | ID interno del contacto |
 
 **Ejemplo:** `PUT /api/v1/contacts/1`
-
-**Headers:**
-```
-Authorization: Bearer <accessToken>
-```
 
 **Request body:**
 
@@ -214,7 +216,7 @@ Authorization: Bearer <accessToken>
 
 ```json
 {
-  "timestamp": "2026-10-14T10:55:00",
+  "timestamp": "2026-10-31T12:55:00",
   "status": 200,
   "detail": "Success",
   "data": {
@@ -222,8 +224,8 @@ Authorization: Bearer <accessToken>
     "name": "Maria Lopez Actualizada",
     "email": "maria.nueva@example.com",
     "phone": "1199999999",
-    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "createdAt": "2026-10-14T10:52:00"
+    "userId": "00000000-0000-0000-0000-000000000001",
+    "createdAt": "2026-10-31T12:52:00"
   },
   "success": true
 }
@@ -243,6 +245,11 @@ Authorization: Bearer <accessToken>
 
 **URL:** `DELETE /api/v1/contacts/{id}`
 
+**Headers:**
+```
+Authorization: Bearer <accessToken>
+```
+
 **Path param:**
 
 | Param | Tipo | Descripción |
@@ -250,11 +257,6 @@ Authorization: Bearer <accessToken>
 | id | Long | ID interno del contacto |
 
 **Ejemplo:** `DELETE /api/v1/contacts/1`
-
-**Headers:**
-```
-Authorization: Bearer <accessToken>
-```
 
 **Response 204 No Content:**
 
@@ -276,12 +278,12 @@ Sin body.
 
 ```typescript
 {
-  id: number;         // Long autogenerado (ej: 1, 2, 3...)
+  id: number;          // Long autogenerado
   name: string;
   email: string;
   phone: string;
-  userId: string;     // UUID del dueño
-  createdAt: string;  // ISO-8601
+  userId: string;      // UUID del dueño
+  createdAt: string;   // ISO-8601
 }
 ```
 
@@ -289,9 +291,9 @@ Sin body.
 
 ```typescript
 {
-  name: string;    // 2-100 chars
-  email: string;   // email válido
-  phone: string;   // 7-15 dígitos
+  name: string;   // 2-100 chars
+  email: string;  // email válido
+  phone: string;  // 7-15 dígitos
   // ❌ NO incluye userId (se saca del JWT)
 }
 ```
@@ -311,6 +313,58 @@ Sin body.
 | 404 | Not Found | Contacto no existe O no pertenece al usuario |
 | 409 | Conflict | Duplicado (email ya existe para ese user) |
 | 500 | Internal Server Error | Error inesperado |
+
+---
+
+## Casos de error comunes
+
+### 401 Unauthorized (sin token)
+
+```json
+{
+  "status": 401,
+  "detail": "Authentication required",
+  "success": false
+}
+```
+
+### 400 Bad Request (body inválido)
+
+```json
+{
+  "timestamp": "2026-10-31T12:56:00",
+  "status": 400,
+  "detail": "Email is required, Phone must contain only numbers and be between 7 and 15 digits",
+  "path": "/api/v1/contacts",
+  "success": false
+}
+```
+
+Los múltiples errores de validación se concatenan con comas en `detail`.
+
+### 404 Not Found (contacto ajeno o inexistente)
+
+```json
+{
+  "timestamp": "2026-10-31T12:56:00",
+  "status": 404,
+  "detail": "Contact not found with id: 1 for user: 00000000-0000-0000-0000-000000000001",
+  "path": "/api/v1/contacts/1",
+  "success": false
+}
+```
+
+### 409 Conflict (email duplicado)
+
+```json
+{
+  "timestamp": "2026-10-31T12:56:00",
+  "status": 409,
+  "detail": "Contact already exists with email: maria@example.com for this user",
+  "path": "/api/v1/contacts",
+  "success": false
+}
+```
 
 ---
 

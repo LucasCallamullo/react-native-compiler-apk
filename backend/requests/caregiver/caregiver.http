@@ -1,0 +1,80 @@
+### REST Client Test File for CaregiverLink Operations
+### Base URL: http://localhost:8080
+### Seeded users:
+###   - test@gmail.com      (USER, protegido)
+###   - caregiver@gmail.com (CAREGIVER, cuidador)
+
+### ============================================
+### SETUP: Login
+### ============================================
+
+### 0a. Login as PROTECTED USER (test@gmail.com)
+# @name loginProtected
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "email": "test@gmail.com",
+    "password": "123456"
+}
+
+### 0b. Login as CAREGIVER (caregiver@gmail.com)
+# @name loginCaregiver
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "email": "caregiver@gmail.com",
+    "password": "123456"
+}
+
+### ============================================
+### SUCCESS CASES
+### ============================================
+
+### 1. Generate Code - Success (as PROTECTED)
+# @name generateCode
+POST http://localhost:8080/api/v1/caregiver-links
+Authorization: Bearer {{loginProtected.response.body.data.accessToken}}
+
+### 2. Accept Code - Success (as CAREGIVER)
+# @name acceptCode
+POST http://localhost:8080/api/v1/caregiver-links/{{generateCode.response.body.data.code}}/accept
+Authorization: Bearer {{loginCaregiver.response.body.data.accessToken}}
+
+### 3. List My Caregivers - Success (as PROTECTED)
+# @name listCaregivers
+GET http://localhost:8080/api/v1/caregiver-links
+Authorization: Bearer {{loginProtected.response.body.data.accessToken}}
+
+### 4. List Whom I Care For - Success (as CAREGIVER)
+# @name listCaring
+GET http://localhost:8080/api/v1/caregiver-links/caring
+Authorization: Bearer {{loginCaregiver.response.body.data.accessToken}}
+
+### 5. Revoke Link - Success (as PROTECTED)
+# @name revokeLink
+PATCH http://localhost:8080/api/v1/caregiver-links/{{acceptCode.response.body.data.id}}/revoke
+Authorization: Bearer {{loginProtected.response.body.data.accessToken}}
+
+### ============================================
+### ERROR CASES
+### ============================================
+
+### 6. Accept code - Not found (404)
+# @name acceptNotFound
+POST http://localhost:8080/api/v1/caregiver-links/00000000-0000-0000-0000-000000000000/accept
+Authorization: Bearer {{loginCaregiver.response.body.data.accessToken}}
+
+### 7. Accept code - No token (401)
+# @name acceptNoToken
+POST http://localhost:8080/api/v1/caregiver-links/{{generateCode.response.body.data.code}}/accept
+
+### 8. Revoke - Not the owner (403)
+# @name revokeNotOwner
+PATCH http://localhost:8080/api/v1/caregiver-links/{{acceptCode.response.body.data.id}}/revoke
+Authorization: Bearer {{loginCaregiver.response.body.data.accessToken}}
+
+### 9. Generate code - No token (401)
+# @name generateNoToken
+POST http://localhost:8080/api/v1/caregiver-links
